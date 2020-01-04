@@ -1,3 +1,3 @@
-# OpenSlides ... service
+# OpenSlides authentication service
 
 Service for OpenSlides which ...
