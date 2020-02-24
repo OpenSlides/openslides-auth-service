@@ -1,0 +1,87 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "max-line-length": {
+            "options": [120]
+        },
+        "array-type": [true, "array"],
+        "arrow-return-shorthand": true,
+        "arrow-parens": true,
+        "callable-types": true,
+        "class-name": true,
+        "comment-format": [true, "check-space"],
+        "curly": true,
+        "deprecation": {
+            "severity": "warn"
+        },
+        "forin": true,
+        "import-blacklist": [true, "rxjs/Rx"],
+        "interface-name": true,
+        "interface-over-type-literal": true,
+        "jsdoc-format": true,
+        "label-position": true,
+        "member-access": false,
+        "member-ordering": [
+            true,
+            {
+                "order": ["static-field", "instance-field", "static-method", "instance-method"]
+            }
+        ],
+        "no-arg": true,
+        "no-construct": true,
+        "no-debugger": true,
+        "no-duplicate-super": true,
+        "no-empty": true,
+        "no-empty-interface": true,
+        "no-eval": true,
+        "no-inferrable-types": [true, "ignore-params"],
+        "no-misused-new": true,
+        "no-non-null-assertion": true,
+        "no-shadowed-variable": true,
+        "no-string-literal": false,
+        "no-string-throw": true,
+        "no-switch-case-fall-through": true,
+        "no-unnecessary-initializer": true,
+        "no-unused-expression": true,
+        "no-var-keyword": true,
+        "no-consecutive-blank-lines": false,
+        "no-trailing-whitespace": true,
+        "object-literal-sort-keys": false,
+        "ordered-imports": [
+            true,
+            {
+                "import-source-order": "case-sensitive",
+                "grouped-imports": true,
+                "groups": [{
+                        "name": "internal dependencies",
+                        "match": "^(app/|\\.?\\./).*",
+                        "order": 30
+                    },
+                    {
+                        "name": "external dependencies",
+                        "_match": "^(?!(app/|\\.?\\./)).*",
+                        "match": ".*",
+                        "order": 20
+                    }
+                ],
+                "named-imports-order": "case-insensitive",
+                "module-source-path": "basename"
+            }
+        ],
+        "quotemark": [true, "single"],
+        "variable-name": [true, "check-format", "require-const-for-all-caps", "ban-keywords"],
+        "prefer-const": true,
+        "radix": true,
+        "triple-equals": [true, "allow-null-check"],
+        "typedef": [
+            true,
+            "call-signature",
+            "property-declaration",
+            "parameter",
+            "object-destructuring",
+            "array-destructuring"
+        ],
+        "unified-signatures": true,
+        "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"]
+    }
+}
