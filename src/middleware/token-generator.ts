@@ -19,7 +19,7 @@ export default class TokenGenerator {
             return;
         }
         if (username === mockedUsername && password === mockedPassword) {
-            const token = jwt.sign({ username }, secret, { expiresIn: '10s' });
+            const token = jwt.sign({ username }, secret, { expiresIn: '10m' });
             response.json({
                 success: true,
                 message: 'Authentication successful!',

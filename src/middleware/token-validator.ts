@@ -12,7 +12,7 @@ export default class TokenValidator {
     ): express.Response | void {
         let token = (request.headers['x-access-token'] || request.headers['authorization']) as string;
         if (!token) {
-            return response.json({
+            return response.status(403).json({
                 success: false,
                 message: 'Auth token is not supplied'
             });

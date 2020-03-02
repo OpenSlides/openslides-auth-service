@@ -1,4 +1,5 @@
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import { createServer, Server } from 'http';
@@ -8,7 +9,7 @@ import Routes from './routes/Routes';
 export default class AuthenticationServer {
     private static instance: AuthenticationServer;
 
-    private readonly PORT: number = 3000;
+    private readonly PORT: number = 5000;
 
     private app: express.Application;
     private port: string | number;
@@ -42,6 +43,7 @@ export default class AuthenticationServer {
     private initializeConfig(): void {
         dotenv.config();
         this.port = process.env.PORT || this.PORT;
+        this.app.use(cors());
         this.app.use(express.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(bodyParser.json());
