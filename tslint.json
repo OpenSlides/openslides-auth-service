@@ -6,7 +6,7 @@
         },
         "array-type": [true, "array"],
         "arrow-return-shorthand": true,
-        "arrow-parens": true,
+        "arrow-parens": false,
         "callable-types": true,
         "class-name": true,
         "comment-format": [true, "check-space"],

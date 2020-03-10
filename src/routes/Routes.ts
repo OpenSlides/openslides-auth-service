@@ -31,7 +31,9 @@ export default class Routes {
         // this.app.get('/', (_, response) => {
         //     response.send('Hello world');
         // });
+        this.app.post('/register'); // Register a new user
         this.app.post('/login', this.tokenGenerator.login);
+        this.app.post('/token'); // Receive token for OAuth2.0
         this.app.get('/', this.tokenGenerator.index);
     }
 

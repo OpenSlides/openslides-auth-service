@@ -31,6 +31,7 @@
         "@types/express-jwt": "0.0.42",
         "@types/jsonwebtoken": "^8.3.7",
         "@types/node": "^13.7.0",
+        "@types/pouchdb": "^6.4.0",
         "nodemon": "^2.0.2",
         "prettier": "^1.19.1",
         "ts-node": "^8.6.2",
@@ -43,6 +44,7 @@
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "express-jwt": "^5.3.1",
-        "jsonwebtoken": "^8.5.1"
+        "jsonwebtoken": "^8.5.1",
+        "pouchdb": "^7.2.1"
     }
 }
