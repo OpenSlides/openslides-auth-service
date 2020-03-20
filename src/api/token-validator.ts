@@ -2,7 +2,7 @@ import express from 'express';
 // import jwt from 'express-jwt';
 import jwt from 'jsonwebtoken';
 
-import { secret } from '../config/config';
+import { SECRET } from '../config';
 
 export default class TokenValidator {
     public checkToken(
@@ -22,7 +22,7 @@ export default class TokenValidator {
         }
 
         // let status = {};
-        jwt.verify(token, secret, (error, decoded) => {
+        jwt.verify(token, SECRET, (error, decoded) => {
             // console.log('token', error);
             if (error) {
                 return response.json({

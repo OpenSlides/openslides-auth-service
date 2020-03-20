@@ -1,20 +1,32 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import querystring from 'querystring';
+import { uuid } from 'uuidv4';
 
-import ClientService from '../services/client-service';
-import { secret } from '../config/config';
+import ClientService from '../model-services/client-service';
+import { SECRET } from '../config';
+import DatabaseAdapter from '../adapter/services/database-adapter';
 
 export default class TokenGenerator {
-    private clientService = ClientService.getInstance();
+    private clientService = new ClientService();
     private codes: any = {};
+    private database = new DatabaseAdapter();
 
-    public login(request: express.Request, response: express.Response): void {
+    public constructor() {
+        // this.database = DatabaseAdapter.getInstance();
+        // if (this.database) {
+        //     this.database.addUser({ username: 'admin', password: 'admin' });
+        // }
+        this.insertMockData();
+    }
+
+    public async login(request: express.Request, response: express.Response): Promise<void> {
         const username = request.body.username;
         const password = request.body.password;
 
         const mockedUsername = 'admin';
         const mockedPassword = 'admin';
+        // const user = await this.database.getUserByName('admin');
 
         if (!username || !password) {
             response.json({
@@ -24,11 +36,17 @@ export default class TokenGenerator {
             return;
         }
         if (username === mockedUsername && password === mockedPassword) {
-            const token = jwt.sign({ username }, secret, { expiresIn: '10m' });
+            const token = jwt.sign({ username, expiresIn: '10m', sessionId: uuid(), clientId: uuid() }, SECRET, {
+                expiresIn: '10m'
+            });
+            const refreshId = uuid();
+
+            response.cookie('refreshId', refreshId, { httpOnly: true, secure: false });
             response.json({
                 success: true,
                 message: 'Authentication successful!',
-                token
+                token,
+                refreshId
             });
         } else {
             response.status(403).json({
@@ -36,6 +54,12 @@ export default class TokenGenerator {
                 message: 'Incorrect username or password'
             });
         }
+    }
+
+    public refreshToken(request: express.Request, reponse: express.Response): void {
+        const refreshToken = request.cookies['sessionId'];
+        // const username = request.body.username;
+        // const token = jwt.sign({username}, secret, {expiresIn: '1h'})
     }
 
     public generateToken(request: express.Request, response: express.Response): void {
@@ -128,4 +152,14 @@ export default class TokenGenerator {
     }
 
     private getClient(): any {}
+
+    private insertMockData(): void {
+        console.log('insertMockData');
+        if (this.database) {
+            this.database.addUser({ username: 'admin', password: 'admin' });
+            this.database.getUserByName('admin').then(() => console.log('fetched'));
+        } else {
+            // setTimeout(() => this.insertMockData(), 1000);
+        }
+    }
 }

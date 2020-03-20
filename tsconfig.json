@@ -4,6 +4,7 @@
         "strict": true,
         "baseUrl": "./",
         "outDir": "build",
+        "sourceMap": true,
         "removeComments": true,
         "experimentalDecorators": true,
         "target": "esnext",

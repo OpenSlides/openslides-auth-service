@@ -16,7 +16,7 @@
         },
         "forin": true,
         "import-blacklist": [true, "rxjs/Rx"],
-        "interface-name": true,
+        "interface-name": false,
         "interface-over-type-literal": true,
         "jsdoc-format": true,
         "label-position": true,

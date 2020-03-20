@@ -1,0 +1,45 @@
+Interface Token {
+    payload: {
+        // The lifetime of the Token in milliseconds.
+        expiresIn: number (ms),
+        // The corresponding userId of the requesting client.
+        userId: string,
+        // The id of the current session.
+        sessionId: string
+    },
+    signature: string
+}
+
+/**
+* The client can login with its credentials for authentication.
+* If they are correct, the service answers with a signed Token and sets a cookie, containing the sessionId of the client. 
+*/
+(Token, Cookie) Login (username: string, password: string);
+
+/**
+* An example for any protected route. If the client requests protected resources, it has to 
+* send the signed Token and the cookie, it receives from the service at login, to the server.
+*/
+Any Api* (token: Token, cookie: Cookie);
+
+/**
+* A request to get knowledge about themselves. This information is contained in the payload of 
+* a Token. So, this function handles the refreshing of a Token.
+* Sends back a new Token.
+*/
+Token WhoAmI(cookie: Cookie);
+
+/**
+* Function to kill one specific session by its id.
+*/
+void ClearSessionById (sessionId: string);
+
+/**
+* Function to kill all current opened sessions except the one, which is requesting.
+*/ 
+void ClearAllSessionsExceptThemselves ();
+
+/**
+* The service deletes the session depending on the given Token.
+*/
+void Logout (token: Token);

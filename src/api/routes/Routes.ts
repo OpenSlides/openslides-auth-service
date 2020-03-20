@@ -1,7 +1,7 @@
 import * as express from 'express';
 
-import TokenGenerator from '../middleware/token-generator';
-import TokenValidator from '../middleware/token-validator';
+import TokenGenerator from '../token-generator';
+import TokenValidator from '../token-validator';
 
 export default class Routes {
     private readonly SECURE_URL_PREFIX = '/api';
@@ -28,11 +28,9 @@ export default class Routes {
     }
 
     private initPublicRoutes(): void {
-        // this.app.get('/', (_, response) => {
-        //     response.send('Hello world');
-        // });
         this.app.post('/register'); // Register a new user
-        this.app.post('/login', this.tokenGenerator.login);
+        this.app.post('/login', this.tokenGenerator.login); // Sends a token back
+        this.app.post('/refresh_token', this.tokenGenerator.refreshToken); // Sends back a refresh token
         this.app.post('/token'); // Receive token for OAuth2.0
         this.app.get('/', this.tokenGenerator.index);
     }
@@ -44,8 +42,4 @@ export default class Routes {
     private getSecureUrl(urlPath: string): string {
         return `${this.SECURE_URL_PREFIX}${urlPath}`;
     }
-
-    // private getSecureUrl (urlPath: string, handler: (req: express.Request, res: express.Response) => any): void {
-
-    // }
 }

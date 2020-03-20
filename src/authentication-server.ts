@@ -1,10 +1,11 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import { createServer, Server } from 'http';
 
-import Routes from './routes/Routes';
+import Routes from './api/routes/Routes';
 
 export default class AuthenticationServer {
     private static instance: AuthenticationServer;
@@ -47,6 +48,7 @@ export default class AuthenticationServer {
         this.app.use(express.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(bodyParser.json());
+        this.app.use(cookieParser());
     }
 
     private initializeRoutes(): void {

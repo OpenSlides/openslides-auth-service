@@ -1,18 +1,20 @@
-import Client from 'src/models/client';
+import Client from '../core/models/client';
+import { service } from '../core/modules/decorators';
 
+@service
 export default class ClientService {
-    private static instance: ClientService;
+    // private static instance: ClientService;
 
     private clients: Client[];
 
-    private constructor() {}
+    // private constructor() {}
 
-    public static getInstance(): ClientService {
-        if (!this.instance) {
-            this.instance = new ClientService();
-        }
-        return this.instance;
-    }
+    // public static getInstance(): ClientService {
+    //     if (!this.instance) {
+    //         this.instance = new ClientService();
+    //     }
+    //     return this.instance;
+    // }
 
     public addClient(client: Client): boolean {
         if (!this.clients.find(entry => entry.clientId === client.clientId)) {
