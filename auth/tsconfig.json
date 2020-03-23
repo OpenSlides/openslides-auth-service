@@ -2,8 +2,9 @@
     "compilerOptions": {
         "module": "commonjs",
         "strict": true,
-        "baseUrl": "./",
-        "outDir": "build",
+        // "baseUrl": "./",
+        "rootDir": "./src",
+        "outDir": "./dist",
         "sourceMap": true,
         "removeComments": true,
         "experimentalDecorators": true,
@@ -13,17 +14,9 @@
         "moduleResolution": "node",
         "importHelpers": true,
         "strictPropertyInitialization": false,
-        "types": [
-            "node"
-        ],
-        "typeRoots": [
-            "node_modules/@types"
-        ]
+        "types": ["node"],
+        "typeRoots": ["node_modules/@types"]
     },
-    "include": [
-        "./src/**/*.ts"
-    ],
-    "exclude": [
-        "./src/public/"
-    ]
+    "include": ["./src/**/*.ts"],
+    "exclude": ["./src/public"]
 }

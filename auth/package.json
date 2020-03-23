@@ -2,7 +2,7 @@
     "name": "openslides-auth-service",
     "version": "1.0.0",
     "description": "Service for OpenSlides which ...",
-    "main": "build/server.js",
+    "main": "./dist/server.js",
     "directories": {
         "test": "tests"
     },
@@ -14,7 +14,8 @@
         "dev": "nodemon --config \"./util/nodemon.json\"",
         "linter-write": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
         "prettify-write": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json,.css,.scss}\"",
-        "start": "ts-node src/authentication-server.ts",
+        "start": "node ./dist/index.js",
+        "build": "tsc",
         "test": "echo \"Error: no test specified\" && exit 1",
         "uptodate": "npm update && npm update --dev"
     },
