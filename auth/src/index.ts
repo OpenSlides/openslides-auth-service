@@ -1,7 +1,7 @@
 import * as http from 'http';
 
-let reqCnt = 1;
-const PORT = process.env.PORT || 5000;
+let reqCnt: number = 1;
+const PORT: number = parseInt(process.env.PORT || '', 10) || 8000;
 
 http.createServer((req, res) => {
     const message = `Request Count: ${reqCnt}`;
