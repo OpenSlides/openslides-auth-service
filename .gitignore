@@ -44,4 +44,4 @@ yarn.lock
 package-lock.json
 
 # ignore database files
-database
+*/UserDatabase

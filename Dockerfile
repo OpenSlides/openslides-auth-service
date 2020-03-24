@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
 COPY auth/package*.json ./
-RUN npm install
+RUN npm install --only=production
 
 # Application lays in /app/src
 COPY ./auth ./
