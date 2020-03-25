@@ -4,9 +4,13 @@ WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
 COPY auth/package*.json ./
-RUN npm install --only=production
+COPY auth/tsconfig.json ./
+RUN npm install
 
 # Application lays in /app/src
 COPY ./auth ./
+
+# Now the source-files can be transpiled
+RUN npm run build
 EXPOSE 8000
 CMD ["npm", "run", "start"]

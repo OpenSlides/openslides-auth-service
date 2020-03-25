@@ -1,7 +1,7 @@
 import Client from '../core/models/client';
-import { service } from '../core/modules/decorators';
+import { Service } from '../core/modules/decorators';
 
-@service
+@Service('clientService')
 export default class ClientService {
     // private static instance: ClientService;
 
@@ -29,5 +29,9 @@ export default class ClientService {
      */
     public getClientById(id: string): Client | undefined {
         return this.clients.find(client => client.clientId === id);
+    }
+
+    public hello(): void {
+        console.log('Hello world from ClientService');
     }
 }

@@ -9,7 +9,8 @@
     "scripts": {
         "postinstall": "npm run uptodate",
         "cleanup": "npm run prettify-write && npm run linter-write",
-        "start": "nodemon src/index.ts",
+        "start": "node dist/index.js",
+        "dev": "nodemon src/index.ts",
         "linter-write": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
         "prettify-write": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json,.css,.scss}\"",
         "build": "tsc",
@@ -52,6 +53,7 @@
         "jsonwebtoken": "^8.5.1",
         "pouchdb": "^7.2.1",
         "pouchdb-adapter-memory": "^7.2.1",
+        "reflect-metadata": "^0.1.13",
         "uuidv4": "^6.0.6"
     }
 }

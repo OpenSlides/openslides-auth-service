@@ -1,4 +1,4 @@
-import Client from 'src/core/models/client';
+import Client from '../../core/models/client';
 
 export default interface IDatabasePort {
     getClientByName(name: string): Client;
