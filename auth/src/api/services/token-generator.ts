@@ -15,9 +15,9 @@ export default class TokenGenerator {
     private clientService = Container.getInstance().get(ClientService);
     // @Inject()
     // private clientService: ClientService;
-    private readonly crypto = crypto.subtle;
-    private readonly signKey: any;
-    private codes: any = {};
+    // private readonly crypto = crypto.subtle;
+    // private readonly signKey: any;
+    // private codes: any = {};
     private database: DatabaseAdapter = Container.getInstance().get(DatabaseAdapter);
 
     public constructor() {
@@ -25,7 +25,7 @@ export default class TokenGenerator {
         // if (this.database) {
         //     this.database.addUser({ username: 'admin', password: 'admin' });
         // }
-        this.signKey = this.crypto.generateKey('HMAC', false, ['sign', 'verify']);
+        // this.signKey = this.crypto.generateKey('HMAC', false, ['sign', 'verify']);
         this.insertMockData();
         console.log('clientService:', this.clientService);
         this.clientService.hello();
@@ -155,7 +155,7 @@ export default class TokenGenerator {
     public index(_: any, response: express.Response): void {
         response.json({
             success: true,
-            message: 'Index page'
+            message: 'Hello World'
         });
     }
 
