@@ -1,35 +1,27 @@
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import querystring from 'querystring';
 import { uuid } from 'uuidv4';
 
 import ClientService from '../../model-services/client-service';
-import { SECRET, SECRET_COOKIE } from '../../config';
-import Container from '../../core/modules/di/container';
-import DatabaseAdapter from '../../adapter/services/database-adapter';
-import IDatabasePort from '../../adapter/interfaces/database-port';
-import { Inject } from '../../core/modules/decorators';
-import cookieParser from 'cookie-parser';
 import { ClientServiceInterface } from '../../model-services/client-service.interface';
+import { SECRET, SECRET_COOKIE } from '../../config';
+import DatabaseAdapter from '../../adapter/services/database-adapter';
+import { DatabasePort } from '../../adapter/interfaces/database-port';
+import { Inject } from '../../core/modules/decorators';
 
 export default class TokenGenerator {
-    // private clientService = Container.getInstance().get(ClientService);
     @Inject(ClientServiceInterface)
     private clientService: ClientService;
     // private readonly crypto = crypto.subtle;
     // private readonly signKey: any;
     // private codes: any = {};
-    private database: DatabaseAdapter = Container.getInstance().get(DatabaseAdapter);
+    @Inject(DatabasePort)
+    private database: DatabaseAdapter;
 
     public constructor() {
-        // this.database = DatabaseAdapter.getInstance();
-        // if (this.database) {
-        //     this.database.addUser({ username: 'admin', password: 'admin' });
-        // }
         // this.signKey = this.crypto.generateKey('HMAC', false, ['sign', 'verify']);
         this.insertMockData();
-        console.log('clientService:', this.clientService);
-        this.clientService.hello();
     }
 
     public async login(request: express.Request, response: express.Response): Promise<void> {
@@ -170,12 +162,9 @@ export default class TokenGenerator {
     private getClient(): any {}
 
     private insertMockData(): void {
-        console.log('insertMockData');
         if (this.database) {
-            this.database.addUser({ username: 'admin', password: 'admin' });
-            this.database.getUserByName('admin').then(() => console.log('fetched'));
-        } else {
-            // setTimeout(() => this.insertMockData(), 1000);
+            this.database.addClient({ username: 'admin', password: 'admin' });
+            this.database.getClientByName('admin').then(() => console.log('fetched'));
         }
     }
 }

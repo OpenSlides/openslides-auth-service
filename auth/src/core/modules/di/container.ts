@@ -5,7 +5,6 @@ export default class Container {
     private static instance: Container;
 
     private readonly registry = new Map<Dependency<any>, Provider<any>>();
-    private readonly registerMap = new Map<string, Dependency<any>>();
 
     private constructor() {}
 
@@ -23,26 +22,12 @@ export default class Container {
         return this;
     }
 
-    public get<T>(dependency: new () => T): T {
+    public get<T>(dependency: new () => T): T | undefined {
         const provider = this.registry.get(dependency);
         if (provider) {
             return provider(this);
         } else {
-            const item = new dependency();
-            this.registry.set(dependency, () => item);
-            return item;
+            return undefined;
         }
     }
-
-    // public registerString<T>(key: string, dependency: Dependency<T>): this {
-    //     if (!this.registerMap.get(key)) {
-    //         this.registerMap.set(key, dependency);
-    //     }
-    //     return this;
-    // }
-
-    // public getString<T>(key: string): Dependency<T> | undefined {
-    //     const provider = this.registerMap.get(key);
-    //     return provider;
-    // }
 }

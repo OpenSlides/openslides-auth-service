@@ -12,6 +12,6 @@ export class InjectableClass {
     name: string;
 }
 
-export function Injectable<T extends InjectableClass, V>(key: T): ClassDecorator<Type<object>> {
+export function Injectable<T extends InjectableClass>(key: T): ClassDecorator<Type<object>> {
     return (target: Type<object>) => Container.getInstance().register(key, () => new target());
 }
