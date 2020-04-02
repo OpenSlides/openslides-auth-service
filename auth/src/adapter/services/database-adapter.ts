@@ -4,7 +4,8 @@ import Client from '../../core/models/client';
 import { DATABASE_PATH } from '../../config';
 import { Service } from '../../core/modules/decorators';
 
-@Service('database')
+// @Service('database')
+@Service()
 export default class DatabaseAdapter {
     // private static instance: DatabaseAdapter;
     private database: PouchDB.Database;

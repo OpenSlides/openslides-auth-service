@@ -31,10 +31,14 @@ export interface Type<T> {
     name: string;
 }
 
-export const Service = (key: any): ClassDecorator<Type<object>> => {
-    return (target: Type<object>) => {
-        Container.getInstance().register(key, () => new target());
-    };
+// export const Service = (key: any): ClassDecorator<Type<object>> => {
+//     return (target: Type<object>) => {
+//         Container.getInstance().register(key, () => new target());
+//     };
+// };
+
+export const Service = (): any => {
+    return (target: any) => console.log(Reflect.getMetadata('design:paramtypes', target));
 };
 
 // export function Service(): ClassDecorator<Type<object>> {

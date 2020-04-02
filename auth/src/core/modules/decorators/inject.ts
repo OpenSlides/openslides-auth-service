@@ -1,4 +1,4 @@
-// import 'reflect-metadata';
+import 'reflect-metadata';
 
 import Container from '../di/container';
 import { Type } from './service';
@@ -39,24 +39,31 @@ import { Type } from './service';
 // }
 
 export function Inject<T>(key: any): any {
-    const c = (target: object, propertyKey: string | symbol, descriptor?: PropertyDescriptor): T | undefined => {
-        console.log('target', target);
-        console.log('key', key);
-        console.log('propertyKey', propertyKey);
-        console.log('paramInx', descriptor);
-        // const paramTypes = Reflect.getMetadata('design:paramtypes', target);
-        // console.log('paramTypes', paramTypes);
-        // console.log('property:', Container.getInstance().get(key));
-        // if (!key) {
-        //     // const instance = Reflect.getMetadata('design:paramtypes', target);
-        //     // console.log('instance', instance);
-        // } else {
-        //     return Container.getInstance().get(key);
-        // }
-        return Container.getInstance().get(key) as T;
+    return (target: any, propertyKey: string | symbol, descriptor?: PropertyDescriptor): T => {
+        const service = Container.getInstance().get(key) as T;
+        target[propertyKey] = service;
+        return service;
     };
-    console.log('returnValue', c);
-    return c;
+    // const c = (target: object, propertyKey: string | symbol, descriptor?: PropertyDescriptor): T => {
+    //     console.log('target', target);
+    //     console.log('key', key);
+    //     console.log('propertyKey', propertyKey);
+    //     console.log('paramInx', descriptor);
+    //     const paramTypes = Reflect.getMetadata('design:paramtypes', target);
+    //     const types = Reflect.getMetadata('design:type', target);
+    //     console.log('paramTypes', paramTypes);
+    //     console.log('types', types);
+    //     // console.log('property:', Container.getInstance().get(key));
+    //     // if (!key) {
+    //     //     // const instance = Reflect.getMetadata('design:paramtypes', target);
+    //     //     // console.log('instance', instance);
+    //     // } else {
+    //     //     return Container.getInstance().get(key);
+    //     // }
+    //     return Container.getInstance().get(key) as T;
+    // };
+    // console.log('returnValue', c);
+    // // return c;
     // return Container.getInstance().get(key);
 }
 

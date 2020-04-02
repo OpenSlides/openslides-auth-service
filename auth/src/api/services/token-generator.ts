@@ -10,11 +10,12 @@ import DatabaseAdapter from '../../adapter/services/database-adapter';
 import IDatabasePort from '../../adapter/interfaces/database-port';
 import { Inject } from '../../core/modules/decorators';
 import cookieParser from 'cookie-parser';
+import { ClientServiceInterface } from '../../model-services/client-service.interface';
 
 export default class TokenGenerator {
-    private clientService = Container.getInstance().get(ClientService);
-    // @Inject()
-    // private clientService: ClientService;
+    // private clientService = Container.getInstance().get(ClientService);
+    @Inject(ClientServiceInterface)
+    private clientService: ClientService;
     // private readonly crypto = crypto.subtle;
     // private readonly signKey: any;
     // private codes: any = {};

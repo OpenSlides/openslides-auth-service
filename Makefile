@@ -11,3 +11,10 @@ build-prod:
 run-prod: | build-prod
 	docker-compose -f docker-compose.yaml up
 	docker-compose -f docker-compose.yaml down
+
+build-test:
+	docker build -t openslides-auth-test -f Dockerfile.test .
+
+test: | build-test
+	docker-compose -f docker-compose.yaml up
+	docker-compose -f docker.compose.yaml down

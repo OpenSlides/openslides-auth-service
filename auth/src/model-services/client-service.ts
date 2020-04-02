@@ -1,8 +1,14 @@
 import Client from '../core/models/client';
+import { ClientServiceInterface } from './client-service.interface';
+import { Injectable } from '../core/modules/decorators/injectable';
 import { Service } from '../core/modules/decorators';
+// import { Service } from '../core/modules/decorators';
 
-@Service('clientService')
-export default class ClientService {
+// @Service('clientService')
+// @Injectable(ClientServiceInterface)
+@Injectable(ClientServiceInterface)
+export default class ClientService implements ClientServiceInterface {
+    name = 'ClientService';
     // private static instance: ClientService;
 
     private clients: Client[];
