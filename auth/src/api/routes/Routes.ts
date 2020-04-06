@@ -28,10 +28,7 @@ export default class Routes {
     }
 
     private initPublicRoutes(): void {
-        // this.app.post('/register'); // Register a new user
         this.app.post('/login', this.tokenGenerator.login); // Sends a token back
-        // this.app.post('/refresh_token', this.tokenGenerator.refreshToken); // Sends back a new token
-        // this.app.post('/token'); // Receive token for OAuth2.0
         this.app.get('/', this.tokenGenerator.index);
     }
 

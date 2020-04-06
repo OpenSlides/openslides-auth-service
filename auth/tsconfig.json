@@ -3,8 +3,8 @@
         "module": "commonjs",
         "strict": true,
         "baseUrl": "./",
-        "rootDir": "./src",
-        "outDir": "./dist",
+        "rootDir": "src",
+        "outDir": "build",
         "sourceMap": true,
         "removeComments": true,
         "experimentalDecorators": true,
@@ -17,6 +17,6 @@
         "types": ["node"],
         "typeRoots": ["node_modules/@types"]
     },
-    "include": ["./src/**/*.ts"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]
 }

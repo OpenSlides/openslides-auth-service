@@ -2,13 +2,14 @@ version: "3"
 
 services:
   auth:
-    image: openslides-auth
+    image: openslides-auth-test
     restart: always
     depends_on:
       - message_bus
       - storage
     environment:
       - STORAGE_HOST=storage
+      - STORAGE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
     volumes:
       - ./auth/src:/app/src
@@ -16,13 +17,33 @@ services:
       - "8000:8000"
     networks:
       - auth
+
   message_bus:
     image: redis:alpine
     networks:
       - auth
+
   storage:
     image: redis:alpine
+    expose:
+      - 6379
     networks:
       - auth
+
+  test:
+    image: openslides-auth-test
+    command: dockerize -wait tcp://auth:8000 -timeout 10s bash -c "npm run test"
+    environment:
+      - AUTH_URL=http://auth:8000
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=6379
+      - MESSAGE_BUS_HOST=message_bus
+    depends_on:
+      - auth
+      - storage
+      - message_bus
+    networks:
+      - auth
+
 networks:
   auth:

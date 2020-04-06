@@ -29,10 +29,11 @@
         ],
         "no-arg": true,
         "no-construct": true,
+        "no-console": false,
         "no-debugger": true,
         "no-duplicate-super": true,
-        "no-empty": true,
-        "no-empty-interface": true,
+        "no-empty": false,
+        "no-empty-interface": false,
         "no-eval": true,
         "no-inferrable-types": [true, "ignore-params"],
         "no-misused-new": true,
@@ -52,7 +53,8 @@
             {
                 "import-source-order": "case-sensitive",
                 "grouped-imports": true,
-                "groups": [{
+                "groups": [
+                    {
                         "name": "internal dependencies",
                         "match": "^(app/|\\.?\\./).*",
                         "order": 30
