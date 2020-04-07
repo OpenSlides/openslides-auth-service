@@ -1,29 +1,34 @@
-version: '3'
+version: "3"
 
 services:
-    auth:
-        image: openslides-auth-dev
-        restart: always
-        depends_on:
-            - message_bus
-            - storage
-        environment:
-            - STORAGE_HOST=storage
-            - MESSAGE_BUS_HOST=message_bus
-        volumes:
-            - ./auth/src:/app/src
-        ports:
-            - '8000:8000'
-        networks:
-            - auth
-    message_bus:
-        image: redis:alpine
-        networks:
-            - auth
-    storage:
-        image: redis:alpine
-        networks:
-            - auth
+  auth:
+    image: openslides-auth-dev
+    restart: always
+    depends_on:
+      - message_bus
+      - storage
+    environment:
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=6379
+      - MESSAGE_BUS_HOST=message_bus
+      - MESSAGE_BUS_PORT=6380
+    volumes:
+      - ./auth/src:/app/src
+    ports:
+      - "8000:8000"
+    networks:
+      - auth
+  message_bus:
+    image: redis:alpine
+    ports:
+      - "6380:6380"
+    networks:
+      - auth
+  storage:
+    image: redis:alpine
+    networks:
+      - auth
+    ports:
+      - "6379:6379"
 networks:
-    auth:
-       
+  auth:

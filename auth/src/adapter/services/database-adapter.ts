@@ -8,6 +8,7 @@ import { Injectable } from '../../core/modules/decorators';
 export default class DatabaseAdapter implements DatabasePort {
     private readonly redisPort = parseInt(process.env.STORAGE_PORT || '', 10) || 6379;
     private readonly redisHost = process.env.STORAGE_HOST || '';
+    private readonly localHost = '172.18.0.4';
 
     public name = 'DatabaseAdapter';
 
@@ -16,8 +17,10 @@ export default class DatabaseAdapter implements DatabasePort {
     private database: Redis.RedisClient;
 
     public constructor() {
-        this.database = Redis.createClient();
-        console.log('database', this.redisHost, this.redisPort);
+        if (!this.database) {
+            this.database = Redis.createClient({ port: this.redisPort });
+        }
+        console.log('database constructor', this.redisHost, this.redisPort);
     }
 
     /**

@@ -8,5 +8,8 @@ RUN npm install
 
 # Application lays in /app/src
 COPY ./auth ./
+COPY auth/entrypoint.sh ./
 EXPOSE 8000
+
+ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["npm", "run", "dev"]
