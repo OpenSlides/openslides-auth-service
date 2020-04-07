@@ -1,5 +1,8 @@
 FROM node:latest
 
+RUN apt-get -y update && apt-get -y upgrade && \
+    apt-get install --no-install-recommends -y wait-for-it
+
 WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
