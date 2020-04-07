@@ -80,8 +80,8 @@ export default class TokenGenerator {
 
     private insertMockData(): void {
         if (this.database) {
-            this.database.addClient({ username: 'admin', password: 'admin' });
-            this.database.getClientByName('admin').then(() => console.log('fetched'));
+            // this.database.addClient();
+            // this.database.getClientByName('admin').then(() => console.log('fetched'));
         }
     }
 }

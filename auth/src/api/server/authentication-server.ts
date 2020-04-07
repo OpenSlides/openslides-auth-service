@@ -1,6 +1,5 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import * as dotenv from 'dotenv';
 import express from 'express';
 import { createServer, Server } from 'http';
 
@@ -10,18 +9,17 @@ import Routes from '../routes/Routes';
 export default class AuthenticationServer implements BaseServer {
     private static instance: AuthenticationServer;
 
+    public name = 'AuthenticationServer';
+
     private app: express.Application;
     private server: Server;
     private routes: Routes;
 
     private constructor() {
-        // dotenv.config();
-        // this.port = port;
         this.createApp();
         this.createServer();
         this.initializeConfig();
         this.initializeRoutes();
-        // this.listen();
     }
 
     /**
@@ -48,8 +46,6 @@ export default class AuthenticationServer implements BaseServer {
     }
 
     private initializeConfig(): void {
-        dotenv.config();
-        // this.port = process.env.PORT || this.PORT;
         this.app.use(cors());
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
@@ -60,12 +56,6 @@ export default class AuthenticationServer implements BaseServer {
         this.routes = new Routes(this.app);
         this.routes.initRoutes();
     }
-
-    // private listen(): void {
-    //     this.server.listen(this.port, () => {
-    //         console.log(`Server listening on port ${this.port}`);
-    //     });
-    // }
 
     public getApp(): express.Application {
         return this.app;
