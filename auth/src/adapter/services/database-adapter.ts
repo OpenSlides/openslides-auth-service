@@ -1,18 +1,8 @@
-// import Redis from 'ioredis';
 import Redis from 'redis';
-import { promisify } from 'util';
 
 import { DatabasePort } from '../interfaces/database-port';
-import { Injectable } from '../../core/modules/decorators';
-import { Service, ParamTypes, Constructable } from '../../core/modules/decorators/injectable';
+import { Constructable } from '../../core/modules/decorators';
 
-interface RedisCallback {
-    error: any;
-    result: any;
-}
-
-// @Injectable(DatabasePort)
-// @Service()
 @Constructable(DatabasePort)
 export default class DatabaseAdapter implements DatabasePort {
     public name = 'DatabaseAdapter';
@@ -43,15 +33,6 @@ export default class DatabaseAdapter implements DatabasePort {
      */
     public async set<T>(key: string, obj: T): Promise<boolean> {
         if (!(await this.get(key))) {
-            // this.redisSet(key, JSON.stringify(obj))
-            //     .then(this.logResult)
-            //     .catch(this.logError);
-            // const r = this.database.set(key, JSON.stringify(obj), (error, result) => {
-            //     this.logError(error);
-            //     this.logResult(result);
-            //     return result;
-            // });
-            // console.log('r', r);
             this.redisSet(key, obj);
             return true;
         } else {
@@ -67,26 +48,7 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns The object - if there is no object stored by this key, it will return an empty object.
      */
     public async get<T>(key: string): Promise<T | null> {
-        // if (!this.redisGet) {
-        //     return {} as T;
-        // }
-        // this.database.get(key, (error, r) => {
-        //     if (error) {
-        //         return;
-        //     }
-        //     console.log('return result:', r);
-        // });
         return this.redisGet(key);
-
-        // this.redisGet(key)
-        //     .then(result => console.log('result', result))
-        //     .catch(error => console.log('error', error));
-        // const result = (await this.redisGet(key)) || JSON.stringify({});
-        // return JSON.parse(result) as T;
-        // const result = await this.redisGet(key);
-        // console.log('result', result);
-        // return null;
-        // return typeof result === 'string' ? (JSON.parse(result) as T) : null;
     }
 
     /**
@@ -124,9 +86,6 @@ export default class DatabaseAdapter implements DatabasePort {
     }
 
     private initializeRedisCommands(): void {
-        // this.redisSet = promisify(this.database.set);
-        // this.redisGet = promisify(this.database.get);
-        // this.redisDelete = promisify(this.database.del);
         this.redisSet = <T>(key: string, value: T): Promise<boolean> => {
             return new Promise((resolve, reject) => {
                 this.database.set(key, JSON.stringify(value), (error, result) => {
@@ -160,13 +119,5 @@ export default class DatabaseAdapter implements DatabasePort {
                 });
             });
         };
-    }
-
-    private logResult(result: any): void {
-        console.log('result', result);
-    }
-
-    private logError(error: any): void {
-        console.log('error', error);
     }
 }

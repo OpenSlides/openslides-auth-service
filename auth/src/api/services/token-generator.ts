@@ -6,16 +6,11 @@ import { uuid } from 'uuidv4';
 import ClientService from '../../model-services/client-service';
 import { ClientServiceInterface } from '../../model-services/client-service.interface';
 import { SECRET, SECRET_COOKIE } from '../../config';
-import DatabaseAdapter from '../../adapter/services/database-adapter';
-import { DatabasePort } from '../../adapter/interfaces/database-port';
 import { Inject } from '../../core/modules/decorators';
 
 export default class TokenGenerator {
     @Inject(ClientServiceInterface)
     private clientService: ClientService;
-
-    // @Inject(DatabasePort)
-    // private database: DatabaseAdapter;
 
     public constructor() {
         this.insertMockData();
@@ -79,12 +74,8 @@ export default class TokenGenerator {
     }
 
     private insertMockData(): void {
-        console.log('insertMockData', this.clientService);
         if (this.clientService) {
-            console.log('clientService', this.clientService);
             this.clientService.create('admin', 'admin');
-            // this.database.addClient();
-            // this.database.getClientByName('admin').then(() => console.log('fetched'));
         }
     }
 }

@@ -1,4 +1,4 @@
 import { Inject } from './inject';
-import { Injectable, InjectableClass } from './injectable';
+import { Constructable, InjectableClass } from './injectable';
 
-export { Injectable, InjectableClass, Inject };
+export { Constructable, InjectableClass, Inject };
