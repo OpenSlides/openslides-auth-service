@@ -1,4 +1,5 @@
 import * as http from 'http';
+import 'reflect-metadata';
 
 import AuthenticationServer from './api/server/authentication-server';
 import BaseServer from './api/interfaces/base-server';

@@ -14,8 +14,8 @@ export default class TokenGenerator {
     @Inject(ClientServiceInterface)
     private clientService: ClientService;
 
-    @Inject(DatabasePort)
-    private database: DatabaseAdapter;
+    // @Inject(DatabasePort)
+    // private database: DatabaseAdapter;
 
     public constructor() {
         this.insertMockData();
@@ -79,7 +79,10 @@ export default class TokenGenerator {
     }
 
     private insertMockData(): void {
-        if (this.database) {
+        console.log('insertMockData', this.clientService);
+        if (this.clientService) {
+            console.log('clientService', this.clientService);
+            this.clientService.create('admin', 'admin');
             // this.database.addClient();
             // this.database.getClientByName('admin').then(() => console.log('fetched'));
         }
