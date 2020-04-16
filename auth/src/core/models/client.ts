@@ -1,6 +1,6 @@
-import Token from './token';
-
 export default class Client implements IClient {
+    public static readonly COLLECTIONSTRING = 'client';
+
     private pClientId: string;
     private pClientSecret: string;
     private pUsername: string;
@@ -31,10 +31,8 @@ export default class Client implements IClient {
         this.pPassword = password;
         this.pClientId = clientId;
     }
-    // private redirectUris: string[];
-    // private scope: string;
 
-    public setSession(sessionId: string, token: Token): void {
+    public setSession(sessionId: string): void {
         this.pSessionId = sessionId;
     }
 }

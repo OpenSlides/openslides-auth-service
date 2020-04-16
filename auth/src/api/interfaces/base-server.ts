@@ -1,5 +1,6 @@
 import * as http from 'http';
-import { InjectableClass } from 'src/core/modules/decorators';
+
+import { InjectableClass } from '../../core/modules/decorators';
 
 export default class BaseServer extends InjectableClass {
     getServer: () => http.Server;

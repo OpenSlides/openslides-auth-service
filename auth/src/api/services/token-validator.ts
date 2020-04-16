@@ -2,9 +2,14 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 
 import { SECRET } from '../../config';
+import { Constructable } from '../../core/modules/decorators';
+import { Validator } from '../interfaces/validator';
 
-export default class TokenValidator {
-    public checkToken(
+@Constructable(Validator)
+export default class TokenValidator implements Validator {
+    public name = 'TokenValidator';
+
+    public validateToken(
         request: express.Request,
         response: express.Response,
         next: express.NextFunction

@@ -1,13 +1,19 @@
 import * as express from 'express';
 
-import TokenGenerator from '../services/token-generator';
+import { Inject } from '../../core/modules/decorators';
+import RouteHandler from '../services/route-handler';
+import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
 import TokenValidator from '../services/token-validator';
+import { Validator } from '../interfaces/validator';
 
 export default class Routes {
     private readonly SECURE_URL_PREFIX = '/api';
 
-    private tokenValidator = new TokenValidator();
-    private tokenGenerator = new TokenGenerator();
+    @Inject(Validator)
+    private tokenValidator: TokenValidator;
+
+    @Inject(RouteHandlerInterface)
+    private routeHandler: RouteHandler;
 
     private app: express.Application;
 
@@ -22,23 +28,23 @@ export default class Routes {
     }
 
     private configRoutes(): void {
-        this.app.all(`${this.SECURE_URL_PREFIX}/*`, this.tokenValidator.checkToken, (hello, world, next) => {
+        this.app.all(`${this.SECURE_URL_PREFIX}/*`, this.tokenValidator.validateToken, (hello, world, next) => {
             next();
         });
     }
 
     private initPublicRoutes(): void {
-        this.app.post('/login', this.tokenGenerator.login); // Sends a token back
-        this.app.get('/', this.tokenGenerator.index);
+        this.app.post('/login', this.routeHandler.login); // Sends a token back
+        this.app.get('/', this.routeHandler.index);
     }
 
     private initApiRoutes(): void {
-        this.app.get(this.getSecureUrl('/hello'), this.tokenGenerator.secureIndex);
+        this.app.get(this.getSecureUrl('/hello'), this.routeHandler.secureIndex);
         this.app.post(this.getSecureUrl('/logout'));
         this.app.get(this.getSecureUrl('/list-sessions'));
         this.app.post(this.getSecureUrl('/clear-all-sessions-except-themselves'));
         this.app.delete(this.getSecureUrl('/clear-session-by-id'));
-        this.app.get(this.getSecureUrl('/who-am-i'), this.tokenGenerator.refreshToken);
+        this.app.get(this.getSecureUrl('/who-am-i'), this.routeHandler.whoAmI);
     }
 
     private getSecureUrl(urlPath: string): string {

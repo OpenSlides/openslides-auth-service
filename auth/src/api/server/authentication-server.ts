@@ -4,37 +4,22 @@ import express from 'express';
 import { createServer, Server } from 'http';
 
 import BaseServer from '../interfaces/base-server';
+import { Constructable } from '../../core/modules/decorators';
 import Routes from '../routes/Routes';
 
+@Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {
-    private static instance: AuthenticationServer;
-
     public name = 'AuthenticationServer';
 
     private app: express.Application;
     private server: Server;
     private routes: Routes;
 
-    private constructor() {
+    public constructor() {
         this.createApp();
         this.createServer();
         this.initializeConfig();
         this.initializeRoutes();
-    }
-
-    /**
-     * Returns the instance of the auth-server.
-     * Creates an instance, if not already existing.
-     *
-     * @param port The port the server should listen to.
-     *
-     * @returns The instance of the auth-server.
-     */
-    public static getInstance(): AuthenticationServer {
-        if (!this.instance) {
-            this.instance = new AuthenticationServer();
-        }
-        return this.instance;
     }
 
     private createApp(): void {

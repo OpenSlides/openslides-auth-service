@@ -14,8 +14,14 @@ export default class DatabaseAdapter implements DatabasePort {
     // Redis commands
     private redisSet: <T>(key: string, value: T) => Promise<boolean>;
     private redisGet: <T>(key: string) => Promise<T>;
+    private redisGetAll: <T>(pattern?: string) => Promise<T[]>;
     private redisDelete: (key: string) => Promise<boolean>;
 
+    /**
+     * Constructor.
+     *
+     * Initialize the database and redis commands declared above, if the database is not already initialized.
+     */
     public constructor() {
         if (!this.database) {
             this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
@@ -31,8 +37,9 @@ export default class DatabaseAdapter implements DatabasePort {
      *
      * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
      */
-    public async set<T>(key: string, obj: T): Promise<boolean> {
-        if (!(await this.get(key))) {
+    public async set<T>(prefix: string, key: string, obj: T): Promise<boolean> {
+        if (!(await this.get(prefix, key))) {
+            key = prefix + key;
             this.redisSet(key, obj);
             return true;
         } else {
@@ -47,7 +54,7 @@ export default class DatabaseAdapter implements DatabasePort {
      *
      * @returns The object - if there is no object stored by this key, it will return an empty object.
      */
-    public async get<T>(key: string): Promise<T | null> {
+    public async get<T>(prefix: string, key: string): Promise<T | null> {
         return this.redisGet(key);
     }
 
@@ -62,14 +69,14 @@ export default class DatabaseAdapter implements DatabasePort {
      *
      * @returns The updated object.
      */
-    public async update<T>(key: string, update: Partial<T>): Promise<T> {
-        const object = await this.get<T>(key);
+    public async update<T>(prefix: string, key: string, update: Partial<T>): Promise<T> {
+        const object = await this.get<T>(prefix, key);
         if (object) {
             Object.assign(object, update);
             this.redisSet(key, object);
             return object;
         } else {
-            await this.set(key, update);
+            await this.set(prefix, key, update);
             return update as T;
         }
     }
@@ -81,10 +88,25 @@ export default class DatabaseAdapter implements DatabasePort {
      *
      * @returns A boolean if the object was successfully deleted.
      */
-    public async remove(key: string): Promise<boolean> {
+    public async remove(prefix: string, key: string): Promise<boolean> {
+        key = prefix + key;
         return await this.redisDelete(key);
     }
 
+    /**
+     * Function to get all objects from the database stored by a specific prefix.
+     *
+     * @param prefix The known name for the storage of the requested objects.
+     *
+     * @returns An array with all found objects for the specific prefix.
+     */
+    public async getAll<T>(prefix: string): Promise<T[]> {
+        return this.redisGetAll<T>(prefix);
+    }
+
+    /**
+     * This function creates a promisified version of redis commands, like set, get, delete.
+     */
     private initializeRedisCommands(): void {
         this.redisSet = <T>(key: string, value: T): Promise<boolean> => {
             return new Promise((resolve, reject) => {
@@ -105,6 +127,20 @@ export default class DatabaseAdapter implements DatabasePort {
                     }
                     const parsedObject = JSON.parse(result);
                     resolve(parsedObject);
+                });
+            });
+        };
+
+        this.redisGetAll = <T>(pattern: string = ''): Promise<T[]> => {
+            return new Promise((resolve, reject) => {
+                this.database.keys(pattern, (error, results = []) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    const parsedObjects = results.map(result => {
+                        return JSON.parse(result) as T;
+                    });
+                    resolve(parsedObjects);
                 });
             });
         };
