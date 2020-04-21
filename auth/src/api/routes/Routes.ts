@@ -34,8 +34,9 @@ export default class Routes {
     }
 
     private initPublicRoutes(): void {
-        this.app.post('/login', this.routeHandler.login); // Sends a token back
+        this.app.post('/login', (request, response) => this.routeHandler.login(request, response)); // Sends token
         this.app.get('/', this.routeHandler.index);
+        this.app.all('*', this.routeHandler.notFound);
     }
 
     private initApiRoutes(): void {

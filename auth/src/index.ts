@@ -1,9 +1,9 @@
-import * as http from 'http';
 import 'reflect-metadata';
 
 import AuthenticationServer from './api/server/authentication-server';
 import BaseServer from './api/interfaces/base-server';
 import { Inject } from './core/modules/decorators';
+import { Modules } from './model-services/modules';
 
 class Server {
     private readonly PORT: number = parseInt(process.env.PORT || '', 10) || 8000;
@@ -17,6 +17,8 @@ class Server {
 
     public start(): void {
         this.httpServer.getServer().listen(this.PORT, () => {
+            const implementations = Modules.getImplementations();
+            console.log('implementations', implementations);
             console.log(`Server is running on port ${this.PORT}`);
         });
     }
@@ -24,9 +26,3 @@ class Server {
 
 const server = new Server();
 server.start();
-// const PORT: number = parseInt(process.env.PORT || '', 10) || 8000;
-
-// const authServer: BaseServer = AuthenticationServer.getInstance();
-// const server: http.Server = authServer.getServer();
-// server.listen(PORT);
-console.log(`Server is running on port ${server.port}`);

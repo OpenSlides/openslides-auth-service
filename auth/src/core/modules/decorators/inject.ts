@@ -1,5 +1,5 @@
 import Container from '../di/container';
-import { Type } from './injectable';
+import { Type } from './utils';
 
 export function Inject<T>(key: any): any {
     return (target: Type<T>, propertyKey: string | symbol, descriptor?: PropertyDescriptor): T => {

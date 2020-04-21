@@ -1,5 +1,5 @@
+import { Type } from '../decorators';
 import Dependency from './dependency';
-import { Type } from '../decorators/injectable';
 
 export default class Container {
     private static instance: Container;

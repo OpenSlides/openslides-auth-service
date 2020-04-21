@@ -1,7 +1,9 @@
 import Redis from 'redis';
 
+import { BaseModel } from '../../core/base/base-model';
 import { DatabasePort } from '../interfaces/database-port';
-import { Constructable } from '../../core/modules/decorators';
+import { Constructable, Inject } from '../../core/modules/decorators';
+import { ModelConstructorInterface, ModelConstructorService } from '../../model-services/model-constructor';
 
 @Constructable(DatabasePort)
 export default class DatabaseAdapter implements DatabasePort {
@@ -11,10 +13,13 @@ export default class DatabaseAdapter implements DatabasePort {
     private readonly redisHost = process.env.STORAGE_HOST || '';
     private readonly database: Redis.RedisClient;
 
+    @Inject(ModelConstructorInterface)
+    private modelConstructor: ModelConstructorService;
+
     // Redis commands
     private redisSet: <T>(key: string, value: T) => Promise<boolean>;
     private redisGet: <T>(key: string) => Promise<T>;
-    private redisGetAll: <T>(pattern?: string) => Promise<T[]>;
+    private redisGetAll: <T>(get: (key: string) => Promise<BaseModel>, pattern?: string) => Promise<T[]>;
     private redisDelete: (key: string) => Promise<boolean>;
 
     /**
@@ -38,9 +43,9 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
      */
     public async set<T>(prefix: string, key: string, obj: T): Promise<boolean> {
+        console.log('set an obj', obj);
         if (!(await this.get(prefix, key))) {
-            key = prefix + key;
-            this.redisSet(key, obj);
+            await this.redisSet(this.getPrefixedKey(prefix, key), obj);
             return true;
         } else {
             return false;
@@ -55,7 +60,7 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns The object - if there is no object stored by this key, it will return an empty object.
      */
     public async get<T>(prefix: string, key: string): Promise<T | null> {
-        return this.redisGet(key);
+        return this.redisGet(this.getPrefixedKey(prefix, key));
     }
 
     /**
@@ -89,8 +94,7 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns A boolean if the object was successfully deleted.
      */
     public async remove(prefix: string, key: string): Promise<boolean> {
-        key = prefix + key;
-        return await this.redisDelete(key);
+        return await this.redisDelete(this.getPrefixedKey(prefix, key));
     }
 
     /**
@@ -101,7 +105,7 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns An array with all found objects for the specific prefix.
      */
     public async getAll<T>(prefix: string): Promise<T[]> {
-        return this.redisGetAll<T>(prefix);
+        return this.redisGetAll<T>((key: string) => this.redisGet<BaseModel>(key), prefix);
     }
 
     /**
@@ -131,15 +135,23 @@ export default class DatabaseAdapter implements DatabasePort {
             });
         };
 
-        this.redisGetAll = <T>(pattern: string = ''): Promise<T[]> => {
+        this.redisGetAll = <T>(get: (key: string) => Promise<BaseModel>, pattern: string = ''): Promise<T[]> => {
             return new Promise((resolve, reject) => {
-                this.database.keys(pattern, (error, results = []) => {
+                this.database.keys(`${pattern}*`, async (error, results = []) => {
                     if (error) {
                         reject(error);
                     }
-                    const parsedObjects = results.map(result => {
-                        return JSON.parse(result) as T;
-                    });
+                    const parsedObjects: T[] = [];
+                    for (const result of results) {
+                        const object = (await get(result)) as BaseModel<T>;
+                        // parsedObjects.push(await get(result));
+                        // tslint:disable-next-line:no-non-null-assertion
+                        const constructor = this.modelConstructor.getModelConstructor<T>(object.collectionString)!;
+                        console.log('constructor', constructor);
+                        // const model = constructor ? new constructor(object) : null;
+                        const model = new constructor(object);
+                        parsedObjects.push(model);
+                    }
                     resolve(parsedObjects);
                 });
             });
@@ -155,5 +167,9 @@ export default class DatabaseAdapter implements DatabasePort {
                 });
             });
         };
+    }
+
+    private getPrefixedKey(prefix: string, key: string): string {
+        return prefix + '_' + key;
     }
 }
