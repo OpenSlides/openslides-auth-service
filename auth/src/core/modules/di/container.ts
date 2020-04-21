@@ -20,12 +20,12 @@ export default class Container {
         return this;
     }
 
-    public get<T>(dependency: new () => T): Type<T> {
+    public get<T>(dependency: new () => T, input?: any): Type<T> {
         const provider = this.registry.get(dependency);
         if (provider) {
             const tokens = Reflect.getMetadataKeys(provider.prototype, 'property');
             const injections = tokens.map((token: any) => this.get(token));
-            return new provider(injections);
+            return new provider(...injections, input);
         } else {
             return {} as Type<T>;
         }

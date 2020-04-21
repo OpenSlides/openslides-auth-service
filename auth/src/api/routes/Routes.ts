@@ -35,8 +35,10 @@ export default class Routes {
 
     private initPublicRoutes(): void {
         this.app.post('/login', (request, response) => this.routeHandler.login(request, response)); // Sends token
-        this.app.get('/', this.routeHandler.index);
-        this.app.all('*', this.routeHandler.notFound);
+        this.app.get('/', (request, response) => this.routeHandler.index(request, response));
+        this.app.post('/logout', (request, response) => this.routeHandler.logout(request, response));
+        this.app.post('/who-am-i', (request, response) => this.routeHandler.whoAmI(request, response));
+        // this.app.all('*', this.routeHandler.notFound);
     }
 
     private initApiRoutes(): void {
@@ -45,7 +47,6 @@ export default class Routes {
         this.app.get(this.getSecureUrl('/list-sessions'));
         this.app.post(this.getSecureUrl('/clear-all-sessions-except-themselves'));
         this.app.delete(this.getSecureUrl('/clear-session-by-id'));
-        this.app.get(this.getSecureUrl('/who-am-i'), this.routeHandler.whoAmI);
     }
 
     private getSecureUrl(urlPath: string): string {

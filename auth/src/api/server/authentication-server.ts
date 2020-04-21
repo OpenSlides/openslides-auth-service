@@ -31,7 +31,14 @@ export default class AuthenticationServer implements BaseServer {
     }
 
     private initializeConfig(): void {
-        this.app.use(cors());
+        this.app.use(
+            cors({
+                allowedHeaders: 'Origin, X-Requested-With, Content-Type, X-Content-Type, Accept',
+                credentials: true,
+                origin: 'http://localhost:4200',
+                methods: 'OPTIONS, GET, POST, PUT, DELETE'
+            })
+        );
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
         this.app.use(cookieParser());

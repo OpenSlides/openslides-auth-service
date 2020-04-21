@@ -5,21 +5,13 @@ import { ClientServiceInterface } from './client-service.interface';
 import DatabaseAdapter from '../../../adapter/services/database-adapter';
 import { DatabasePort } from '../../../adapter/interfaces/database-port';
 import { Constructable, Inject } from '../../modules/decorators';
-import { ModelConstructorInterface, ModelConstructorService } from '../../../model-services/model-constructor';
 
 @Constructable(ClientServiceInterface)
 export default class ClientService implements ClientServiceInterface {
     public name = 'ClientService';
 
-    @Inject(DatabasePort)
+    @Inject(DatabasePort, Client)
     private database: DatabaseAdapter;
-
-    @Inject(ModelConstructorInterface)
-    private modelConstructor: ModelConstructorService;
-
-    public constructor() {
-        this.modelConstructor.define(Client.COLLECTIONSTRING, Client);
-    }
 
     public async create(username: string, password: string): Promise<Client> {
         const clientId = uuid();
@@ -31,10 +23,7 @@ export default class ClientService implements ClientServiceInterface {
     public async getClientByCredentials(username: string, password: string): Promise<Client | undefined> {
         const clients = await this.getAllClientsFromDatabase();
         const client = clients.find(c => c.username === username && c.password === password);
-        // const client = this.findClient(clients, c => c.username === username && c.password === password);
-        console.log('client', client);
         return client;
-        // return clients.find(c => c.username === username && c.password === password);
     }
 
     public async getClientBySessionId(sessionId: string): Promise<Client | undefined> {
@@ -57,17 +46,5 @@ export default class ClientService implements ClientServiceInterface {
 
     private async getAllClientsFromDatabase(): Promise<Client[]> {
         return await this.database.getAll(Client.COLLECTIONSTRING);
-    }
-
-    private findClient(clients: Client[], condition: (client: Client) => boolean): Client | undefined {
-        let result;
-        for (const client of clients) {
-            console.log('client', client.username);
-            if (condition(client)) {
-                result = client;
-                break;
-            }
-        }
-        return result;
     }
 }

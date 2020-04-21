@@ -1,8 +1,6 @@
 import { Collection } from './collection';
 
 export abstract class BaseModel<T = any> implements Collection {
-    // public abstract get collectionString(): string;
-
     protected constructor(public readonly collectionString: string, input?: Partial<T>) {
         this.assign(input);
     }

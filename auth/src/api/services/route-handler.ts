@@ -31,12 +31,17 @@ export default class RouteHandler implements RouteHandlerInterface {
 
         if (this.clientService.hasClient(username, password)) {
             const ticket = await this.tokenGenerator.createTicket(username, password);
-            response.cookie('refreshId', ticket.cookie, { httpOnly: true, secure: false });
-            response.json({
-                success: true,
-                message: 'Authentication successful!',
-                token: ticket.token
-            });
+            response
+                .cookie('refreshId', ticket.cookie, {
+                    maxAge: 7200000,
+                    httpOnly: true,
+                    secure: false
+                })
+                .send({
+                    success: true,
+                    message: 'Authentication successful!',
+                    token: ticket.token
+                });
         } else {
             response.status(403).json({
                 success: false,
@@ -46,8 +51,7 @@ export default class RouteHandler implements RouteHandlerInterface {
     }
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
-        const cookie = request.cookies('refreshId');
-        console.log('cookie', cookie);
+        const cookie = request.cookies['refreshId'];
         const ticket = await this.tokenGenerator.renewTicket(cookie);
         response.json({
             success: true,
@@ -57,10 +61,9 @@ export default class RouteHandler implements RouteHandlerInterface {
     }
 
     public logout(request: express.Request, response: express.Response): void {
-        const cookie = request.cookies('refreshId');
+        const cookie = request.cookies['refreshId'];
         if (this.tokenGenerator.verifyCookie(cookie)) {
-            response.clearCookie('refreshId');
-            response.json({
+            response.clearCookie('refreshId').send({
                 success: true,
                 message: 'Successfully signed out!'
             });

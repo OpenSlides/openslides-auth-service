@@ -2,8 +2,7 @@ import Redis from 'redis';
 
 import { BaseModel } from '../../core/base/base-model';
 import { DatabasePort } from '../interfaces/database-port';
-import { Constructable, Inject } from '../../core/modules/decorators';
-import { ModelConstructorInterface, ModelConstructorService } from '../../model-services/model-constructor';
+import { Constructable } from '../../core/modules/decorators';
 
 @Constructable(DatabasePort)
 export default class DatabaseAdapter implements DatabasePort {
@@ -13,24 +12,23 @@ export default class DatabaseAdapter implements DatabasePort {
     private readonly redisHost = process.env.STORAGE_HOST || '';
     private readonly database: Redis.RedisClient;
 
-    @Inject(ModelConstructorInterface)
-    private modelConstructor: ModelConstructorService;
-
     // Redis commands
     private redisSet: <T>(key: string, value: T) => Promise<boolean>;
     private redisGet: <T>(key: string) => Promise<T>;
     private redisGetAll: <T>(get: (key: string) => Promise<BaseModel>, pattern?: string) => Promise<T[]>;
     private redisDelete: (key: string) => Promise<boolean>;
+    private redisClear: () => Promise<boolean>;
 
     /**
      * Constructor.
      *
      * Initialize the database and redis commands declared above, if the database is not already initialized.
      */
-    public constructor() {
+    public constructor(public readonly modelConstructor: new <T>(...args: any) => T) {
         if (!this.database) {
             this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
             this.initializeRedisCommands();
+            this.clear();
         }
     }
 
@@ -43,7 +41,6 @@ export default class DatabaseAdapter implements DatabasePort {
      * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
      */
     public async set<T>(prefix: string, key: string, obj: T): Promise<boolean> {
-        console.log('set an obj', obj);
         if (!(await this.get(prefix, key))) {
             await this.redisSet(this.getPrefixedKey(prefix, key), obj);
             return true;
@@ -109,6 +106,15 @@ export default class DatabaseAdapter implements DatabasePort {
     }
 
     /**
+     * Clears the whole database.
+     *
+     * Necessary for development to avoid inserting a new entry every refresh.
+     */
+    private clear(): void {
+        this.redisClear().then(() => console.log('Database is empty!'));
+    }
+
+    /**
      * This function creates a promisified version of redis commands, like set, get, delete.
      */
     private initializeRedisCommands(): void {
@@ -144,12 +150,7 @@ export default class DatabaseAdapter implements DatabasePort {
                     const parsedObjects: T[] = [];
                     for (const result of results) {
                         const object = (await get(result)) as BaseModel<T>;
-                        // parsedObjects.push(await get(result));
-                        // tslint:disable-next-line:no-non-null-assertion
-                        const constructor = this.modelConstructor.getModelConstructor<T>(object.collectionString)!;
-                        console.log('constructor', constructor);
-                        // const model = constructor ? new constructor(object) : null;
-                        const model = new constructor(object);
+                        const model = new this.modelConstructor<T>(object);
                         parsedObjects.push(model);
                     }
                     resolve(parsedObjects);
@@ -164,6 +165,20 @@ export default class DatabaseAdapter implements DatabasePort {
                         reject(error);
                     }
                     resolve(result === 1);
+                });
+            });
+        };
+
+        this.redisClear = (): Promise<boolean> => {
+            return new Promise((resolve, reject) => {
+                this.database.keys('*', async (error, results = []) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    for (const result of results) {
+                        await this.redisDelete(result);
+                    }
+                    resolve(true);
                 });
             });
         };
