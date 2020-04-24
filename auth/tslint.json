@@ -20,7 +20,7 @@
         "interface-over-type-literal": true,
         "jsdoc-format": true,
         "label-position": true,
-        "member-access": false,
+        "member-access": true,
         "member-ordering": [
             true,
             {
@@ -31,6 +31,7 @@
         "no-construct": true,
         "no-console": false,
         "no-debugger": true,
+        "no-namespace": false,
         "no-duplicate-super": true,
         "no-empty": false,
         "no-empty-interface": false,
@@ -53,8 +54,7 @@
             {
                 "import-source-order": "case-sensitive",
                 "grouped-imports": true,
-                "groups": [
-                    {
+                "groups": [{
                         "name": "internal dependencies",
                         "match": "^(app/|\\.?\\./).*",
                         "order": 30

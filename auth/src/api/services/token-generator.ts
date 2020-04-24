@@ -5,7 +5,7 @@ import { uuid } from 'uuidv4';
 import Client from '../../core/models/client/client';
 import ClientService from '../../core/models/client/client-service';
 import { ClientServiceInterface } from '../../core/models/client/client-service.interface';
-import { SECRET, SECRET_COOKIE } from '../../config';
+import { Keys } from '../../config';
 import { Constructable, Inject } from '../../core/modules/decorators';
 import { Cookie, Generator, Response } from '../interfaces/generator';
 
@@ -24,7 +24,7 @@ export default class TokenGenerator implements Generator {
         const client = await this.clientService.getClientByCredentials(username, password);
         if (client) {
             const sessionId = uuid();
-            const cookie = jwt.sign({ sessionId }, SECRET_COOKIE, { expiresIn: '1d' });
+            const cookie = jwt.sign({ sessionId }, Keys.privateCookieKey(), { expiresIn: '1d' });
             console.log('client', client);
             client.setSession(sessionId);
             const token = this.generateToken(sessionId, client);
@@ -47,18 +47,17 @@ export default class TokenGenerator implements Generator {
     }
 
     public verifyCookie(cookieAsString: string): Cookie {
-        return jwt.verify(cookieAsString, SECRET_COOKIE) as Cookie;
+        return jwt.verify(cookieAsString, Keys.privateCookieKey()) as Cookie;
     }
 
     private init(): void {
         this.insertMockData();
-        cookieParser(SECRET_COOKIE);
     }
 
     private generateToken(sessionId: string, client: Client): string {
         const token = jwt.sign(
             { username: client.username, expiresIn: '10m', sessionId, clientId: client.clientId },
-            SECRET,
+            Keys.privateKey(),
             {
                 expiresIn: '10m'
             }

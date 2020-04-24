@@ -1,7 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 
-import { SECRET } from '../../config';
+import { Keys } from '../../config';
 import { Constructable } from '../../core/modules/decorators';
 import { Validator } from '../interfaces/validator';
 
@@ -9,14 +9,18 @@ import { Validator } from '../interfaces/validator';
 export default class TokenValidator implements Validator {
     public name = 'TokenValidator';
 
+    private token = 'token';
+
     public validateToken(
         request: express.Request,
         response: express.Response,
         next: express.NextFunction
     ): express.Response | void {
-        let token = (request.headers['x-access-token'] || request.headers['authorization']) as string;
+        let token = (request.headers['x-access-token'] ||
+            request.headers['authentication'] ||
+            request.headers['authorization']) as string;
         if (!token) {
-            return response.status(403).json({
+            return response.json({
                 success: false,
                 message: 'Auth token is not supplied'
             });
@@ -25,7 +29,7 @@ export default class TokenValidator implements Validator {
             token = token.slice(7, token.length);
         }
 
-        jwt.verify(token, SECRET, (error, decoded) => {
+        jwt.verify(token, Keys.privateKey(), (error, decoded) => {
             if (error) {
                 return response.json({
                     success: false,
@@ -33,7 +37,7 @@ export default class TokenValidator implements Validator {
                 });
             } else {
                 // @ts-ignore
-                request.decoded = decoded;
+                request[this.token] = decoded;
                 next();
             }
         });

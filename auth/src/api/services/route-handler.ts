@@ -5,6 +5,7 @@ import { ClientServiceInterface } from '../../core/models/client/client-service.
 import { Constructable, Inject } from '../../core/modules/decorators';
 import { Generator } from '../interfaces/generator';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
+import SessionHandlerInterface from '../interfaces/session-handler-interface';
 import TokenGenerator from './token-generator';
 
 @Constructable(RouteHandlerInterface)
@@ -16,6 +17,12 @@ export default class RouteHandler implements RouteHandlerInterface {
 
     @Inject(Generator)
     private tokenGenerator: TokenGenerator;
+
+    private sessionHandler: SessionHandlerInterface;
+
+    public constructor(sessionHandler: SessionHandlerInterface) {
+        this.sessionHandler = sessionHandler;
+    }
 
     public async login(request: express.Request, response: express.Response): Promise<void> {
         const username = request.body.username;
@@ -52,12 +59,20 @@ export default class RouteHandler implements RouteHandlerInterface {
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
         const cookie = request.cookies['refreshId'];
-        const ticket = await this.tokenGenerator.renewTicket(cookie);
-        response.json({
-            success: true,
-            message: 'Authentication successful!',
-            token: ticket.token
-        });
+        console.log('cookie', cookie);
+        try {
+            const ticket = await this.tokenGenerator.renewTicket(cookie);
+            response.json({
+                success: true,
+                message: 'Authentication successful!',
+                token: ticket.token
+            });
+        } catch {
+            response.json({
+                success: false,
+                message: 'Cookie is wrong!'
+            });
+        }
     }
 
     public logout(request: express.Request, response: express.Response): void {
@@ -68,9 +83,48 @@ export default class RouteHandler implements RouteHandlerInterface {
                 message: 'Successfully signed out!'
             });
         } else {
-            response.status(403).json({
+            response.json({
                 success: false,
                 message: 'Credentials are invalid!'
+            });
+        }
+    }
+
+    public getListOfSessions(request: express.Request, response: express.Response): void {
+        response.status(200).json({
+            success: true,
+            message: this.sessionHandler.getAllActiveSessions()
+        });
+    }
+
+    public clearSessionById(request: express.Request, response: express.Response): void {
+        const cookie = request.cookies['refreshId'];
+        const answer = this.sessionHandler.clearSessionById(cookie);
+        if (answer) {
+            response.json({
+                success: true,
+                message: 'Cleared!'
+            });
+        } else {
+            response.json({
+                success: false,
+                message: 'You have no permission!'
+            });
+        }
+    }
+
+    public clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void {
+        const cookie = request.cookies['refreshId'];
+        const answer = this.sessionHandler.clearAllSessionsExceptThemselves(cookie);
+        if (answer) {
+            response.json({
+                success: true,
+                message: 'Cleared!'
+            });
+        } else {
+            response.json({
+                success: false,
+                message: 'You have no permission!'
             });
         }
     }

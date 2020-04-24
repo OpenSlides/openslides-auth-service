@@ -33,7 +33,8 @@ export default class AuthenticationServer implements BaseServer {
     private initializeConfig(): void {
         this.app.use(
             cors({
-                allowedHeaders: 'Origin, X-Requested-With, Content-Type, X-Content-Type, Accept',
+                allowedHeaders:
+                    'Origin, X-Requested-With, Content-Type, X-Content-Type, Authentication, Authorization, X-Access-Token, Accept',
                 credentials: true,
                 origin: 'http://localhost:4200',
                 methods: 'OPTIONS, GET, POST, PUT, DELETE'

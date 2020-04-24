@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-namespace
 export namespace Modules {
     interface Constructor<T> {
         new (...args: any[]): T;
