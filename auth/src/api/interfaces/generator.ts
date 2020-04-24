@@ -1,3 +1,4 @@
+import Client from '../../core/models/client/client';
 import { InjectableClass } from '../../core/modules/decorators';
 
 export interface Token {
@@ -17,6 +18,7 @@ export interface Cookie {
 export interface Response {
     cookie: string;
     token: string;
+    client: Client;
 }
 
 export class Generator extends InjectableClass {

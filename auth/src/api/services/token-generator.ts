@@ -28,7 +28,7 @@ export default class TokenGenerator implements Generator {
             console.log('client', client);
             client.setSession(sessionId);
             const token = this.generateToken(sessionId, client);
-            return { cookie, token };
+            return { cookie, token, client };
         } else {
             throw new Error('Client is not defined.');
         }
@@ -40,7 +40,7 @@ export default class TokenGenerator implements Generator {
             console.log('refreshId', refreshId);
             const client = (await this.clientService.getClientBySessionId(refreshId.sessionId)) || ({} as Client);
             const token = this.generateToken(refreshId.sessionId, client);
-            return { token, cookie: cookieAsString };
+            return { token, cookie: cookieAsString, client };
         } catch {
             throw new Error('Cookie has wrong format.');
         }

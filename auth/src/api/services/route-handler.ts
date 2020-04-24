@@ -3,7 +3,7 @@ import express from 'express';
 import ClientService from '../../core/models/client/client-service';
 import { ClientServiceInterface } from '../../core/models/client/client-service.interface';
 import { Constructable, Inject, InjectService } from '../../core/modules/decorators';
-import { Generator } from '../interfaces/generator';
+import { Cookie, Generator } from '../interfaces/generator';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
 import SessionHandler from './session-handler';
 import TokenGenerator from './token-generator';
@@ -35,6 +35,7 @@ export default class RouteHandler implements RouteHandlerInterface {
 
         if (this.clientService.hasClient(username, password)) {
             const ticket = await this.tokenGenerator.createTicket(username, password);
+            this.sessionHandler.addSession(ticket.client);
             response
                 .cookie('refreshId', ticket.cookie, {
                     maxAge: 7200000,
@@ -72,9 +73,10 @@ export default class RouteHandler implements RouteHandlerInterface {
         }
     }
 
-    public logout(request: express.Request, response: express.Response): void {
-        const cookie = request.cookies['refreshId'];
-        if (this.tokenGenerator.verifyCookie(cookie)) {
+    public logout(request: any, response: express.Response): void {
+        const cookie = request['cookie'] as Cookie;
+        if (cookie) {
+            this.sessionHandler.clearSessionById(cookie.sessionId);
             response.clearCookie('refreshId').send({
                 success: true,
                 message: 'Successfully signed out!'
@@ -94,9 +96,9 @@ export default class RouteHandler implements RouteHandlerInterface {
         });
     }
 
-    public clearSessionById(request: express.Request, response: express.Response): void {
-        const cookie = request.cookies['refreshId'];
-        const answer = this.sessionHandler.clearSessionById(cookie);
+    public clearSessionById(request: any, response: express.Response): void {
+        const cookie = request['cookie'] as Cookie;
+        const answer = this.sessionHandler.clearSessionById(cookie.sessionId);
         if (answer) {
             response.json({
                 success: true,
@@ -110,9 +112,9 @@ export default class RouteHandler implements RouteHandlerInterface {
         }
     }
 
-    public clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void {
-        const cookie = request.cookies['refreshId'];
-        const answer = this.sessionHandler.clearAllSessionsExceptThemselves(cookie);
+    public clearAllSessionsExceptThemselves(request: any, response: express.Response): void {
+        const cookie = request['cookie'] as Cookie;
+        const answer = this.sessionHandler.clearAllSessionsExceptThemselves(cookie.sessionId);
         if (answer) {
             response.json({
                 success: true,

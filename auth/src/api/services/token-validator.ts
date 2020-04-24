@@ -12,7 +12,7 @@ export default class TokenValidator implements Validator {
     private token = 'token';
 
     public validateToken(
-        request: express.Request,
+        request: any,
         response: express.Response,
         next: express.NextFunction
     ): express.Response | void {
@@ -36,8 +36,7 @@ export default class TokenValidator implements Validator {
                     message: 'Token is not valid: ' + error.message
                 });
             } else {
-                // @ts-ignore
-                request['token'] = decoded;
+                request[this.token] = decoded;
                 next();
             }
         });

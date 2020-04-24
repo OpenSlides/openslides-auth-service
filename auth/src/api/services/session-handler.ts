@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import Client from '../../core/models/client/client';
@@ -54,8 +54,8 @@ export default class SessionHandler implements SessionHandlerInterface {
     }
 
     public addSession(client: Client): boolean {
-        if (!this.activeSessions.has(client.clientId)) {
-            this.activeSessions.set(client.clientId, client);
+        if (!this.hasSession(client.sessionId)) {
+            this.activeSessions.set(client.sessionId, client);
             return true;
         } else {
             return false;

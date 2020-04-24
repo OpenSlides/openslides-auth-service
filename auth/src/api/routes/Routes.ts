@@ -4,7 +4,6 @@ import { Inject, InjectService } from '../../core/modules/decorators';
 import RouteHandler from '../services/route-handler';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
 import SessionHandler from '../services/session-handler';
-import SessionHandlerInterface from '../interfaces/session-handler-interface';
 import TokenValidator from '../services/token-validator';
 import { Validator } from '../interfaces/validator';
 
@@ -46,7 +45,11 @@ export default class Routes {
     private initPublicRoutes(): void {
         this.app.post('/login', (request, response) => this.routeHandler.login(request, response)); // Sends token
         this.app.get('/', (request, response) => this.routeHandler.index(request, response));
-        this.app.post('/who-am-i', (request, response) => this.routeHandler.whoAmI(request, response));
+        this.app.post(
+            '/who-am-i',
+            (request, response, next) => this.sessionHandler.validateSession(request, response, next),
+            (request, response) => this.routeHandler.whoAmI(request, response)
+        );
     }
 
     private initApiRoutes(): void {
