@@ -25,6 +25,7 @@ export default class DatabaseAdapter implements DatabasePort {
      * Initialize the database and redis commands declared above, if the database is not already initialized.
      */
     public constructor(public readonly modelConstructor: new <T>(...args: any) => T) {
+        console.log('databaseadapter', modelConstructor);
         if (!this.database) {
             this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
             this.initializeRedisCommands();

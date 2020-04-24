@@ -37,7 +37,7 @@ export default class TokenValidator implements Validator {
                 });
             } else {
                 // @ts-ignore
-                request[this.token] = decoded;
+                request['token'] = decoded;
                 next();
             }
         });

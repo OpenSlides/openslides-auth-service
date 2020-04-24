@@ -19,7 +19,7 @@ export default class SessionHandler implements SessionHandlerInterface {
         const refreshId = request.cookies['refreshId'] as string;
         const cookie = jwt.verify(refreshId, Keys.privateCookieKey()) as Cookie;
         if (!this.activeSessions.has(cookie.sessionId)) {
-            response.json({
+            return response.json({
                 success: false,
                 message: 'You are not signed in!'
             });

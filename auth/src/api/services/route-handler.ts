@@ -2,10 +2,10 @@ import express from 'express';
 
 import ClientService from '../../core/models/client/client-service';
 import { ClientServiceInterface } from '../../core/models/client/client-service.interface';
-import { Constructable, Inject } from '../../core/modules/decorators';
+import { Constructable, Inject, InjectService } from '../../core/modules/decorators';
 import { Generator } from '../interfaces/generator';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
-import SessionHandlerInterface from '../interfaces/session-handler-interface';
+import SessionHandler from './session-handler';
 import TokenGenerator from './token-generator';
 
 @Constructable(RouteHandlerInterface)
@@ -18,11 +18,8 @@ export default class RouteHandler implements RouteHandlerInterface {
     @Inject(Generator)
     private tokenGenerator: TokenGenerator;
 
-    private sessionHandler: SessionHandlerInterface;
-
-    public constructor(sessionHandler: SessionHandlerInterface) {
-        this.sessionHandler = sessionHandler;
-    }
+    @InjectService(SessionHandler)
+    private sessionHandler: SessionHandler;
 
     public async login(request: express.Request, response: express.Response): Promise<void> {
         const username = request.body.username;

@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { Inject } from '../../core/modules/decorators';
+import { Inject, InjectService } from '../../core/modules/decorators';
 import RouteHandler from '../services/route-handler';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
 import SessionHandler from '../services/session-handler';
@@ -14,11 +14,11 @@ export default class Routes {
     @Inject(Validator)
     private tokenValidator: TokenValidator;
 
-    @Inject(SessionHandlerInterface)
-    private sessionHandler: SessionHandler;
-
     @Inject(RouteHandlerInterface)
     private routeHandler: RouteHandler;
+
+    @InjectService(SessionHandler)
+    private sessionHandler: SessionHandler;
 
     private app: express.Application;
 
@@ -35,9 +35,9 @@ export default class Routes {
     private configRoutes(): void {
         this.app.all(
             `${this.SECURE_URL_PREFIX}/*`,
-            this.tokenValidator.validateToken,
-            this.sessionHandler.validateSession,
-            (hello, world, next) => {
+            (request, response, next) => this.tokenValidator.validateToken(request, response, next),
+            (request, response, next) => this.sessionHandler.validateSession(request, response, next),
+            (request, response, next) => {
                 next();
             }
         );
