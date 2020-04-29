@@ -38,3 +38,19 @@ test('POST who-am-i', async () => {
             expect(tokenParts.length).toBe(3);
         });
 });
+
+test('POST logout', async () => {
+    await agent
+        .post(getUrl('/login'))
+        .withCredentials()
+        .send(credentials)
+        .set('Accept', 'application/json')
+        .then(async res => {
+            await agent
+                .post(getUrl('/api/logout'))
+                .set('authentication', res.body.token)
+                .then(answer => {
+                    expect(answer.body.success).toBe(true);
+                });
+        });
+});
