@@ -1,0 +1,46 @@
+distro: xenial
+sudo: true
+
+cache:
+  - auth/node_modules
+
+include:
+  - stage: "Dependencies"
+    name: "Installing node modules"
+    language: node_js
+    cache:
+      - directories:
+          - "auth/node_modules"
+    before_install:
+      - cd auth
+    install:
+      - npm install
+    script: skip
+
+  - stage: "Tests"
+    name: "Server: Testing"
+    language: node_js
+    node_js: "10.13"
+    script:
+      - cd auth
+      - npm t
+  - name: "Server: Production Build"
+    language: node_js
+    node_js: "10.13"
+    script:
+      - cd auth
+      - npm run build
+  - name: "Server: Linting"
+    language: node_js
+    node_js: "10.13"
+    script:
+      - cd auth
+      - npm run lint-check
+
+  - name: "Server: Code Formatting Check"
+    language: node_js
+    node_js: "10.13"
+    script:
+      - cd auth
+      - npm list --depth=0 || cat --help
+      - npm run prettify-check

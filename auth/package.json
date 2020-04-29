@@ -13,6 +13,8 @@
         "dev": "nodemon src/index.ts",
         "linter-write": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
         "prettify-write": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json,.css,.scss}\"",
+        "lint-check": "tslint -c ./tslint.json 'src/**/*{.ts,.tsx}'",
+        "prettify-check": "prettier --config ./.prettierrc --list-different \"src/{app,environments}/**/*{.ts,.js,.json,.css,.scss}\"",
         "build-ts": "tsc",
         "test": "jest",
         "uptodate": "npm update && npm update --dev"
