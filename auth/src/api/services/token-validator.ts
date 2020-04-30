@@ -29,16 +29,16 @@ export default class TokenValidator implements Validator {
             token = token.slice(7, token.length);
         }
 
-        jwt.verify(token, Keys.privateKey(), (error, decoded) => {
-            if (error) {
-                return response.json({
-                    success: false,
-                    message: 'Token is not valid: ' + error.message
-                });
-            } else {
-                request[this.token] = decoded;
-                next();
-            }
-        });
+        try {
+            console.time('verify');
+            request[this.token] = jwt.verify(token, Keys.privateKey());
+            console.timeEnd('verify');
+            next();
+        } catch (e) {
+            return response.json({
+                success: false,
+                message: 'Token is not valid: ' + e.message
+            });
+        }
     }
 }

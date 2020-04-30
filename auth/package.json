@@ -16,8 +16,13 @@
         "lint-check": "tslint -c ./tslint.json 'src/**/*{.ts,.tsx}'",
         "prettify-check": "prettier --config ./.prettierrc --list-different \"src/{app,environments}/**/*{.ts,.js,.json,.css,.scss}\"",
         "build-ts": "tsc",
-        "test": "jest",
-        "uptodate": "npm update && npm update --dev"
+        "build": "tsc",
+        "prebuild": "echo false > .buildstatus",
+        "postbuild": "echo true > .buildstatus",
+        "test": "jest --passWithNoTests",
+        "uptodate": "npm update && npm update --dev",
+        "make-badges": "node_modules/.bin/jest-badges-readme",
+        "make-readme": "npm t && npm run make-badges"
     },
     "repository": {
         "type": "git",
@@ -30,6 +35,7 @@
     },
     "homepage": "https://github.com/OpenSlides/openslides-auth-service#readme",
     "devDependencies": {
+        "@olavoparno/jest-badges-readme": "^1.4.1",
         "@types/cookie-parser": "^1.4.2",
         "@types/cors": "^2.8.6",
         "@types/express": "^4.17.3",
@@ -40,6 +46,7 @@
         "@types/node": "^13.11.0",
         "@types/pouchdb": "^6.4.0",
         "@types/redis": "^2.8.17",
+        "@types/superagent": "^4.1.7",
         "jest": "^25.2.7",
         "nodemon": "^2.0.2",
         "prettier": "^1.19.1",

@@ -57,7 +57,6 @@ export default class RouteHandler implements RouteHandlerInterface {
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
         const cookie = request.cookies['refreshId'];
-        console.log('cookie', cookie);
         try {
             const ticket = await this.tokenGenerator.renewTicket(cookie);
             response.json({

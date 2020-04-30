@@ -25,7 +25,6 @@ export default class TokenGenerator implements Generator {
         if (client) {
             const sessionId = uuid();
             const cookie = jwt.sign({ sessionId }, Keys.privateCookieKey(), { expiresIn: '1d' });
-            console.log('client', client);
             client.setSession(sessionId);
             const token = this.generateToken(sessionId, client);
             return { cookie, token, client };
@@ -37,7 +36,6 @@ export default class TokenGenerator implements Generator {
     public async renewTicket(cookieAsString: string): Promise<Response> {
         try {
             const refreshId = this.verifyCookie(cookieAsString);
-            console.log('refreshId', refreshId);
             const client = (await this.clientService.getClientBySessionId(refreshId.sessionId)) || ({} as Client);
             const token = this.generateToken(refreshId.sessionId, client);
             return { token, cookie: cookieAsString, client };
