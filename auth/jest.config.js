@@ -10,5 +10,5 @@ module.exports = {
     testURL: 'http://localhost:4200',
     verbose: true,
     collectCoverage: true,
-    collectCoverageFrom: ['auth/src/**/*.{ts,tsx}']
+    collectCoverageFrom: ['src/**/*.{ts,tsx}']
 };
