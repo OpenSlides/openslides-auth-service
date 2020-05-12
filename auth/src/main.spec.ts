@@ -1,5 +1,3 @@
-import * as jest from 'jest';
-
 import { isInternalLink } from './main';
 
 test('should return false given external link', () => {

@@ -2,14 +2,14 @@
     "name": "openslides-auth-service",
     "version": "1.0.0",
     "description": "Service for OpenSlides which ...",
-    "main": "./dist/server.js",
+    "main": "./build/server.js",
     "directories": {
         "test": "auth/tests"
     },
     "scripts": {
         "postinstall": "npm run uptodate",
         "cleanup": "npm run prettify-write && npm run linter-write",
-        "start": "node dist/index.js",
+        "start": "node build/index.js",
         "dev": "nodemon src/index.ts",
         "linter-write": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
         "prettify-write": "prettier --config ./.prettierrc --write \"src/**/*{.ts,.js,.json,.css,.scss}\"",
@@ -48,12 +48,12 @@
         "@types/redis": "^2.8.17",
         "@types/superagent": "^4.1.7",
         "husky": "^4.2.5",
-        "jest": "^25.2.7",
+        "jest": "^25.5.4",
         "nodemon": "^2.0.2",
         "prettier": "^1.19.1",
         "reflect-metadata": "^0.1.13",
         "superagent": "^5.2.2",
-        "ts-jest": "^25.3.1",
+        "ts-jest": "^25.5.1",
         "ts-node": "^8.8.2",
         "tslint": "^6.1.1",
         "typescript": "^3.8.3"
