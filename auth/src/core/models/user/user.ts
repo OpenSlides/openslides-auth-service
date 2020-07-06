@@ -1,24 +1,28 @@
 import { BaseModel } from '../../base/base-model';
 
 export class User extends BaseModel implements IUser {
-    public static readonly COLLECTIONSTRING = 'user';
+    public static readonly COLLECTION = 'user';
 
     public readonly username: string;
     public readonly password: string;
     public readonly userId: string;
 
-    private sessionId: string;
+    public get sessionId(): string {
+        return this.pSessionId;
+    }
+
+    private pSessionId: string;
 
     public constructor(input?: any) {
-        super(User.COLLECTIONSTRING, input);
+        super(User.COLLECTION, input);
     }
 
     public setSession(sessionId: string): void {
-        this.sessionId = sessionId;
+        this.pSessionId = sessionId;
     }
 
     public hasSessionId(sessionId: string): boolean {
-        return this.sessionId === sessionId;
+        return this.pSessionId === sessionId;
     }
 }
 

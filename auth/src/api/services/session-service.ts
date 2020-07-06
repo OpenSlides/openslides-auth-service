@@ -1,31 +1,27 @@
-import { NextFunction, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { exception } from 'console';
 
-import { Keys } from '../../config';
-import { Constructable } from '../../core/modules/decorators';
-import { Cookie } from '../interfaces/generator';
-import SessionHandlerInterface from '../interfaces/session-handler-interface';
+import { Constructable } from '../../util/di';
+import { Cookie } from '../../core/ticket';
+import SessionHandler from '../interfaces/session-handler';
 import { User } from '../../core/models/user/user';
+import { TokenService } from './token-service';
 
-@Constructable(SessionHandlerInterface)
-export default class SessionHandler implements SessionHandlerInterface {
+@Constructable(SessionHandler)
+export default class SessionService implements SessionHandler {
     public name = 'SessionHandler';
-
-    private cookie = 'cookie';
 
     private activeSessions: Map<string, User> = new Map();
 
-    public validateSession(request: any, response: Response, next: NextFunction): Response | void {
-        const refreshId = request.cookies['refreshId'] as string;
-        const cookie = jwt.verify(refreshId, Keys.privateCookieKey()) as Cookie;
-        if (!this.activeSessions.has(cookie.sessionId)) {
-            return response.json({
-                success: false,
-                message: 'You are not signed in!'
-            });
+    public isValid(token: string): Cookie | undefined {
+        try {
+            const cookie = TokenService.verifyCookie(token);
+            if (!this.activeSessions.has(cookie.sessionId)) {
+                throw exception('Not logged in!');
+            }
+            return cookie;
+        } catch {
+            throw exception('The cookie is wrong');
         }
-        request[this.cookie] = cookie;
-        next();
     }
 
     public getAllActiveSessions(): string[] {

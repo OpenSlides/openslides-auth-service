@@ -4,8 +4,8 @@ import express from 'express';
 import { createServer, Server } from 'http';
 
 import BaseServer from '../interfaces/base-server';
-import { Constructable } from '../../core/modules/decorators';
-import Routes from '../routes/Routes';
+import { Constructable } from '../../util/di';
+import Routes from '../routes/routes';
 
 @Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {

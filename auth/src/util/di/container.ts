@@ -1,4 +1,4 @@
-import { Type } from '../decorators';
+import { Type } from './';
 import Dependency from './dependency';
 
 export default class Container {

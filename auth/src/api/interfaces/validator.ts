@@ -1,9 +1,9 @@
 import express from 'express';
 
-import { InjectableClass } from '../../core/modules/decorators';
+import { InjectableClass } from '../../util/di';
 
 export class Validator extends InjectableClass {
-    public isValid: (
+    public validate: (
         request: express.Request,
         response: express.Response,
         next: express.NextFunction

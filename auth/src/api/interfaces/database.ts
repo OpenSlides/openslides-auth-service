@@ -1,4 +1,4 @@
-import { InjectableClass } from '../../core/modules/decorators';
+import { InjectableClass } from '../../util/di';
 
 export class Database extends InjectableClass {
     public set: <T>(prefix: string, key: string, obj: T) => Promise<boolean>;

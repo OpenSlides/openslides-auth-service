@@ -1,11 +1,11 @@
-import { Client } from './client';
-import { ClientServiceInterface } from './client-service.interface';
-import { RedisDatabaseAdapter } from '../../../adapter/services/database-adapter';
-import { Database } from '../../../adapter/interfaces/database-port';
-import { Constructable, Inject } from '../../../core/modules/decorators';
-import { cryptoKey } from '../../modules/helper';
+import { Client } from '../../core/models/client/client';
+import { ClientHandler } from '../interfaces/client-handler';
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
+import { Database } from '../interfaces/database';
+import { Constructable, Inject } from '../../util/di';
+import { cryptoKey } from '../../util/helper';
 
-@Constructable(ClientServiceInterface)
+@Constructable(ClientHandler)
 export class ClientService {
     public name = 'ClientService';
 

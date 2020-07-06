@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import AuthenticationServer from './api/server/authentication-server';
 import BaseServer from './api/interfaces/base-server';
-import { Inject } from './core/modules/decorators';
+import { Inject } from './util/di';
 
 class Server {
     private readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
