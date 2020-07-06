@@ -5,7 +5,7 @@ services:
     image: openslides-auth-dev
     restart: always
     depends_on:
-    #  - message_bus
+      #  - message_bus
       - storage
     environment:
       - STORAGE_HOST=storage
@@ -15,7 +15,7 @@ services:
     volumes:
       - ./auth/src:/app/src
     ports:
-      - "8000:8000"
+      - "9004:9004"
     networks:
       - auth
   message_bus:

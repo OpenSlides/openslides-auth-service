@@ -14,7 +14,7 @@ services:
     volumes:
       - ./auth/src:/app/src
     ports:
-      - "8000:8000"
+      - "9004:9004"
     networks:
       - auth
 
@@ -32,9 +32,9 @@ services:
 
   test:
     image: openslides-auth-test
-    command: dockerize -wait tcp://auth:8000 -timeout 10s bash -c "npm run test"
+    command: dockerize -wait tcp://auth:9004 -timeout 10s bash -c "npm run test"
     environment:
-      - AUTH_URL=http://auth:8000
+      - AUTH_URL=http://auth:9004
       - STORAGE_HOST=storage
       - STORAGE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus

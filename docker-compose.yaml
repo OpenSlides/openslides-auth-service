@@ -13,7 +13,7 @@ services:
     volumes:
       - ./auth/src:/app/src
     ports:
-      - "8000:8000"
+      - "9004:9004"
     networks:
       - auth
   message_bus:

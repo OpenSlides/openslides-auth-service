@@ -6,21 +6,22 @@ export class User extends BaseModel implements IUser {
     public readonly username: string;
     public readonly password: string;
     public readonly userId: string;
-    private pSessionId: string;
 
-    public get sessionId(): string {
-        return this.pSessionId;
-    }
+    private sessionId: string;
 
     public constructor(input?: any) {
         super(User.COLLECTIONSTRING, input);
     }
 
     public setSession(sessionId: string): void {
-        this.pSessionId = sessionId;
+        this.sessionId = sessionId;
+    }
+
+    public hasSessionId(sessionId: string): boolean {
+        return this.sessionId === sessionId;
     }
 }
 
 export interface IUser {
-    sessionId: string;
+    hasSessionId: (sessionId: string) => boolean;
 }

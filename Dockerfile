@@ -12,5 +12,5 @@ COPY ./auth ./
 
 # Now the source-files can be transpiled
 RUN npm run build
-EXPOSE 8000
+EXPOSE 9004
 CMD ["npm", "run", "start"]
