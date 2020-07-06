@@ -1,6 +1,6 @@
 import request from 'superagent';
 
-const SERVER_URL = process.env.AUTH_URL || 'http://localhost:8000';
+const SERVER_URL = process.env.AUTH_URL || 'http://localhost:9004';
 const credentials = { username: 'admin', password: 'admin' };
 
 const agent = request.agent();
@@ -10,13 +10,13 @@ const getUrl = (urlSuffix: string) => {
 };
 
 test('Ajax request to server', async () => {
-    const { body } = await request.get(getUrl('/'));
+    const { body }: any = await request.get(getUrl('/'));
     expect(body.success).toBe(true);
     expect(body.message).toBe('Hello World');
 });
 
 test('POST login with credentials', async () => {
-    const { body } = await request.post(getUrl('/login')).send(credentials);
+    const { body }: any = await request.post(getUrl('/login')).send(credentials);
     const tokenParts = body.token.split('.');
     expect(body.success).toBe(true);
     expect(body.token).not.toBeNull();
@@ -31,7 +31,7 @@ test('POST who-am-i', async () => {
         .set('X-API-Key', 'foobar')
         .set('Accept', 'application/json')
         .then(async res => {
-            const { body } = await agent.post(getUrl('/who-am-i'));
+            const { body }: any = await agent.post(getUrl('/who-am-i'));
             const tokenParts = body.token.split('.');
             expect(body.success).toBe(true);
             expect(body.token).not.toBeNull();

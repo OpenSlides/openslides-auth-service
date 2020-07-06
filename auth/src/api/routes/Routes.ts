@@ -34,7 +34,7 @@ export default class Routes {
     private configRoutes(): void {
         this.app.all(
             `${this.SECURE_URL_PREFIX}/*`,
-            (request, response, next) => this.tokenValidator.validateToken(request, response, next),
+            (request, response, next) => this.tokenValidator.isValid(request, response, next),
             (request, response, next) => this.sessionHandler.validateSession(request, response, next),
             (request, response, next) => {
                 next();

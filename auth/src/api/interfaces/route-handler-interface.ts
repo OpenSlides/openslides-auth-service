@@ -8,4 +8,7 @@ export class RouteHandlerInterface extends InjectableClass {
     public whoAmI: (request: express.Request, response: express.Response) => Promise<void>;
     public logout: (request: express.Request, response: express.Response) => void;
     public notFound: (request: express.Request, response: express.Response) => Promise<void>;
+    public getListOfSessions: (request: express.Request, response: express.Response) => void;
+    public clearSessionById: (request: express.Request, response: express.Response) => void;
+    public clearAllSessionsExceptThemselves: (request: express.Request, response: express.Response) => void;
 }

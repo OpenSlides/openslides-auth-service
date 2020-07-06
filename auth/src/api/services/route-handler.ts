@@ -1,19 +1,21 @@
 import express from 'express';
 
-import ClientService from '../../core/models/client/client-service';
-import { ClientServiceInterface } from '../../core/models/client/client-service.interface';
 import { Constructable, Inject, InjectService } from '../../core/modules/decorators';
 import { Cookie, Generator } from '../interfaces/generator';
 import { RouteHandlerInterface } from '../interfaces/route-handler-interface';
 import SessionHandler from './session-handler';
 import TokenGenerator from './token-generator';
+import TokenValidator from './token-validator';
+import { User } from '../../core/models/user/user';
+import { UserService } from '../../core/models/user/user-service';
+import { UserServiceInterface } from '../../core/models/user/user-service.interface';
 
 @Constructable(RouteHandlerInterface)
 export default class RouteHandler implements RouteHandlerInterface {
     public name = 'RouteHandler';
 
-    @Inject(ClientServiceInterface)
-    private clientService: ClientService;
+    @Inject(UserServiceInterface)
+    private userService: UserService;
 
     @Inject(Generator)
     private tokenGenerator: TokenGenerator;
@@ -33,36 +35,38 @@ export default class RouteHandler implements RouteHandlerInterface {
             return;
         }
 
-        if (this.clientService.hasClient(username, password)) {
-            const ticket = await this.tokenGenerator.createTicket(username, password);
-            this.sessionHandler.addSession(ticket.client);
-            response
-                .cookie('refreshId', ticket.cookie, {
-                    maxAge: 7200000,
-                    httpOnly: true,
-                    secure: false
-                })
-                .send({
-                    success: true,
-                    message: 'Authentication successful!',
-                    token: ticket.token
-                });
-        } else {
+        if (!this.userService.hasUser(username, password)) {
             response.status(403).json({
                 success: false,
                 message: 'Incorrect username or password'
             });
         }
+        const user = (await this.userService.getUserByCredentials(username, password)) || ({} as User);
+        const ticket = await this.tokenGenerator.createTicket(user);
+        this.sessionHandler.addSession(ticket.user);
+        response
+            .cookie('refreshId', ticket.cookie, {
+                maxAge: 7200000,
+                httpOnly: true,
+                secure: false
+            })
+            .send({
+                success: true,
+                message: 'Authentication successful!',
+                token: `bearer ${ticket.token}`
+            });
     }
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
-        const cookie = request.cookies['refreshId'];
+        const cookieAsString = request.cookies['refreshId'];
+        const cookie = TokenValidator.verifyCookie(cookieAsString);
+        const user = (await this.userService.getUserBySessionId(cookie.sessionId)) || ({} as User);
         try {
-            const ticket = await this.tokenGenerator.renewTicket(cookie);
+            const ticket = await this.tokenGenerator.renewTicket(cookieAsString, cookie.sessionId, user);
             response.json({
                 success: true,
                 message: 'Authentication successful!',
-                token: ticket.token
+                token: `bearer ${ticket.token}`
             });
         } catch {
             response.json({
@@ -134,13 +138,24 @@ export default class RouteHandler implements RouteHandlerInterface {
         });
     }
 
+    /**
+     * @deprecated
+     * @param _
+     * @param response
+     */
     public index(_: any, response: express.Response): void {
+        console.log('request');
         response.json({
             success: true,
             message: 'Hello World'
         });
     }
 
+    /**
+     * @deprecated
+     * @param _
+     * @param response
+     */
     public secureIndex(_: any, response: express.Response): void {
         response.json({
             success: true,

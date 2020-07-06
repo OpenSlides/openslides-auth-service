@@ -1,12 +1,12 @@
 import Redis from 'redis';
 
 import { BaseModel } from '../../core/base/base-model';
-import { DatabasePort } from '../interfaces/database-port';
+import { Database } from '../interfaces/database-port';
 import { Constructable } from '../../core/modules/decorators';
 
-@Constructable(DatabasePort)
-export default class DatabaseAdapter implements DatabasePort {
-    public name = 'DatabaseAdapter';
+@Constructable(Database)
+export class RedisDatabaseAdapter implements Database {
+    public name = 'RedisDatabaseAdapter';
 
     private readonly redisPort = parseInt(process.env.STORAGE_PORT || '', 10) || 6379;
     private readonly redisHost = process.env.STORAGE_HOST || '';
@@ -28,7 +28,6 @@ export default class DatabaseAdapter implements DatabasePort {
         if (!this.database) {
             this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
             this.initializeRedisCommands();
-            this.clear();
         }
     }
 
@@ -61,29 +60,6 @@ export default class DatabaseAdapter implements DatabasePort {
     }
 
     /**
-     * This function will update an existing object in the database by the given object.
-     * to the database, no matter if there is already an object stored
-     * by the given key.
-     *
-     * @param key The key, where the object is found.
-     * @param update The object or partially properties, which are assigned to the original object
-     * found by the given key.
-     *
-     * @returns The updated object.
-     */
-    public async update<T>(prefix: string, key: string, update: Partial<T>): Promise<T> {
-        const object = await this.get<T>(prefix, key);
-        if (object) {
-            Object.assign(object, update);
-            this.redisSet(key, object);
-            return object;
-        } else {
-            await this.set(prefix, key, update);
-            return update as T;
-        }
-    }
-
-    /**
      * This will delete an entry from the database.
      *
      * @param key The key of the related object to remove.
@@ -110,8 +86,8 @@ export default class DatabaseAdapter implements DatabasePort {
      *
      * Necessary for development to avoid inserting a new entry every refresh.
      */
-    private clear(): void {
-        this.redisClear().then(() => console.log('Database is empty!'));
+    public clear(): void {
+        this.redisClear();
     }
 
     /**

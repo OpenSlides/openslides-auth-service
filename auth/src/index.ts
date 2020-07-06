@@ -5,7 +5,7 @@ import BaseServer from './api/interfaces/base-server';
 import { Inject } from './core/modules/decorators';
 
 class Server {
-    private readonly PORT: number = parseInt(process.env.PORT || '', 10) || 8000;
+    private readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
 
     public get port(): number {
         return this.PORT;

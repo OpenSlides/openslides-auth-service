@@ -1,51 +1,62 @@
-import { uuid } from 'uuidv4';
-
-import Client from './client';
+import { Client } from './client';
 import { ClientServiceInterface } from './client-service.interface';
-import DatabaseAdapter from '../../../adapter/services/database-adapter';
-import { DatabasePort } from '../../../adapter/interfaces/database-port';
-import { Constructable, Inject } from '../../modules/decorators';
+import { RedisDatabaseAdapter } from '../../../adapter/services/database-adapter';
+import { Database } from '../../../adapter/interfaces/database-port';
+import { Constructable, Inject } from '../../../core/modules/decorators';
+import { cryptoKey } from '../../modules/helper';
 
 @Constructable(ClientServiceInterface)
-export default class ClientService implements ClientServiceInterface {
+export class ClientService {
     public name = 'ClientService';
 
-    @Inject(DatabasePort, Client)
-    private database: DatabaseAdapter;
+    @Inject(Database, Client)
+    private readonly database: RedisDatabaseAdapter;
 
-    private clientCollection: Map<string, Client> = new Map();
+    private readonly clientCollection = new Map<string, Client>();
 
     public constructor() {
-        this.getAllClientsFromDatabase().then(clients => this.initClientCollection(clients));
+        this.init();
     }
 
-    public async create(username: string, password: string): Promise<Client> {
-        const clientId = uuid();
-        const client: Client = new Client({ username, password, clientId });
-        const done = await this.database.set(Client.COLLECTIONSTRING, clientId, client);
+    public async create(appName: string, redirectUrl: string, appDescription: string = ''): Promise<Client> {
+        const id = cryptoKey();
+        const client = new Client({ appName, redirectUrl, appDescription });
+        const done = await this.database.set(Client.COLLECTIONSTRING, id, client);
         if (done) {
-            this.clientCollection.set(clientId, client);
+            this.clientCollection.set(id, client);
         }
         return client;
     }
 
-    public async getClientByCredentials(username: string, password: string): Promise<Client | undefined> {
-        const clients = this.getAllClients();
-        return clients.find(c => c.username === username && c.password === password);
+    public getClientById(clientId: string): Client | undefined {
+        return this.getAllClients().find(client => client.clientId === clientId);
     }
 
-    public async getClientBySessionId(sessionId: string): Promise<Client | undefined> {
-        const clients = this.getAllClients();
-        return clients.find(c => c.sessionId === sessionId);
+    public hasClient(clientId: string): boolean {
+        return !!this.getAllClients().find(client => client.clientId === clientId);
     }
 
-    public async hasClient(username: string, password: string): Promise<boolean> {
-        const clients = this.getAllClients();
-        return !!clients.find(client => client.username === username && client.password === password);
+    public async setClientSecret(clientId: string, clientSecret: string): Promise<void> {
+        const client = this.getClientById(clientId);
+        if (client) {
+            client.clientSecret = clientSecret;
+            this.clientCollection.set(clientId, client);
+            await this.database.set(Client.COLLECTIONSTRING, clientId, client);
+        }
     }
 
     public getAllClients(): Client[] {
         return Array.from(this.clientCollection.values());
+    }
+
+    private async init(): Promise<void> {
+        try {
+            await this.getAllClientsFromDatabase()
+                .then(clients => this.initClientCollection(clients))
+                .catch(e => console.log(e));
+        } catch {
+            console.log('error');
+        }
     }
 
     private async getAllClientsFromDatabase(): Promise<Client[]> {
