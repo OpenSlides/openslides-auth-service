@@ -1,7 +1,7 @@
 import { InjectableClass } from '../../util/di';
 import { User } from '../../core/models/user/user';
 
-export class Datastore extends InjectableClass {
-    public find: (userId: string) => User;
-    public hasUser: (username: string, password: string) => string;
+export abstract class Datastore extends InjectableClass {
+    public abstract find: (userId: string) => User;
+    public abstract hasUser: (username: string, password: string) => string;
 }

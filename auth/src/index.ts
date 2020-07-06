@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import AuthenticationServer from './api/server/authentication-server';
-import BaseServer from './api/interfaces/base-server';
+import { BaseServer } from './api/interfaces/base-server';
 import { Inject } from './util/di';
 
 class Server {

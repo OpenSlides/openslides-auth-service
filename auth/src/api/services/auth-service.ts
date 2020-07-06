@@ -8,12 +8,12 @@ import SessionService from './session-service';
 import { Cookie, Ticket } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { TokenService } from './token-service';
-import { UserServiceInterface } from '../interfaces/user-handler';
+import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
 
 export class AuthService implements AuthHandler {
     public name = 'AuthService';
-    @Inject(UserServiceInterface)
+    @Inject(UserHandler)
     private userService: UserService;
 
     @Inject(TokenHandler)

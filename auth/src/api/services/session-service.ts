@@ -1,7 +1,7 @@
 import { exception } from 'console';
 
 import { Constructable } from '../../util/di';
-import SessionHandler from '../interfaces/session-handler';
+import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
 import { User } from '../../core/models/user/user';

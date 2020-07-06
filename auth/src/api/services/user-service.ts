@@ -4,10 +4,10 @@ import { Database } from '../interfaces/database';
 import { Constructable, Inject } from '../../util/di';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { User } from '../../core/models/user/user';
-import { UserServiceInterface } from '../interfaces/user-handler';
+import { UserHandler } from '../interfaces/user-handler';
 
-@Constructable(UserServiceInterface)
-export class UserService implements UserServiceInterface {
+@Constructable(UserHandler)
+export class UserService implements UserHandler {
     public name = 'UserService';
 
     @Inject(Database, User)

@@ -4,7 +4,7 @@ import { Database } from '../api/interfaces/database';
 import { Constructable } from '../util/di';
 
 @Constructable(Database)
-export class RedisDatabaseAdapter implements Database {
+export class RedisDatabaseAdapter extends Database {
     public name = 'RedisDatabaseAdapter';
 
     private readonly redisPort = parseInt(process.env.STORAGE_PORT || '', 10) || 6379;
@@ -17,6 +17,7 @@ export class RedisDatabaseAdapter implements Database {
      * Initialize the database and redis commands declared above, if the database is not already initialized.
      */
     public constructor(public readonly modelConstructor: new <T>(...args: any) => T) {
+        super();
         if (!this.database) {
             this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
             this.clear();

@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer, Server } from 'http';
 
-import BaseServer from '../interfaces/base-server';
+import { BaseServer } from '../interfaces/base-server';
 import { Constructable } from '../../util/di';
 import Routes from '../routes/routes';
 

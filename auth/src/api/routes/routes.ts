@@ -65,11 +65,11 @@ export default class Routes {
     }
 
     private getExternalUrlPrefix(): string {
-        return 'system/auth/';
+        return 'system/auth';
     }
 
     private getInternalUrlPrefix(): string {
-        return 'internal/auth/';
+        return 'internal/auth';
     }
 
     private getPublicUrl(urlPath: string): string {

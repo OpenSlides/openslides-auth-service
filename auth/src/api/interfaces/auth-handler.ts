@@ -1,11 +1,11 @@
 import { InjectableClass } from '../../util/di';
 import { Cookie, Ticket } from '../../core/ticket';
 
-export class AuthHandler extends InjectableClass {
-    public login: (username: string, password: string) => Promise<Ticket>;
-    public whoAmI: (cookieAsString: string) => Promise<Ticket>;
-    public logout: (cookie: Cookie) => void;
-    public getListOfSessions: () => string[];
-    public clearSessionById: (cookie: Cookie) => void;
-    public clearAllSessionsExceptThemselves: (cookie: Cookie) => void;
+export abstract class AuthHandler extends InjectableClass {
+    public abstract login: (username: string, password: string) => Promise<Ticket>;
+    public abstract whoAmI: (cookieAsString: string) => Promise<Ticket>;
+    public abstract logout: (cookie: Cookie) => void;
+    public abstract getListOfSessions: () => string[];
+    public abstract clearSessionById: (cookie: Cookie) => void;
+    public abstract clearAllSessionsExceptThemselves: (cookie: Cookie) => void;
 }
