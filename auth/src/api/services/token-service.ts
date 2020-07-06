@@ -1,11 +1,11 @@
+import { exception } from 'console';
 import jwt from 'jsonwebtoken';
 
 import { Keys } from '../../config';
-import { Token, Cookie, Ticket } from '../../core/ticket';
+import { cryptoKey } from '../../util/helper';
+import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { User } from '../../core/models/user/user';
-import { cryptoKey } from '../../util/helper';
-import { exception } from 'console';
 
 export class TokenService implements TokenHandler {
     public name = 'TokenHandler';

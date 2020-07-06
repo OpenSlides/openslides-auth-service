@@ -1,14 +1,15 @@
-import { AuthHandler } from '../interfaces/auth-handler';
-import SessionService from './session-service';
-import { InjectService, Inject } from '../../util/di';
-import { Ticket, Cookie } from '../../core/ticket';
-import { UserServiceInterface } from '../interfaces/user-handler';
-import { UserService } from './user-service';
-import { TokenHandler } from '../interfaces/token-handler';
-import { TokenService } from './token-service';
 import { exception } from 'console';
+
+import { AuthHandler } from '../interfaces/auth-handler';
+import { Inject, InjectService } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
+import SessionService from './session-service';
+import { Cookie, Ticket } from '../../core/ticket';
+import { TokenHandler } from '../interfaces/token-handler';
+import { TokenService } from './token-service';
+import { UserServiceInterface } from '../interfaces/user-handler';
+import { UserService } from './user-service';
 
 export class AuthService implements AuthHandler {
     public name = 'AuthService';

@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { Constructable, Inject } from '../../util/di';
-import { Cookie } from '../../core/ticket';
-import { RouteHandler } from '../interfaces/route-handler';
 import { AuthHandler } from '../interfaces/auth-handler';
 import { AuthService } from '../services/auth-service';
+import { Constructable, Inject } from '../../util/di';
+import { RouteHandler } from '../interfaces/route-handler';
+import { Cookie } from '../../core/ticket';
 
 @Constructable(RouteHandler)
 export default class RouteService implements RouteHandler {

@@ -1,8 +1,8 @@
 import { uuid } from 'uuidv4';
 
-import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { Database } from '../interfaces/database';
 import { Constructable, Inject } from '../../util/di';
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { User } from '../../core/models/user/user';
 import { UserServiceInterface } from '../interfaces/user-handler';
 

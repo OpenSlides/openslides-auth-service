@@ -1,6 +1,6 @@
 import { InjectableClass } from '../../util/di';
 import { IsValid } from './is-valid';
-import { Cookie, Token, Ticket } from '../../core/ticket';
+import { Cookie, Ticket, Token } from '../../core/ticket';
 import { User } from '../../core/models/user/user';
 
 export class TokenHandler extends InjectableClass implements IsValid<Token> {

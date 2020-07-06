@@ -1,9 +1,9 @@
 import { Client } from '../../core/models/client/client';
 import { ClientHandler } from '../interfaces/client-handler';
-import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { Database } from '../interfaces/database';
 import { Constructable, Inject } from '../../util/di';
 import { cryptoKey } from '../../util/helper';
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 
 @Constructable(ClientHandler)
 export class ClientService {

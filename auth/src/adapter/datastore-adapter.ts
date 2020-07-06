@@ -1,6 +1,6 @@
-import { Constructable } from 'src/util/di';
 import { Datastore } from 'src/api/interfaces/datastore';
 import { User } from 'src/core/models/user/user';
+import { Constructable } from 'src/util/di';
 
 @Constructable(Datastore)
 export class DatastoreAdapter implements Datastore {

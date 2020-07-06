@@ -1,10 +1,10 @@
 import { exception } from 'console';
 
 import { Constructable } from '../../util/di';
-import { Cookie } from '../../core/ticket';
 import SessionHandler from '../interfaces/session-handler';
-import { User } from '../../core/models/user/user';
+import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
+import { User } from '../../core/models/user/user';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {

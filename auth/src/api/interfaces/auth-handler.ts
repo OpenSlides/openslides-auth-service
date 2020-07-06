@@ -1,5 +1,5 @@
 import { InjectableClass } from '../../util/di';
-import { Ticket, Cookie } from '../../core/ticket';
+import { Cookie, Ticket } from '../../core/ticket';
 
 export class AuthHandler extends InjectableClass {
     public login: (username: string, password: string) => Promise<Ticket>;

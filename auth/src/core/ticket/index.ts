@@ -1,5 +1,5 @@
 import { Cookie } from './cookie';
-import { Token } from './token';
 import { Ticket } from './ticket';
+import { Token } from './token';
 
 export { Cookie, Token, Ticket };
