@@ -1,28 +1,28 @@
 import { uuid } from 'uuidv4';
 
 import { Database } from '../interfaces/database';
-import { Constructable, Inject } from '../../util/di';
-import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
-import { User } from '../../core/models/user';
-import { UserHandler } from '../interfaces/user-handler';
 import { Datastore } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
+import { Constructable, Inject } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
 import { Validation } from '../interfaces/jwt-validator';
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
+import { User } from '../../core/models/user';
+import { UserHandler } from '../interfaces/user-handler';
 
 @Constructable(UserHandler)
 export class UserService implements UserHandler {
     public name = 'UserService';
 
-    @Inject(Datastore)
-    private readonly datastore: DatastoreAdapter;
+    @Inject(DatastoreAdapter)
+    private readonly datastore: Datastore;
 
-    @Inject(Database, User)
-    private readonly database: RedisDatabaseAdapter;
+    @Inject(RedisDatabaseAdapter, User)
+    private readonly database: Database;
 
-    @Inject(HashingHandler)
-    private readonly hashingHandler: HashingService;
+    @Inject(HashingService)
+    private readonly hashingHandler: HashingHandler;
 
     private readonly userCollection: Map<string, User> = new Map();
 

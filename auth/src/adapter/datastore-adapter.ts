@@ -5,8 +5,8 @@ import { HttpService } from '../api/services/http-service';
 
 @Constructable(Datastore)
 export class DatastoreAdapter extends Datastore {
-    @Inject(HttpHandler)
-    private readonly httpHandler: HttpService;
+    @Inject(HttpService)
+    private readonly httpHandler: HttpHandler;
 
     public async filter<T>(
         collection: string,

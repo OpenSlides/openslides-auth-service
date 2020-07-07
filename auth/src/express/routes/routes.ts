@@ -12,11 +12,11 @@ export default class Routes {
     private readonly INTERNAL_URL_PREFIX = '/internal/auth';
     private readonly SECURE_URL_PREFIX = '/api';
 
-    @Inject(Validator)
-    private tokenValidator: TokenValidator;
+    @Inject(TokenValidator)
+    private tokenValidator: Validator;
 
-    @Inject(RouteHandler)
-    private routeHandler: RouteService;
+    @Inject(RouteService)
+    private routeHandler: RouteHandler;
 
     @InjectService(SessionValidator)
     private sessionValidator: SessionValidator;

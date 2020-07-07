@@ -2,15 +2,15 @@ import { Client } from '../../core/models/client';
 import { ClientHandler } from '../interfaces/client-handler';
 import { Database } from '../interfaces/database';
 import { Constructable, Inject } from '../../util/di';
-import { cryptoKey } from '../../util/helper';
+import { Random } from '../../util/helper';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 
 @Constructable(ClientHandler)
 export class ClientService {
     public name = 'ClientService';
 
-    @Inject(Database, Client)
-    private readonly database: RedisDatabaseAdapter;
+    @Inject(RedisDatabaseAdapter, Client)
+    private readonly database: Database;
 
     private readonly clientCollection = new Map<string, Client>();
 
@@ -19,7 +19,7 @@ export class ClientService {
     }
 
     public async create(appName: string, redirectUrl: string, appDescription: string = ''): Promise<Client> {
-        const id = cryptoKey();
+        const id = Random.cryptoKey();
         const client = new Client({ appName, redirectUrl, appDescription });
         const done = await this.database.set(Client.COLLECTIONSTRING, id, client);
         if (done) {

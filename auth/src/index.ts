@@ -13,8 +13,8 @@ class Server {
         return Server.PORT;
     }
 
-    @Inject(BaseServer)
-    private httpServer: AuthenticationServer;
+    @Inject(AuthenticationServer)
+    private httpServer: BaseServer;
 
     public start(): void {
         this.httpServer.getServer().listen(Server.PORT, () => {

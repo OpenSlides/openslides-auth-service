@@ -3,16 +3,16 @@ import express from 'express';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { Constructable, Inject } from '../../util/di';
+import { Logger } from '../../api/services/logger';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import { Cookie } from '../../core/ticket';
-import { Logger } from '../../api/services/logger';
 
 @Constructable(RouteHandler)
 export default class RouteService implements RouteHandler {
     public name = 'RouteHandler';
 
-    @Inject(AuthHandler)
-    private authHandler: AuthService;
+    @Inject(AuthService)
+    private authHandler: AuthHandler;
 
     public async login(request: express.Request, response: express.Response): Promise<void> {
         const username = request.body.username;

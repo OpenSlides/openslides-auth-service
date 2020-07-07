@@ -1,27 +1,27 @@
 import { AuthHandler } from '../interfaces/auth-handler';
-import { Inject, InjectService, Constructable } from '../../util/di';
+import { Constructable, Inject, InjectService } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
+import { Validation } from '../interfaces/jwt-validator';
+import { Logger } from './logger';
 import SessionService from './session-service';
 import { Cookie, Ticket } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { TokenService } from './token-service';
 import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
-import { Validation } from '../interfaces/jwt-validator';
-import { Logger } from './logger';
 
 @Constructable(AuthHandler)
 export class AuthService implements AuthHandler {
     public name = 'AuthService';
-    @Inject(UserHandler)
-    private userService: UserService;
+    @Inject(UserService)
+    private userService: UserHandler;
 
-    @Inject(TokenHandler)
-    private tokenHandler: TokenService;
+    @Inject(TokenService)
+    private tokenHandler: TokenHandler;
 
-    @Inject(HashingHandler)
-    private hashHandler: HashingService;
+    @Inject(HashingService)
+    private hashHandler: HashingHandler;
 
     @InjectService(SessionService)
     private sessionHandler: SessionService;

@@ -3,10 +3,10 @@ import jwt from 'jsonwebtoken';
 
 import { Keys } from '../../config';
 import { Random } from '../../util/helper';
+import { Validation } from '../interfaces/jwt-validator';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { User } from '../../core/models/user';
-import { Validation } from '../interfaces/jwt-validator';
 
 export class TokenService implements TokenHandler {
     public name = 'TokenHandler';

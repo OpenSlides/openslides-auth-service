@@ -1,5 +1,5 @@
-import cryptoRandomString from 'crypto-random-string';
 import crypto from 'crypto';
+import cryptoRandomString from 'crypto-random-string';
 
 export namespace Random {
     /**

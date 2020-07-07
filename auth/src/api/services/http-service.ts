@@ -1,5 +1,5 @@
 import { Constructable } from '../../util/di';
-import { HttpHandler, HttpMethod, HttpHeaders } from '../interfaces/http-handler';
+import { HttpHandler, HttpHeaders, HttpMethod } from '../interfaces/http-handler';
 
 @Constructable(HttpHandler)
 export class HttpService extends HttpHandler {

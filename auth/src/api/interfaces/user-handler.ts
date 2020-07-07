@@ -1,6 +1,6 @@
 import { InjectableClass } from '../../util/di';
-import { User } from '../../core/models/user';
 import { Validation } from './jwt-validator';
+import { User } from '../../core/models/user';
 
 export abstract class UserHandler extends InjectableClass {
     public abstract async getUserByCredentials(username: string, password: string): Promise<Validation<User>>;

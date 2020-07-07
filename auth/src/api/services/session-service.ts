@@ -1,11 +1,11 @@
 import { exception } from 'console';
 
 import { Constructable } from '../../util/di';
+import { Validation } from '../interfaces/jwt-validator';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
 import { User } from '../../core/models/user';
-import { Validation } from '../interfaces/jwt-validator';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {

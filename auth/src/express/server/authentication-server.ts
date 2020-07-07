@@ -6,8 +6,8 @@ import { createServer, Server } from 'http';
 import { BaseServer } from '../../api/interfaces/base-server';
 import { Config } from '../../config';
 import { Constructable } from '../../util/di';
-import Routes from '../routes/routes';
 import { Logger } from '../../api/services/logger';
+import Routes from '../routes/routes';
 
 @Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {
