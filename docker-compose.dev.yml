@@ -12,12 +12,15 @@ services:
       - STORAGE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
       - MESSAGE_BUS_PORT=6379
+      - DATASTORE_READER_HOST=reader
+      - DATASTORE_READER_PORT=9010
     volumes:
       - ./auth/src:/app/src
     ports:
       - "9004:9004"
     networks:
       - auth
+      - datastore
   message_bus:
     image: redis:alpine
     networks:
@@ -28,3 +31,5 @@ services:
       - auth
 networks:
   auth:
+  datastore:
+    driver: bridge

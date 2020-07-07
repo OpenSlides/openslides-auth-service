@@ -19,6 +19,13 @@ export default class RouteService implements RouteHandler {
     }
 
     public async login(request: express.Request, response: express.Response): Promise<void> {
+        console.log('body', request.body);
+        try {
+            JSON.parse(request.body);
+        } catch (e) {
+            console.log(e);
+        }
+
         const username = request.body.username;
         const password = request.body.password;
         Logger.log(`user: ${username}:${password}`);

@@ -57,7 +57,7 @@ export class RedisDatabaseAdapter extends Database {
                 if (error) {
                     reject(error);
                 }
-                const parsedObject = new this.modelConstructor<T>(JSON.parse(result));
+                const parsedObject = new this.modelConstructor<T>();
                 resolve(parsedObject);
             });
         });

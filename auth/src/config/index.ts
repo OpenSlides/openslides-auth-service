@@ -1,14 +1,9 @@
 import fs from 'fs';
 
-// export const AUTH_SERVER = {
-//     authorizationEndpoint: 'http://localhost:9001/authorize',
-//     tokenEndpoint: 'http://localhost:9001/token'
-// };
-
 export namespace Config {
     export const DATABASE_PATH = 'database/';
-    export const DATASTORE_READER = `${process.env.INSTANCE_DOMAIN || 'http://127.0.0.1'}:9010`;
-    export const DATASTORE_WRITER = `${process.env.INSTANCE_DOMAIN || 'http://localhost'}:9011`;
+    export const DATASTORE_READER = `${process.env.INSTANCE_DOMAIN || `http://172.21.0.3`}:9010`;
+    export const DATASTORE_WRITER = `${process.env.INSTANCE_DOMAIN || 'http://172.21.0.4'}:9011`;
 }
 
 export namespace Keys {
