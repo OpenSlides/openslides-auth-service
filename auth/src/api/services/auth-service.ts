@@ -1,5 +1,3 @@
-import { exception } from 'console';
-
 import { AuthHandler } from '../interfaces/auth-handler';
 import { Inject, InjectService, Constructable } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
@@ -32,66 +30,60 @@ export class AuthService implements AuthHandler {
         console.log('login', username, password);
         if (!username || !password) {
             return { isValid: false, message: 'Authentication failed! No username or password provided!' };
-            // throw new Error('Authentication failed! No username or password provided!');
         }
 
         if (!(await this.userService.hasUser(username))) {
-            // throw new Error('Incorrect username or password!');
             return { isValid: false, message: 'Incorrect username or password!' };
         }
 
-        const user = await this.userService.getUserByCredentials(username, password);
-        // console.log('user', user);
-        Logger.log(`user: ${user}`);
-        if (!user) {
-            return { isValid: false, message: 'Something went wrong!' };
-            // throw new Error('Something went wrong');
+        const result = await this.userService.getUserByCredentials(username, password);
+        Logger.log(`user: ${result.result}`);
+        if (!result.result) {
+            return { isValid: false, message: result.message };
         }
 
-        this.sessionHandler.addSession(user);
-        return await this.tokenHandler.create(user);
+        this.sessionHandler.addSession(result.result);
+        return await this.tokenHandler.create(result.result);
     }
 
     public async whoAmI(cookieAsString: string): Promise<Validation<Ticket>> {
         const result = this.sessionHandler.isValid(cookieAsString);
         if (!result.result) {
             return { isValid: false, message: 'No cookie provided!' };
-            // throw new Error('No cookie provided');
         }
-        // if (!result.result) {
-        //     return {isValid: false, message: ''}
-        // }
-        const user = await this.userService.getUserBySessionId(result.result.sessionId);
-        if (!user) {
+        const userResult = await this.userService.getUserBySessionId(result.result.sessionId);
+        if (!userResult.result) {
             return { isValid: false, message: 'Wrong user!' };
-            // throw new Error('Wrong user');
         }
-        return await this.tokenHandler.refresh(cookieAsString, result.result.sessionId, user);
+        return await this.tokenHandler.refresh(cookieAsString, result.result.sessionId, userResult.result);
     }
 
-    public logout(cookie: Cookie): void {
+    public logout(cookie: Cookie): Validation<void> {
         if (!cookie) {
-            throw new Error('No cookie provided');
+            return { isValid: false, message: 'No cookie provided!' };
         }
         if (!this.sessionHandler.clearSessionById(cookie.sessionId)) {
-            throw new Error('Wrong cookie!');
+            return { isValid: false, message: 'Wrong cookie!' };
         }
+        return { isValid: true, message: 'successful' };
     }
 
     public getListOfSessions(): string[] {
         return this.sessionHandler.getAllActiveSessions();
     }
 
-    public clearSessionById(cookie: Cookie): void {
+    public clearSessionById(cookie: Cookie): Validation<void> {
         if (!this.sessionHandler.clearSessionById(cookie.sessionId)) {
-            throw new Error('You have no permission!');
+            return { isValid: false, message: 'You have no permissions!' };
         }
+        return { isValid: true, message: 'successful' };
     }
 
-    public clearAllSessionsExceptThemselves(cookie: Cookie): void {
+    public clearAllSessionsExceptThemselves(cookie: Cookie): Validation<void> {
         if (!this.sessionHandler.clearAllSessionsExceptThemselves(cookie.sessionId)) {
-            throw new Error('You have no permission!');
+            return { isValid: false, message: 'You have no permissions!' };
         }
+        return { isValid: true, message: 'successful' };
     }
 
     public toHash(input: string): string {

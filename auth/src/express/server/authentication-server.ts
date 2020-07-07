@@ -7,6 +7,7 @@ import { BaseServer } from '../../api/interfaces/base-server';
 import { Config } from '../../config';
 import { Constructable } from '../../util/di';
 import Routes from '../routes/routes';
+import { Logger } from '../../api/services/logger';
 
 @Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {
@@ -62,11 +63,12 @@ export default class AuthenticationServer implements BaseServer {
     private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {
         const origin = req.headers.origin;
         const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
-        console.log('requestingOrigin', requestingOrigin);
         if (AuthenticationServer.ALLOWED_ORIGINS.indexOf(requestingOrigin) > -1) {
-            console.log(`origin ${requestingOrigin} is allowed`);
+            res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
+            Logger.log(`${requestingOrigin} -- is allowed:`);
+        } else {
+            Logger.log(`${requestingOrigin} -- blocked.`);
         }
-        res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
         res.setHeader(
             'Access-Control-Allow-Headers',

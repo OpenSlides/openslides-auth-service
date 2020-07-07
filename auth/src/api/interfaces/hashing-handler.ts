@@ -26,11 +26,14 @@ export abstract class HashingHandler extends InjectableClass {
             .update(value)
             .digest('base64');
 
-        const hmac = crypto
-            .createHmac('sha512', salt)
-            .update(value)
-            .digest('base64');
-        console.log('sha vs hmac:', sha, hmac);
-        return hmac;
+        // const hmac = crypto
+        //     .createHmac('sha512', salt)
+        //     .update(value)
+        //     .digest('base64');
+        // console.log('sha', sha);
+        // console.log('hmac', hmac);
+        // console.log('sha vs hmac:', sha.length, hmac.length);
+        // return hmac;
+        return sha;
     }
 }

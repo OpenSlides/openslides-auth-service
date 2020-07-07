@@ -14,21 +14,10 @@ export default class RouteService implements RouteHandler {
     @Inject(AuthHandler)
     private authHandler: AuthService;
 
-    public constructor() {
-        console.log('authHandler', this.authHandler);
-    }
-
     public async login(request: express.Request, response: express.Response): Promise<void> {
-        console.log('body', request.body);
-        try {
-            JSON.parse(request.body);
-        } catch (e) {
-            console.log(e);
-        }
-
         const username = request.body.username;
         const password = request.body.password;
-        Logger.log(`user: ${username}:${password}`);
+        Logger.log(`user: ${username} -- signs in`);
 
         const result = await this.authHandler.login(username, password);
         if (!result.result) {

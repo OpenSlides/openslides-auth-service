@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import AuthenticationServer from './express/server/authentication-server';
 import { BaseServer } from './api/interfaces/base-server';
 import { Inject } from './util/di';
+import { Logger } from './api/services/logger';
 
 class Server {
     public static readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
@@ -17,7 +18,7 @@ class Server {
 
     public start(): void {
         this.httpServer.getServer().listen(Server.PORT, () => {
-            console.log(`Server is running on ${Server.DOMAIN}:${Server.PORT}`);
+            Logger.log(`Server is running on ${Server.DOMAIN}:${Server.PORT}`);
         });
     }
 }

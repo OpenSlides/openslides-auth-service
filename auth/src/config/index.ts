@@ -2,8 +2,8 @@ import fs from 'fs';
 
 export namespace Config {
     export const DATABASE_PATH = 'database/';
-    export const DATASTORE_READER = `${process.env.INSTANCE_DOMAIN || `http://172.21.0.3`}:9010`;
-    export const DATASTORE_WRITER = `${process.env.INSTANCE_DOMAIN || 'http://172.21.0.4'}:9011`;
+    export const DATASTORE_READER = `${process.env.INSTANCE_DOMAIN || `http://reader`}:9010`;
+    export const DATASTORE_WRITER = `${process.env.INSTANCE_DOMAIN || 'http://writer'}:9011`;
 }
 
 export namespace Keys {

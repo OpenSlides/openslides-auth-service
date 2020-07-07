@@ -3,6 +3,7 @@ export class User implements IUser {
 
     public readonly username: string;
     public readonly password: string;
+    public readonly default_password: string;
     public readonly id: string;
 
     public get sessionId(): string {
