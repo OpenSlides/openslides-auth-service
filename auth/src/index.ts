@@ -5,18 +5,19 @@ import { BaseServer } from './api/interfaces/base-server';
 import { Inject } from './util/di';
 
 class Server {
-    private readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
+    public static readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
+    public static readonly DOMAIN: string = process.env.INSTANCE_DOMAIN || 'http://localhost';
 
     public get port(): number {
-        return this.PORT;
+        return Server.PORT;
     }
 
     @Inject(BaseServer)
     private httpServer: AuthenticationServer;
 
     public start(): void {
-        this.httpServer.getServer().listen(this.PORT, () => {
-            console.log(`Server is running on port ${this.PORT}`);
+        this.httpServer.getServer().listen(Server.PORT, () => {
+            console.log(`Server is running on ${Server.DOMAIN}:${Server.PORT}`);
         });
     }
 }

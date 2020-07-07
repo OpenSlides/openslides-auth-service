@@ -4,11 +4,20 @@ import express from 'express';
 import { createServer, Server } from 'http';
 
 import { BaseServer } from '../../api/interfaces/base-server';
+import { Config } from '../../config';
 import { Constructable } from '../../util/di';
 import Routes from '../routes/routes';
 
 @Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {
+    public static readonly ALLOWED_ORIGINS = [
+        process.env.INSTANCE_DOMAIN,
+        'http://localhost:4200',
+        'http://localhost:9004',
+        Config.DATASTORE_READER,
+        Config.DATASTORE_WRITER
+    ];
+
     public name = 'AuthenticationServer';
 
     private app: express.Application;
@@ -31,15 +40,7 @@ export default class AuthenticationServer implements BaseServer {
     }
 
     private initializeConfig(): void {
-        this.app.use(
-            cors({
-                allowedHeaders:
-                    'Origin, X-Requested-With, Content-Type, X-Content-Type, Authentication, Authorization, X-Access-Token, Accept',
-                credentials: true,
-                origin: process.env.INSTANCE_DOMAIN,
-                methods: 'OPTIONS, GET, POST, PUT, DELETE'
-            })
-        );
+        this.app.use((req, res, next) => this.corsFunction(req, res, next));
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
         this.app.use(cookieParser());
@@ -56,5 +57,22 @@ export default class AuthenticationServer implements BaseServer {
 
     public getServer(): Server {
         return this.server;
+    }
+
+    private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {
+        const origin = req.headers.origin;
+        const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
+        console.log('requestingOrigin', requestingOrigin);
+        if (AuthenticationServer.ALLOWED_ORIGINS.indexOf(requestingOrigin) > -1) {
+            console.log(`origin ${requestingOrigin} is allowed`);
+        }
+        res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
+        res.setHeader(
+            'Access-Control-Allow-Headers',
+            'Origin, X-Requested-With, Content-Type, X-Content-Type, Authentication, Authorization, X-Access-Token, Accept'
+        );
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        return next();
     }
 }

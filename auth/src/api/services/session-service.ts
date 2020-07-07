@@ -5,6 +5,7 @@ import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
 import { User } from '../../core/models/user';
+import { Validation } from '../interfaces/jwt-validator';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {
@@ -12,16 +13,15 @@ export default class SessionService implements SessionHandler {
 
     private activeSessions: Map<string, User> = new Map();
 
-    public isValid(token: string): Cookie | undefined {
-        try {
-            const cookie = TokenService.verifyCookie(token);
-            if (!this.activeSessions.has(cookie.sessionId)) {
-                throw exception('Not logged in!');
-            }
-            return cookie;
-        } catch {
-            throw exception('The cookie is wrong');
+    public isValid(token: string): Validation<Cookie> {
+        const result = TokenService.verifyCookie(token);
+        if (!result.isValid) {
+            return { isValid: false, message: 'The cookie is wrong' };
         }
+        if (result.result && !this.activeSessions.has(result.result.sessionId)) {
+            return { isValid: false, message: 'Not logged in!' };
+        }
+        return result;
     }
 
     public getAllActiveSessions(): string[] {

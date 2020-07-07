@@ -1,11 +1,13 @@
 import { Constructable } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
+import { Random } from '../../util/helper';
 
 @Constructable(HashingHandler)
-export class HashingService implements HashingHandler {
+export class HashingService extends HashingHandler {
     public name = 'HashingService';
 
     public hash(input: string): string {
-        return '';
+        const salt = Random.cryptoKey();
+        return this.sha512(input, salt);
     }
 }

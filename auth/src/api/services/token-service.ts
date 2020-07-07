@@ -2,27 +2,36 @@ import { exception } from 'console';
 import jwt from 'jsonwebtoken';
 
 import { Keys } from '../../config';
-import { cryptoKey } from '../../util/helper';
+import { Random } from '../../util/helper';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { User } from '../../core/models/user';
+import { Validation } from '../interfaces/jwt-validator';
 
 export class TokenService implements TokenHandler {
     public name = 'TokenHandler';
 
-    public static verifyCookie(cookieAsString: string): Cookie {
+    public static verifyCookie(cookieAsString: string): Validation<Cookie> {
         try {
-            return jwt.verify(cookieAsString, Keys.privateCookieKey()) as Cookie;
+            return {
+                isValid: true,
+                message: 'Successful',
+                result: jwt.verify(cookieAsString, Keys.privateCookieKey()) as Cookie
+            };
         } catch {
-            throw exception('Wrong cookie');
+            return { isValid: false, message: 'Wrong cookie' };
         }
     }
 
-    public static verifyToken(tokenAsString: string): Token {
+    public static verifyToken(tokenAsString: string): Validation<Token> {
         try {
-            return jwt.verify(tokenAsString, Keys.privateKey()) as Token;
+            return {
+                isValid: true,
+                message: 'successful',
+                result: jwt.verify(tokenAsString, Keys.privateKey()) as Token
+            };
         } catch {
-            throw exception('Wrong token');
+            return { isValid: false, message: 'Wrong token' };
         }
     }
 
@@ -32,27 +41,29 @@ export class TokenService implements TokenHandler {
         return JSON.parse(payload) as T;
     }
 
-    public async create(user: User): Promise<Ticket> {
+    public async create(user: User): Promise<Validation<Ticket>> {
         if (!Object.keys(user).length) {
-            throw new Error('user is empty.');
+            return { isValid: false, message: 'User is empty.' };
+            // throw new Error('user is empty.');
         }
-        const sessionId = cryptoKey(32);
+        const sessionId = Random.cryptoKey(32);
         user.setSession(sessionId);
         const cookie = this.generateCookie(sessionId);
         const token = this.generateToken(sessionId, user);
-        return { cookie, token, user };
+        return { isValid: true, message: 'successful', result: { cookie, token, user } };
     }
 
-    public async refresh(cookie: string, sessionId: string, user: User): Promise<Ticket> {
+    public async refresh(cookie: string, sessionId: string, user: User): Promise<Validation<Ticket>> {
         try {
             const token = this.generateToken(sessionId, user);
-            return { token, cookie, user };
+            return { isValid: true, message: 'Successful', result: { token, cookie, user } };
         } catch {
-            throw new Error('Cookie has wrong format.');
+            return { isValid: false, message: 'Cookie has wrong format' };
+            // throw new Error('Cookie has wrong format.');
         }
     }
 
-    public isValid(token: string): Token | undefined {
+    public isValid(token: string): Validation<Token> {
         return TokenService.verifyToken(token);
     }
 

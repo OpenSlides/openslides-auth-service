@@ -36,6 +36,7 @@
     "homepage": "https://github.com/OpenSlides/openslides-auth-service#readme",
     "devDependencies": {
         "@olavoparno/jest-badges-readme": "^1.4.1",
+        "@types/axios": "^0.14.0",
         "@types/cookie-parser": "^1.4.2",
         "@types/cors": "^2.8.6",
         "@types/express": "^4.17.3",
@@ -59,6 +60,7 @@
         "typescript": "^3.8.3"
     },
     "dependencies": {
+        "axios": "^0.19.2",
         "body-parser": "^1.19.0",
         "cookie-parser": "^1.4.5",
         "cors": "^2.8.5",

@@ -7,6 +7,9 @@ import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
 import { Datastore } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
+import { exception } from 'console';
+import { HashingHandler } from '../interfaces/hashing-handler';
+import { HashingService } from './hashing-service';
 
 @Constructable(UserHandler)
 export class UserService implements UserHandler {
@@ -17,6 +20,9 @@ export class UserService implements UserHandler {
 
     @Inject(Database, User)
     private readonly database: RedisDatabaseAdapter;
+
+    @Inject(HashingHandler)
+    private readonly hashingHandler: HashingService;
 
     private readonly userCollection: Map<string, User> = new Map();
 
@@ -38,7 +44,15 @@ export class UserService implements UserHandler {
     }
 
     public async getUserByCredentials(username: string, password: string): Promise<User> {
-        const user = this.datastore.findUserByCredentials(username, password);
+        // const user = this.datastore.findUserByCredentials(username, password);
+        // return user;
+        const user = await this.datastore.filter<User>('user', 'username', username, ['username', 'password', 'id']);
+        if (!user) {
+            throw new Error('Username or password is incorrect');
+        }
+        if (user.password !== this.hashingHandler.hash(password)) {
+            throw new Error('Username or password is incorrect');
+        }
         return user;
         // const users = this.getAllUsers();
         // return users.find(user => user.username === username && user.password === password);
@@ -51,12 +65,16 @@ export class UserService implements UserHandler {
     }
 
     public async getUserByUserId(userId: string): Promise<User | undefined> {
-        const users = this.getAllUsers();
-        return users.find(user => user.id === userId);
+        // const users = this.getAllUsers();
+        // return users.find(user => user.id === userId);
+        return await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']);
     }
 
     public async hasUser(username: string): Promise<boolean> {
-        return this.datastore.hasUser(username);
+        // return this.datastore.hasUser(username);
+        const answer = await this.datastore.exists<User>('user', 'username', username);
+        console.log('answer', answer);
+        return answer.exists;
         // const users = this.getAllUsers();
         // return !!users.find(user => user.username === username && user.password === password);
     }

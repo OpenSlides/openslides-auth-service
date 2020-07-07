@@ -4,7 +4,12 @@ import fs from 'fs';
 //     authorizationEndpoint: 'http://localhost:9001/authorize',
 //     tokenEndpoint: 'http://localhost:9001/token'
 // };
-export const DATABASE_PATH = 'database/';
+
+export namespace Config {
+    export const DATABASE_PATH = 'database/';
+    export const DATASTORE_READER = `${process.env.INSTANCE_DOMAIN || 'http://127.0.0.1'}:9010`;
+    export const DATASTORE_WRITER = `${process.env.INSTANCE_DOMAIN || 'http://localhost'}:9011`;
+}
 
 export namespace Keys {
     const encoding = 'utf8';

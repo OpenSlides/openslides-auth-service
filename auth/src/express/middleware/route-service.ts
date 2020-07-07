@@ -5,6 +5,7 @@ import { AuthService } from '../../api/services/auth-service';
 import { Constructable, Inject } from '../../util/di';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import { Cookie } from '../../core/ticket';
+import { Logger } from '../../api/services/logger';
 
 @Constructable(RouteHandler)
 export default class RouteService implements RouteHandler {
@@ -13,46 +14,52 @@ export default class RouteService implements RouteHandler {
     @Inject(AuthHandler)
     private authHandler: AuthService;
 
+    public constructor() {
+        console.log('authHandler', this.authHandler);
+    }
+
     public async login(request: express.Request, response: express.Response): Promise<void> {
         const username = request.body.username;
         const password = request.body.password;
+        Logger.log(`user: ${username}:${password}`);
 
-        try {
-            const ticket = await this.authHandler.login(username, password);
-            response
-                .cookie('refreshId', ticket.cookie, {
-                    maxAge: 7200000,
-                    httpOnly: true,
-                    secure: false
-                })
-                .send({
-                    success: true,
-                    message: 'Authentication successful!',
-                    token: ticket.token
-                });
-        } catch (e) {
+        const result = await this.authHandler.login(username, password);
+        if (!result.result) {
             response.status(400).json({
                 success: false,
-                message: e
+                message: result.message
             });
+            return;
         }
+
+        response
+            .cookie('refreshId', result.result.cookie, {
+                maxAge: 7200000,
+                httpOnly: true,
+                secure: false
+            })
+            .send({
+                success: true,
+                message: 'Authentication successful!',
+                token: result.result.token
+            });
     }
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
         const cookieAsString = request.cookies['refreshId'];
-        try {
-            const ticket = await this.authHandler.whoAmI(cookieAsString);
-            response.json({
-                success: true,
-                message: 'Authentication successful!',
-                token: ticket.token
-            });
-        } catch (e) {
+        const result = await this.authHandler.whoAmI(cookieAsString);
+        if (!result.result) {
             response.json({
                 success: false,
-                message: e
+                message: result.message
             });
+            return;
         }
+        response.json({
+            success: true,
+            message: 'Authentication successful!',
+            token: result.result.token
+        });
     }
 
     public logout(request: any, response: express.Response): void {

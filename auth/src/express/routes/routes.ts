@@ -8,6 +8,8 @@ import TokenValidator from '../middleware/token-validator';
 import { Validator } from '../../api/interfaces/validator';
 
 export default class Routes {
+    private readonly EXTERNAL_URL_PREFIX = '/system/auth';
+    private readonly INTERNAL_URL_PREFIX = '/internal/auth';
     private readonly SECURE_URL_PREFIX = '/api';
 
     @Inject(Validator)
@@ -73,10 +75,10 @@ export default class Routes {
     }
 
     private getPublicUrl(urlPath: string): string {
-        return `${this.getExternalUrlPrefix()}${urlPath}`;
+        return `${this.EXTERNAL_URL_PREFIX}${urlPath}`;
     }
 
     private getSecureUrl(urlPath: string): string {
-        return `${this.getExternalUrlPrefix()}${this.SECURE_URL_PREFIX}${urlPath}`;
+        return `${this.EXTERNAL_URL_PREFIX}${this.SECURE_URL_PREFIX}${urlPath}`;
     }
 }
