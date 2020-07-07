@@ -1,9 +1,9 @@
 import express from 'express';
 
-import { AuthHandler } from '../interfaces/auth-handler';
-import { AuthService } from '../services/auth-service';
+import { AuthHandler } from '../../api/interfaces/auth-handler';
+import { AuthService } from '../../api/services/auth-service';
 import { Constructable, Inject } from '../../util/di';
-import { RouteHandler } from '../interfaces/route-handler';
+import { RouteHandler } from '../../api/interfaces/route-handler';
 import { Cookie } from '../../core/ticket';
 
 @Constructable(RouteHandler)

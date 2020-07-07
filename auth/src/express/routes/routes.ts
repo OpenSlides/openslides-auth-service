@@ -1,11 +1,11 @@
 import * as express from 'express';
 
 import { Inject, InjectService } from '../../util/di';
-import { RouteHandler } from '../interfaces/route-handler';
+import { RouteHandler } from '../../api/interfaces/route-handler';
 import RouteService from '../middleware/route-service';
 import { SessionValidator } from '../middleware/session-validator';
 import TokenValidator from '../middleware/token-validator';
-import { Validator } from '../interfaces/validator';
+import { Validator } from '../../api/interfaces/validator';
 
 export default class Routes {
     private readonly SECURE_URL_PREFIX = '/api';

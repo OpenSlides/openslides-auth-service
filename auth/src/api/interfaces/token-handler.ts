@@ -1,9 +1,9 @@
 import { InjectableClass } from '../../util/di';
-import { IsValid } from './is-valid';
+import { JwtValidator } from './jwt-validator';
 import { Cookie, Ticket, Token } from '../../core/ticket';
-import { User } from '../../core/models/user/user';
+import { User } from '../../core/models/user';
 
-export abstract class TokenHandler extends InjectableClass implements IsValid<Token> {
+export abstract class TokenHandler extends InjectableClass implements JwtValidator<Token> {
     public static verifyCookie: () => Cookie;
     public static verifyToken: () => Token;
     public static decode: <T>() => T;

@@ -1,5 +1,3 @@
-import { BaseModel } from '../../../core/base/base-model';
-
 interface IClient {
     clientId: string;
     clientSecret?: string;
@@ -11,7 +9,7 @@ interface IClient {
     appName?: string;
 }
 
-export class Client extends BaseModel implements IClient {
+export class Client implements IClient {
     public static readonly COLLECTIONSTRING = 'client';
 
     public readonly appName: string;
@@ -22,7 +20,7 @@ export class Client extends BaseModel implements IClient {
     public clientSecret: string;
 
     public constructor(input?: any) {
-        super(Client.COLLECTIONSTRING, input);
+        Object.assign(this, input);
     }
     public codeChallenge?: string | undefined;
     public codeChallengeMethod?: any;

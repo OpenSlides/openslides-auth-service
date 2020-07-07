@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { Keys } from '../../config';
 import { Constructable } from '../../util/di';
-import { Validator } from '../interfaces/validator';
+import { Validator } from '../../api/interfaces/validator';
 
 @Constructable(Validator)
 export default class TokenValidator implements Validator {

@@ -5,5 +5,5 @@ export abstract class Database extends InjectableClass {
     public abstract get<T>(prefix: string, key: string): Promise<T | null>;
     public abstract getAll<T>(prefix: string): Promise<T[]>;
     public abstract remove(prefix: string, key: string): Promise<boolean>;
-    public abstract clear(): void;
+    protected abstract async clear(): Promise<boolean>;
 }

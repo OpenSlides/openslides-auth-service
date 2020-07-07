@@ -4,7 +4,7 @@ import { Constructable } from '../../util/di';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
-import { User } from '../../core/models/user/user';
+import { User } from '../../core/models/user';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {

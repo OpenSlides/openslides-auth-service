@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer, Server } from 'http';
 
-import { BaseServer } from '../interfaces/base-server';
+import { BaseServer } from '../../api/interfaces/base-server';
 import { Constructable } from '../../util/di';
 import Routes from '../routes/routes';
 
@@ -36,7 +36,7 @@ export default class AuthenticationServer implements BaseServer {
                 allowedHeaders:
                     'Origin, X-Requested-With, Content-Type, X-Content-Type, Authentication, Authorization, X-Access-Token, Accept',
                 credentials: true,
-                origin: 'http://localhost:4200',
+                origin: process.env.INSTANCE_DOMAIN,
                 methods: 'OPTIONS, GET, POST, PUT, DELETE'
             })
         );

@@ -30,7 +30,7 @@ export class AuthService implements AuthHandler {
             throw exception('Authentication failed! No username or password provided!');
         }
 
-        if (!this.userService.hasUser(username, password)) {
+        if (!this.userService.hasUser(username)) {
             throw exception('Incorrect username or password!');
         }
 

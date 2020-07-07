@@ -1,11 +1,9 @@
-import { BaseModel } from '../../base/base-model';
-
-export class User extends BaseModel implements IUser {
+export class User implements IUser {
     public static readonly COLLECTION = 'user';
 
     public readonly username: string;
     public readonly password: string;
-    public readonly userId: string;
+    public readonly id: string;
 
     public get sessionId(): string {
         return this.pSessionId;
@@ -14,7 +12,7 @@ export class User extends BaseModel implements IUser {
     private pSessionId: string;
 
     public constructor(input?: any) {
-        super(User.COLLECTION, input);
+        Object.assign(this, input);
     }
 
     public setSession(sessionId: string): void {

@@ -5,7 +5,7 @@ import { Keys } from '../../config';
 import { cryptoKey } from '../../util/helper';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
-import { User } from '../../core/models/user/user';
+import { User } from '../../core/models/user';
 
 export class TokenService implements TokenHandler {
     public name = 'TokenHandler';
@@ -58,7 +58,7 @@ export class TokenService implements TokenHandler {
 
     private generateToken(sessionId: string, user: User): string {
         const token = jwt.sign(
-            { username: user.username, expiresIn: '10m', sessionId, userId: user.userId },
+            { username: user.username, expiresIn: '10m', sessionId, userId: user.id },
             Keys.privateKey(),
             {
                 expiresIn: '10m'

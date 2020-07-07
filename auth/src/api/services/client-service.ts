@@ -1,4 +1,4 @@
-import { Client } from '../../core/models/client/client';
+import { Client } from '../../core/models/client';
 import { ClientHandler } from '../interfaces/client-handler';
 import { Database } from '../interfaces/database';
 import { Constructable, Inject } from '../../util/di';

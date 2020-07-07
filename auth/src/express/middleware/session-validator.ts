@@ -1,8 +1,8 @@
 import express from 'express';
 
 import { Constructable, InjectService } from '../../util/di';
-import SessionService from '../services/session-service';
-import { Validator } from '../interfaces/validator';
+import SessionService from '../../api/services/session-service';
+import { Validator } from '../../api/interfaces/validator';
 
 Constructable(Validator);
 export class SessionValidator implements Validator {

@@ -1,4 +1,4 @@
-import { Client } from '../../core/models/client/client';
+import { Client } from '../../core/models/client';
 import { InjectableClass } from '../../util/di';
 
 export abstract class ClientHandler extends InjectableClass {

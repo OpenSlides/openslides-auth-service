@@ -111,7 +111,7 @@ export class RedisDatabaseAdapter extends Database {
      *
      * Necessary for development to avoid inserting a new entry every refresh.
      */
-    public async clear(): Promise<boolean> {
+    protected async clear(): Promise<boolean> {
         return new Promise((resolve, reject) => {
             this.database.flushdb((error, result) => {
                 if (error) {
