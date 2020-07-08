@@ -33,19 +33,21 @@ export class UserService implements UserHandler {
         return user;
     }
 
-    public async getUserByCredentials(username: string, password: string): Promise<Validation<User>> {
-        const user = await this.datastore.filter<User>('user', 'username', username, [
+    public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
+        const userObj = await this.datastore.filter<User>('user', 'username', username, [
             'username',
             'password',
             'default_password',
             'id'
         ]);
-        if (!user) {
-            return { isValid: false, message: 'Username or password is incorrect' };
-        }
-        if (user.password !== this.hashingHandler.hash(password)) {
-            return { isValid: false, message: 'Username or password is incorrect' };
-        }
+        const user: User = new User(userObj['1']);
+        console.log('user', user);
+        // if (!user) {
+        //     return { isValid: false, message: 'Username or password is incorrect' };
+        // }
+        // if (user.password.slice(32) !== this.hashingHandler.hash(password)) {
+        //     return { isValid: false, message: 'Username or password is incorrect' };
+        // }
         return { isValid: true, message: 'successful', result: user };
     }
 
@@ -53,8 +55,10 @@ export class UserService implements UserHandler {
         return { isValid: false, message: 'Not implemented' };
     }
 
-    public async getUserByUserId(userId: string): Promise<User | undefined> {
-        return await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']);
+    public async getUserByUserId(userId: string): Promise<any> {
+        return (await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']))[
+            User.COLLECTION
+        ];
     }
 
     public async hasUser(username: string): Promise<boolean> {

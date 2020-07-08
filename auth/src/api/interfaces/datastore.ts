@@ -1,6 +1,11 @@
 import { Config } from '../../config';
 import { InjectableClass } from '../../util/di';
-import { User } from '../../core/models/user';
+
+interface GetManyAnswer<T> {
+    [key: string]: {
+        [key: string]: T;
+    };
+}
 
 export abstract class Datastore extends InjectableClass {
     public name = 'Datastore';
@@ -13,7 +18,7 @@ export abstract class Datastore extends InjectableClass {
         filterField: keyof T,
         filterValue: any,
         mappedFields: (keyof T)[]
-    ): Promise<any>;
+    ): Promise<GetManyAnswer<T>>;
     public abstract async get<T>(collection: string, id: any, mappedFields: (keyof T)[]): Promise<any>;
     public abstract async exists<T>(
         collection: string,

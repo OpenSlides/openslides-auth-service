@@ -13,7 +13,7 @@ export class DatastoreAdapter extends Datastore {
         filterField: keyof T,
         filterValue: any,
         mappedFields?: (keyof T)[]
-    ): Promise<T> {
+    ): Promise<any> {
         return await this.httpHandler.post(`${this.datastoreReader}/filter`, {
             collection,
             filter: {

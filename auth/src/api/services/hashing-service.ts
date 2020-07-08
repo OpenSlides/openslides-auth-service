@@ -8,6 +8,7 @@ export class HashingService extends HashingHandler {
 
     public hash(input: string): string {
         const salt = Random.cryptoKey();
+        console.log('salt', salt);
         return this.sha512(input, salt);
     }
 }
