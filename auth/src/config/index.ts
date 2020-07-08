@@ -8,28 +8,28 @@ export namespace Config {
 
 export namespace Keys {
     const encoding = 'utf8';
-    const pathToFiles = 'src/config';
+    const pathToKeys = 'src/config/keys';
 
-    export function publicKey(): string {
-        return fs.readFileSync(getFile('public.key'), encoding);
+    export function publicTokenKey(): string {
+        return fs.readFileSync(getFile('rsa-token.key.pub'), encoding);
     }
 
     export function publicCookieKey(): string {
-        return fs.readFileSync(getFile('public-cookie.key'), encoding);
+        return fs.readFileSync(getFile('rsa-cookie.key.pub'), encoding);
     }
 
-    export function privateKey(): string {
-        return fs.readFileSync(getFile('private.key'), encoding);
+    export function privateTokenKey(): string {
+        return fs.readFileSync(getFile('rsa-token.key'), encoding);
     }
 
     export function privateCookieKey(): string {
-        return fs.readFileSync(getFile('private-cookie.key'), encoding);
+        return fs.readFileSync(getFile('rsa-cookie.key'), encoding);
     }
 
     function getFile(path: string): string {
         if (!path.startsWith('/')) {
             path = '/' + path;
         }
-        return `${pathToFiles}${path}`;
+        return `${pathToKeys}${path}`;
     }
 }

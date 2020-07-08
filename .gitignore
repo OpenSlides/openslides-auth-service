@@ -7,7 +7,11 @@ lib-cov
 *.pid
 *.gz
 *.swp
+
+# Key files
+keys/*
 *.key
+*.pub
 
 pids
 logs

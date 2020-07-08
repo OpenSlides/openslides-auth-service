@@ -1,20 +1,22 @@
-import { exception } from 'console';
-
-import { Constructable } from '../../util/di';
+import { Constructable, Inject } from '../../util/di';
 import { Validation } from '../interfaces/jwt-validator';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
 import { TokenService } from './token-service';
 import { User } from '../../core/models/user';
+import { TokenHandler } from '../interfaces/token-handler';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {
     public name = 'SessionHandler';
 
+    @Inject(TokenService)
+    private readonly tokenHandler: TokenHandler;
+
     private activeSessions: Map<string, User> = new Map();
 
     public isValid(token: string): Validation<Cookie> {
-        const result = TokenService.verifyCookie(token);
+        const result = this.tokenHandler.verifyCookie(token);
         if (!result.isValid) {
             return { isValid: false, message: 'The cookie is wrong' };
         }

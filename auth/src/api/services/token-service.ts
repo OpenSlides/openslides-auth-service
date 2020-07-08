@@ -1,41 +1,45 @@
-import { exception } from 'console';
 import jwt from 'jsonwebtoken';
 
-import { Keys } from '../../config';
 import { Random } from '../../util/helper';
 import { Validation } from '../interfaces/jwt-validator';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TokenHandler } from '../interfaces/token-handler';
 import { User } from '../../core/models/user';
+import { Inject } from '../../util/di';
+import { KeyService } from './key-service';
+import { KeyHandler } from '../interfaces/key-handler';
 
 export class TokenService implements TokenHandler {
     public name = 'TokenHandler';
 
-    public static verifyCookie(cookieAsString: string): Validation<Cookie> {
+    @Inject(KeyService)
+    private readonly keyHandler: KeyHandler;
+
+    public verifyCookie(cookieAsString: string): Validation<Cookie> {
         try {
             return {
                 isValid: true,
                 message: 'Successful',
-                result: jwt.verify(cookieAsString, Keys.privateCookieKey()) as Cookie
+                result: jwt.verify(cookieAsString, this.keyHandler.getPrivateCookieKey()) as Cookie
             };
         } catch {
             return { isValid: false, message: 'Wrong cookie' };
         }
     }
 
-    public static verifyToken(tokenAsString: string): Validation<Token> {
+    public verifyToken(tokenAsString: string): Validation<Token> {
         try {
             return {
                 isValid: true,
                 message: 'successful',
-                result: jwt.verify(tokenAsString, Keys.privateKey()) as Token
+                result: jwt.verify(tokenAsString, this.keyHandler.getPrivateTokenKey()) as Token
             };
         } catch {
             return { isValid: false, message: 'Wrong token' };
         }
     }
 
-    public static decode<T>(tokenString: string): T {
+    public decode<T>(tokenString: string): T {
         const parts = tokenString.split('.');
         const payload = Buffer.from(parts[1], 'base64').toString('utf8');
         return JSON.parse(payload) as T;
@@ -64,13 +68,13 @@ export class TokenService implements TokenHandler {
     }
 
     public isValid(token: string): Validation<Token> {
-        return TokenService.verifyToken(token);
+        return this.verifyToken(token);
     }
 
     private generateToken(sessionId: string, user: User): string {
         const token = jwt.sign(
             { username: user.username, expiresIn: '10m', sessionId, userId: user.id },
-            Keys.privateKey(),
+            this.keyHandler.getPrivateTokenKey(),
             {
                 expiresIn: '10m'
             }
@@ -79,7 +83,7 @@ export class TokenService implements TokenHandler {
     }
 
     private generateCookie(sessionId: string): string {
-        const cookie = jwt.sign({ sessionId }, Keys.privateCookieKey(), { expiresIn: '1d' });
+        const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), { expiresIn: '1d' });
         return cookie;
     }
 }
