@@ -1,16 +1,17 @@
 import jwt from 'jsonwebtoken';
 
+import { Inject, InjectService } from '../../util/di';
 import { Validation } from '../interfaces/jwt-validator';
+import { KeyHandler } from '../interfaces/key-handler';
+import { KeyService } from './key-service';
+import { Logger } from './logger';
+import { SessionHandler } from '../interfaces/session-handler';
+import SessionService from './session-service';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TicketHandler } from '../interfaces/ticket-handler';
 import { User } from '../../core/models/user';
-import { Inject, InjectService } from '../../util/di';
-import { KeyService } from './key-service';
-import { KeyHandler } from '../interfaces/key-handler';
-import SessionService from './session-service';
-import { SessionHandler } from '../interfaces/session-handler';
-import { UserService } from './user-service';
 import { UserHandler } from '../interfaces/user-handler';
+import { UserService } from './user-service';
 
 export class TicketService implements TicketHandler {
     public name = 'TokenHandler';
@@ -98,17 +99,32 @@ export class TicketService implements TicketHandler {
         };
     }
 
-    public isValid(tokenString: string): boolean {
-        const tokenResult = this.verifyToken(tokenString);
+    public isValid(tokenString: string): Validation<Token> {
+        if (!tokenString) {
+            return {
+                isValid: false,
+                message: 'No token provided!'
+            };
+        }
+        if (!tokenString.toLowerCase().startsWith('bearer')) {
+            Logger.log('no bearer');
+            return {
+                isValid: false,
+                message: 'Wrong token'
+            };
+        }
+        console.log('tokenString', tokenString);
+        const tokenResult = this.verifyToken(tokenString.slice(7));
         const token = tokenResult.result;
         console.log('isValid', token);
         if (!token) {
-            return false;
+            return tokenResult;
         }
         if (!this.sessionHandler.hasSession(token.sessionId)) {
-            return false;
+            console.log('no session provided');
+            return { isValid: false, message: 'You are not signed in!' };
         }
-        return true;
+        return { isValid: true, message: 'Successful', result: token };
     }
 
     private generateToken(sessionId: string, user: User): string {

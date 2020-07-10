@@ -1,6 +1,6 @@
-import { KeyHandler } from '../interfaces/key-handler';
-import { Constructable } from '../../util/di';
 import { Keys } from '../../config';
+import { Constructable } from '../../util/di';
+import { KeyHandler } from '../interfaces/key-handler';
 
 @Constructable(KeyHandler)
 export class KeyService extends KeyHandler {

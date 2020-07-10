@@ -3,7 +3,6 @@ import * as express from 'express';
 import { Inject, InjectService } from '../../util/di';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import RouteService from '../middleware/route-service';
-import { SessionValidator } from '../middleware/session-validator';
 import TicketValidator from '../middleware/ticket-validator';
 import { Validator } from '../../api/interfaces/validator';
 
@@ -17,9 +16,6 @@ export default class Routes {
 
     @Inject(RouteService)
     private routeHandler: RouteHandler;
-
-    @InjectService(SessionValidator)
-    private sessionValidator: Validator;
 
     private app: express.Application;
 

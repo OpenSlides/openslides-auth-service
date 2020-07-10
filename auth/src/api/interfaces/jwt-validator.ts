@@ -4,6 +4,6 @@ export interface Validation<T> {
     result?: T;
 }
 
-export interface JwtValidator {
-    isValid(jwt: string): boolean;
+export interface JwtValidator<T> {
+    isValid(jwt: string): Validation<T>;
 }

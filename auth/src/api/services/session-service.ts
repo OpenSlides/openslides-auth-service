@@ -1,11 +1,11 @@
 import { Constructable, Inject } from '../../util/di';
+import { Random } from '../../util/helper';
 import { Validation } from '../interfaces/jwt-validator';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
+import { TicketHandler } from '../interfaces/ticket-handler';
 import { TicketService } from './ticket-service';
 import { User } from '../../core/models/user';
-import { TicketHandler } from '../interfaces/ticket-handler';
-import { Random } from '../../util/helper';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {
@@ -44,7 +44,7 @@ export default class SessionService implements SessionHandler {
     }
 
     public hasSession(sessionId: string): boolean {
-        return this.activeSessions.has(sessionId);
+        return !!this.getUserIdBySessionId(sessionId);
     }
 
     public addSession(user: User): string {
