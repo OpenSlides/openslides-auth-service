@@ -1,20 +1,19 @@
 Interface Token {
-    payload: {
-        // The lifetime of the Token. The date in unix seconds of the expiration.
-        expiresAt: date,
-        // The corresponding userId of the requesting client.
-        userId: number,
-        // The id of the current session.
-        sessionId: string
-    },
-    signature: string
+    // The lifetime of the Token. The date in unix seconds of the expiration.
+    expiresAt: date,
+    // The corresponding userId of the requesting client.
+    userId: number,
+    // The name of the corresponding user.
+    username: string,
+    // The id of the current session.
+    sessionId: string,
+    // Date of creation of a token.
+    iat: number
 }
 
 Interface Cookie {
     // The id for the session corresponding to the client, who has signed in.
     sessionId: string,
-    // A signature created from the server.
-    signature: string
 }
 
 /**
@@ -49,7 +48,7 @@ Login (username: string, password: string): (Token, Cookie);
 *
 * @throws InvalidCredentials
 */
-Authenticate (token: Token, cookie: Cookie): {userId: number; sessionId: string;};
+Authenticate (token: Token): {userId: number; sessionId: string;};
 
 /**
 * A request to get knowledge about themselves. This information is contained in the payload of 
@@ -72,7 +71,7 @@ WhoAmI(cookie: Cookie): Token;
 * @throws NoPermissions: Only users themselves can clear their own session and (super-) admins
 * can do this, too.
 */
-ClearSessionById (sessionId: string, cookie: Cookie, token: Token): void publishes LogoutSessionEvent;
+ClearSessionById (sessionId: string, token: Token): void publishes LogoutSessionEvent;
 
 /**
 * Function to kill all current opened sessions except the one, which is requesting.
@@ -82,7 +81,7 @@ ClearSessionById (sessionId: string, cookie: Cookie, token: Token): void publish
 * @throws NoPermissions: Only (super-) admins has the necessary permissions to logout and clear
 * other user's session.
 */ 
-ClearAllSessionsExceptThemselves (token: Token, cookie: Cookie): void publishes LogoutSessionEvent;
+ClearAllSessionsExceptThemselves (token: Token): void publishes LogoutSessionEvent;
 
 Event LogoutSessionEvent on topic Logout {
     sessionId: string;
@@ -93,7 +92,7 @@ Event LogoutSessionEvent on topic Logout {
 *
 * @throws InvalidCredentials
 */
-Logout (token: Token, cookie: Cookie): void publishes LogoutSessionEvent;
+Logout (token: Token): void publishes LogoutSessionEvent;
 
 /**
 * Returns all currently active sessions.
@@ -101,4 +100,4 @@ Logout (token: Token, cookie: Cookie): void publishes LogoutSessionEvent;
 * @throws NoPermissions: The users can only see their own session. Only (super-) admins can see sessions
 * of other users.
 */
-ListSessions (token: Token, cookie: Cookie): string[];
+ListSessions (token: Token): string[];
