@@ -1,8 +1,4 @@
-import crypto from 'crypto';
-
-import { InjectableClass } from '../../util/di';
-
-export abstract class HashingHandler extends InjectableClass {
+export abstract class HashingHandler {
     /**
      * This function hashes a given value.
      *
@@ -11,19 +7,4 @@ export abstract class HashingHandler extends InjectableClass {
      * @returns The hashed value.
      */
     public abstract hash(value: string): string;
-
-    /**
-     * This function hashes a given value by `sha512` and adds a salt value.
-     *
-     * @param value The value, which is hashed.
-     * @param salt A salt value, which is appended to the previous value.
-     *
-     * @returns The hashed value.
-     */
-    protected sha512(value: string, salt: string): string {
-        return crypto
-            .createHash('sha512')
-            .update(value)
-            .digest('base64');
-    }
 }

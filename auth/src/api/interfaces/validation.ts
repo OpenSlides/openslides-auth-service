@@ -3,7 +3,3 @@ export interface Validation<T> {
     message: string;
     result?: T;
 }
-
-export interface JwtValidator<T> {
-    isValid(jwt: string): Validation<T>;
-}

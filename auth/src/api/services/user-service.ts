@@ -6,12 +6,11 @@ import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { Constructable, Inject } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
-import { Validation } from '../interfaces/jwt-validator';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
+import { Validation } from '../interfaces/validation';
 
-@Constructable(UserHandler)
 export class UserService implements UserHandler {
     public name = 'UserService';
 

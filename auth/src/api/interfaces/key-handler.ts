@@ -1,6 +1,4 @@
-import { InjectableClass } from '../../util/di';
-
-export abstract class KeyHandler extends InjectableClass {
+export abstract class KeyHandler {
     protected privateTokenKey: string;
     protected privateCookieKey: string;
     protected publicTokenKey: string;

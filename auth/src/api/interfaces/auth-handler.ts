@@ -1,8 +1,8 @@
 import { InjectableClass } from '../../util/di';
-import { Validation } from './jwt-validator';
 import { Cookie, Ticket, Token } from '../../core/ticket';
+import { Validation } from './validation';
 
-export abstract class AuthHandler extends InjectableClass {
+export abstract class AuthHandler {
     public abstract login(username: string, password: string): Promise<Validation<Ticket>>;
     public abstract whoAmI(cookieAsString: string): Promise<Validation<Ticket>>;
     public abstract logout(token: Token): void;

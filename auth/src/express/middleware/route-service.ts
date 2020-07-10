@@ -7,7 +7,6 @@ import { Logger } from '../../api/services/logger';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import { Cookie, Token } from '../../core/ticket';
 
-@Constructable(RouteHandler)
 export default class RouteService implements RouteHandler {
     public name = 'RouteHandler';
 

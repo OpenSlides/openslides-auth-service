@@ -1,6 +1,6 @@
 import { InjectableClass } from '../../util/di';
 
-export abstract class Database extends InjectableClass {
+export abstract class Database {
     public abstract set<T>(prefix: string, key: string, obj: T): Promise<boolean>;
     public abstract get<T>(prefix: string, key: string): Promise<T | null>;
     public abstract getAll<T>(prefix: string): Promise<T[]>;

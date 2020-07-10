@@ -1,14 +1,10 @@
 import { Client } from '../../core/models/client';
-import { ClientHandler } from '../interfaces/client-handler';
 import { Database } from '../interfaces/database';
-import { Constructable, Inject } from '../../util/di';
+import { Inject } from '../../util/di';
 import { Random } from '../../util/helper';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 
-@Constructable(ClientHandler)
 export class ClientService {
-    public name = 'ClientService';
-
     @Inject(RedisDatabaseAdapter, Client)
     private readonly database: Database;
 

@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-import { InjectableClass } from '../../util/di';
-
 export enum HttpProtocol {
     HTTPS = 'https',
     HTTP = 'http'
@@ -17,7 +15,7 @@ export interface HttpHeaders {
     [key: string]: string;
 }
 
-export abstract class HttpHandler extends InjectableClass {
+export abstract class HttpHandler {
     public static readonly DEFAULT_HEADERS: HttpHeaders = {
         accept: 'application/json',
         'Content-Type': 'application/json'

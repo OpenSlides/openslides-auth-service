@@ -1,19 +1,17 @@
 import { AuthHandler } from '../interfaces/auth-handler';
-import { Constructable, Inject, InjectService } from '../../util/di';
+import { Inject, InjectService } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
-import { Validation } from '../interfaces/jwt-validator';
 import { Logger } from './logger';
-import SessionService from './session-service';
-import { Cookie, Ticket, Token } from '../../core/ticket';
+import { SessionService } from './session-service';
+import { Ticket, Token } from '../../core/ticket';
 import { TicketHandler } from '../interfaces/ticket-handler';
 import { TicketService } from './ticket-service';
 import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
+import { Validation } from '../interfaces/validation';
 
-@Constructable(AuthHandler)
 export class AuthService implements AuthHandler {
-    public name = 'AuthService';
     @Inject(UserService)
     private userService: UserHandler;
 
@@ -45,7 +43,7 @@ export class AuthService implements AuthHandler {
     }
 
     public async whoAmI(cookieAsString: string): Promise<Validation<Ticket>> {
-        return await this.ticketHandler.refreshToken(cookieAsString);
+        return await this.ticketHandler.refresh(cookieAsString);
     }
 
     public logout(token: Token): Validation<void> {

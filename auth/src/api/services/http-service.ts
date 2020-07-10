@@ -1,7 +1,5 @@
-import { Constructable } from '../../util/di';
 import { HttpHandler, HttpHeaders, HttpMethod } from '../interfaces/http-handler';
 
-@Constructable(HttpHandler)
 export class HttpService extends HttpHandler {
     public async get(url: string, data?: any, headers?: HttpHeaders, responseType?: string): Promise<any> {
         return this.send(url, HttpMethod.GET, headers, data, responseType);

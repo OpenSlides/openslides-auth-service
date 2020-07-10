@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken';
 
 import { Inject, InjectService } from '../../util/di';
-import { Validation } from '../interfaces/jwt-validator';
 import { KeyHandler } from '../interfaces/key-handler';
 import { KeyService } from './key-service';
 import { SessionHandler } from '../interfaces/session-handler';
-import SessionService from './session-service';
+import { SessionService } from './session-service';
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { TicketHandler } from '../interfaces/ticket-handler';
 import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
+import { Validation } from '../interfaces/validation';
 
 export class TicketService implements TicketHandler {
     public name = 'TokenHandler';
@@ -64,19 +64,12 @@ export class TicketService implements TicketHandler {
         return { isValid: true, message: 'successful', result: { cookie, token, user } };
     }
 
-    public async refresh(cookie: string, sessionId: string, user: User): Promise<Validation<Ticket>> {
-        try {
-            const token = this.generateToken(sessionId, user);
-            return { isValid: true, message: 'Successful', result: { token, cookie, user } };
-        } catch {
-            return { isValid: false, message: 'Cookie has wrong format' };
+    public async refresh(cookieAsString?: string): Promise<Validation<Ticket>> {
+        if (!cookieAsString) {
+            return { isValid: false, message: 'No token provided!' };
         }
-    }
-
-    public async refreshToken(cookieAsString: string): Promise<Validation<Ticket>> {
-        const isValid = this.validateJWT(cookieAsString);
-        if (!isValid.isValid) {
-            return isValid as Validation<Ticket>;
+        if (!cookieAsString.toLowerCase().startsWith('bearer')) {
+            return { isValid: false, message: 'Wrong token' };
         }
         const result = this.verifyCookie(cookieAsString.slice(7));
         if (!result.result) {
@@ -102,10 +95,12 @@ export class TicketService implements TicketHandler {
         };
     }
 
-    public isValid(tokenString: string): Validation<Token> {
-        const isValid = this.validateJWT(tokenString);
-        if (!isValid.isValid) {
-            return isValid as Validation<Token>;
+    public validateToken(tokenString?: string): Validation<Token> {
+        if (!tokenString) {
+            return { isValid: false, message: 'No token provided!' };
+        }
+        if (!tokenString.toLowerCase().startsWith('bearer')) {
+            return { isValid: false, message: 'Wrong token' };
         }
         const tokenResult = this.verifyToken(tokenString.slice(7));
         const token = tokenResult.result;
@@ -134,7 +129,7 @@ export class TicketService implements TicketHandler {
         return `bearer ${cookie}`;
     }
 
-    private validateJWT(token: string): Validation<void> {
+    private validateJWT(token?: string): Validation<void> {
         if (!token) {
             return { isValid: false, message: 'No token provided!' };
         }

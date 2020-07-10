@@ -1,9 +1,8 @@
 import { Datastore, GetManyAnswer } from '../api/interfaces/datastore';
-import { Constructable, Inject } from '../util/di';
+import { Inject } from '../util/di';
 import { HttpHandler } from '../api/interfaces/http-handler';
 import { HttpService } from '../api/services/http-service';
 
-@Constructable(Datastore)
 export class DatastoreAdapter extends Datastore {
     @Inject(HttpService)
     private readonly httpHandler: HttpHandler;

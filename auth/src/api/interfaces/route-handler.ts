@@ -1,8 +1,6 @@
 import express from 'express';
 
-import { InjectableClass } from '../../util/di';
-
-export abstract class RouteHandler extends InjectableClass {
+export abstract class RouteHandler {
     public abstract index(request: express.Request, response: express.Response): void;
     public abstract secureIndex(request: express.Request, response: express.Response): void;
     public abstract notFound(request: express.Request, response: express.Response): Promise<void>;

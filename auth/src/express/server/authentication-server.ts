@@ -1,15 +1,12 @@
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import express from 'express';
 import { createServer, Server } from 'http';
 
 import { BaseServer } from '../../api/interfaces/base-server';
 import { Config } from '../../config';
-import { Constructable } from '../../util/di';
 import { Logger } from '../../api/services/logger';
 import Routes from '../routes/routes';
 
-@Constructable(BaseServer)
 export default class AuthenticationServer implements BaseServer {
     public static readonly ALLOWED_ORIGINS = [
         process.env.INSTANCE_DOMAIN,

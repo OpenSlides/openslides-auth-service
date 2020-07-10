@@ -1,16 +1,8 @@
-import { Constructable, Inject } from '../../util/di';
 import { Random } from '../../util/helper';
-import { Validation } from '../interfaces/jwt-validator';
 import { SessionHandler } from '../interfaces/session-handler';
-import { Cookie } from '../../core/ticket';
-import { TicketHandler } from '../interfaces/ticket-handler';
-import { TicketService } from './ticket-service';
 import { User } from '../../core/models/user';
 
-@Constructable(SessionHandler)
-export default class SessionService implements SessionHandler {
-    public name = 'SessionHandler';
-
+export class SessionService implements SessionHandler {
     private activeSessions: Map<string, string[]> = new Map();
 
     public getAllActiveSessions(): string[] {

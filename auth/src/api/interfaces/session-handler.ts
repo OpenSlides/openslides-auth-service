@@ -1,9 +1,6 @@
-import { InjectableClass } from '../../util/di';
-import { JwtValidator, Validation } from './jwt-validator';
-import { Cookie } from '../../core/ticket';
 import { User } from '../../core/models/user';
 
-export abstract class SessionHandler extends InjectableClass {
+export abstract class SessionHandler {
     public abstract getAllActiveSessions(): string[];
     public abstract clearSessionById(sessionId: string): boolean;
     public abstract clearAllSessionsExceptThemselves(exceptSessionId: string): boolean;
@@ -19,5 +16,4 @@ export abstract class SessionHandler extends InjectableClass {
      * @returns The new created session.
      */
     public abstract addSession(user: User): string;
-    // public abstract isValid(jwt: string): Validation<Cookie>;
 }

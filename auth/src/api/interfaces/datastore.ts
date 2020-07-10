@@ -12,7 +12,7 @@ export interface ExistsAnswer {
     position: Position;
 }
 
-export abstract class Datastore extends InjectableClass {
+export abstract class Datastore {
     public name = 'Datastore';
 
     protected datastoreReader = `${Config.DATASTORE_READER}/internal/datastore/reader`;

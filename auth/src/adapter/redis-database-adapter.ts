@@ -1,12 +1,8 @@
 import Redis from 'redis';
 
 import { Database } from '../api/interfaces/database';
-import { Constructable } from '../util/di';
 
-@Constructable(Database)
 export class RedisDatabaseAdapter extends Database {
-    public name = 'RedisDatabaseAdapter';
-
     private readonly redisPort = parseInt(process.env.STORAGE_PORT || '', 10) || 6379;
     private readonly redisHost = process.env.STORAGE_HOST || '';
     private readonly database: Redis.RedisClient;
