@@ -134,7 +134,6 @@ export default class RouteService implements RouteHandler {
      * @param response
      */
     public index(_: any, response: express.Response): void {
-        console.log('request');
         response.json({
             success: true,
             message: 'Hello World'

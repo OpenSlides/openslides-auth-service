@@ -27,7 +27,6 @@ export class AuthService implements AuthHandler {
     private sessionHandler: SessionService;
 
     public async login(username: string, password: string): Promise<Validation<Ticket>> {
-        console.log('login', username, password);
         if (!username || !password) {
             return { isValid: false, message: 'Authentication failed! No username or password provided!' };
         }

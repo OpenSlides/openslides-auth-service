@@ -21,22 +21,9 @@ export abstract class HashingHandler extends InjectableClass {
      * @returns The hashed value.
      */
     protected sha512(value: string, salt: string): string {
-        console.log('length of salt', salt.length * 2);
-        const sha = crypto
+        return crypto
             .createHash('sha512')
             .update(value)
             .digest('base64');
-
-        const result = salt + sha;
-        console.log('result:', salt, result);
-        // const hmac = crypto
-        //     .createHmac('sha512', salt)
-        //     .update(value)
-        //     .digest('base64');
-        // console.log('sha', sha);
-        // console.log('hmac', hmac);
-        // console.log('sha vs hmac:', sha.length, hmac.length);
-        // return hmac;
-        return sha;
     }
 }
