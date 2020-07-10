@@ -1,4 +1,4 @@
-import { Datastore } from '../api/interfaces/datastore';
+import { Datastore, GetManyAnswer } from '../api/interfaces/datastore';
 import { Constructable, Inject } from '../util/di';
 import { HttpHandler } from '../api/interfaces/http-handler';
 import { HttpService } from '../api/services/http-service';
@@ -13,7 +13,7 @@ export class DatastoreAdapter extends Datastore {
         filterField: keyof T,
         filterValue: any,
         mappedFields?: (keyof T)[]
-    ): Promise<any> {
+    ): Promise<GetManyAnswer<T>> {
         return await this.httpHandler.post(`${this.datastoreReader}/filter`, {
             collection,
             filter: {

@@ -71,7 +71,7 @@
             }
         ],
         "quotemark": [true, "single"],
-        "variable-name": [true, "check-format", "require-const-for-all-caps", "ban-keywords"],
+        "variable-name": [true, "check-format", "allow-leading-underscore", "allow-snake-case", "require-const-for-all-caps", "ban-keywords"],
         "prefer-const": true,
         "radix": true,
         "triple-equals": [true, "allow-null-check"],

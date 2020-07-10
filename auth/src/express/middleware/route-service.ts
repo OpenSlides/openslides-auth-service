@@ -5,7 +5,7 @@ import { AuthService } from '../../api/services/auth-service';
 import { Constructable, Inject } from '../../util/di';
 import { Logger } from '../../api/services/logger';
 import { RouteHandler } from '../../api/interfaces/route-handler';
-import { Cookie } from '../../core/ticket';
+import { Cookie, Token } from '../../core/ticket';
 
 @Constructable(RouteHandler)
 export default class RouteService implements RouteHandler {
@@ -59,9 +59,9 @@ export default class RouteService implements RouteHandler {
     }
 
     public logout(request: any, response: express.Response): void {
-        const cookie = request['cookie'] as Cookie;
+        const token = request['token'] as Token;
         try {
-            this.authHandler.logout(cookie);
+            this.authHandler.logout(token);
             response.clearCookie('refreshId').send({
                 success: true,
                 message: 'Successfully signed out!'
@@ -81,10 +81,10 @@ export default class RouteService implements RouteHandler {
         });
     }
 
-    public clearSessionById(request: any, response: express.Response): void {
-        const cookie = request['cookie'] as Cookie;
+    public clearUserSessionByUserId(request: any, response: express.Response): void {
+        const token = request['token'] as Token;
         try {
-            this.authHandler.clearSessionById(cookie);
+            this.authHandler.clearUserSessionByUserId(token.userId);
             response.json({
                 success: true,
                 message: 'Cleared!'
@@ -98,9 +98,9 @@ export default class RouteService implements RouteHandler {
     }
 
     public clearAllSessionsExceptThemselves(request: any, response: express.Response): void {
-        const cookie = request['cookie'] as Cookie;
+        const token = request['token'] as Token;
         try {
-            this.authHandler.clearAllSessionsExceptThemselves(cookie);
+            this.authHandler.clearAllSessionsExceptThemselves(token.userId);
             response.json({
                 success: true,
                 message: 'Cleared!'

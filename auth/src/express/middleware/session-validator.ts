@@ -4,9 +4,10 @@ import { Constructable, InjectService } from '../../util/di';
 import { Logger } from '../../api/services/logger';
 import SessionService from '../../api/services/session-service';
 import { Validator } from '../../api/interfaces/validator';
+import { SessionChecker } from '../../api/interfaces/session-checker';
 
 Constructable(Validator);
-export class SessionValidator implements Validator {
+export class SessionValidator implements SessionChecker {
     public name = 'SessionValidator';
 
     @InjectService(SessionService)
@@ -14,11 +15,11 @@ export class SessionValidator implements Validator {
 
     private cookie = 'cookie';
 
-    public validate(request: any, response: express.Response, next: express.NextFunction): express.Response | void {
-        const refreshId = request.cookies['refreshId'] as string;
-        console.log('refresh id', refreshId);
+    public checkSession(request: any, response: express.Response, next: express.NextFunction): express.Response | void {
+        // const refreshId = request.cookies['refreshId'] as string;
+        // console.log('refresh id', refreshId);
         // let cookie = null;
-        const result = this.sessionHandler.isValid(refreshId);
+        // const result = this.sessionHandler.isValid(refreshId);
         // try {
         //     cookie = this.sessionHandler.isValid(refreshId);
         // } catch (e) {
@@ -28,13 +29,18 @@ export class SessionValidator implements Validator {
         //         message: e
         //     });
         // }
-        if (!result.isValid) {
-            return response.json({
-                success: false,
-                message: result.message
-            });
-        }
-        request[this.cookie] = result.result;
+
+        /**
+         * has session
+         */
+        // if (!this.sessionHandler.hasSession()) {
+        //     return response.json({
+        //         success: false,
+        //         message: result.message
+        //     });
+        // }
+
+        // request[this.cookie] = result.result;
         next();
     }
 }

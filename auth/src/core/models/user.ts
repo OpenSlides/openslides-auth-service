@@ -6,22 +6,22 @@ export class User implements IUser {
     public readonly default_password: string;
     public readonly id: string;
 
-    public get sessionId(): string {
-        return this.pSessionId;
+    public get sessions(): string[] {
+        return this._sessions;
     }
 
-    private pSessionId: string;
+    private _sessions: string[] = [];
 
     public constructor(input?: any) {
         Object.assign(this, input);
     }
 
-    public setSession(sessionId: string): void {
-        this.pSessionId = sessionId;
+    public addSession(session: string): void {
+        this._sessions.push(session);
     }
 
     public hasSessionId(sessionId: string): boolean {
-        return this.pSessionId === sessionId;
+        return this._sessions.some(session => session === sessionId);
     }
 }
 

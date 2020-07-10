@@ -1,8 +1,8 @@
 export interface Token {
-    payload: {
-        expiresAt: Date;
-        userId: number;
-        sessionId: string;
-    };
-    signature: string;
+    expiresAt: Date;
+    username: string;
+    userId: string;
+    sessionId: string;
+    iat: number;
+    exp: number;
 }

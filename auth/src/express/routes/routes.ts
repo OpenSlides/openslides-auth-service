@@ -4,7 +4,7 @@ import { Inject, InjectService } from '../../util/di';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import RouteService from '../middleware/route-service';
 import { SessionValidator } from '../middleware/session-validator';
-import TokenValidator from '../middleware/token-validator';
+import TicketValidator from '../middleware/ticket-validator';
 import { Validator } from '../../api/interfaces/validator';
 
 export default class Routes {
@@ -12,14 +12,14 @@ export default class Routes {
     private readonly INTERNAL_URL_PREFIX = '/internal/auth';
     private readonly SECURE_URL_PREFIX = '/api';
 
-    @Inject(TokenValidator)
-    private tokenValidator: Validator;
+    @Inject(TicketValidator)
+    private validator: Validator;
 
     @Inject(RouteService)
     private routeHandler: RouteHandler;
 
     @InjectService(SessionValidator)
-    private sessionValidator: SessionValidator;
+    private sessionValidator: Validator;
 
     private app: express.Application;
 
@@ -36,8 +36,7 @@ export default class Routes {
     private configRoutes(): void {
         this.app.all(
             this.getSecureUrl('/*'),
-            (request, response, next) => this.tokenValidator.validate(request, response, next),
-            (request, response, next) => this.sessionValidator.validate(request, response, next),
+            (request, response, next) => this.validator.validate(request, response, next),
             (request, response, next) => {
                 next();
             }
@@ -47,10 +46,8 @@ export default class Routes {
     private initPublicRoutes(): void {
         this.app.get(this.getPublicUrl('/'), (request, response) => this.routeHandler.index(request, response));
         this.app.post(this.getPublicUrl('/login'), (request, response) => this.routeHandler.login(request, response));
-        this.app.post(
-            this.getPublicUrl('/who-am-i'),
-            (request, response, next) => this.sessionValidator.validate(request, response, next),
-            (request, response) => this.routeHandler.whoAmI(request, response)
+        this.app.post(this.getPublicUrl('/who-am-i'), (request, response) =>
+            this.routeHandler.whoAmI(request, response)
         );
         this.app.post(`${this.getInternalUrlPrefix()}/hash`);
     }
@@ -63,7 +60,7 @@ export default class Routes {
             this.getSecureUrl('/clear-all-sessions-except-themselves'),
             this.routeHandler.clearAllSessionsExceptThemselves
         );
-        this.app.delete(this.getSecureUrl('/clear-session-by-id'), this.routeHandler.clearSessionById);
+        this.app.delete(this.getSecureUrl('/clear-session-by-id'), this.routeHandler.clearUserSessionByUserId);
     }
 
     private getExternalUrlPrefix(): string {

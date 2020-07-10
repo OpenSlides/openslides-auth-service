@@ -15,7 +15,7 @@ export class Logger {
         return `0${toFormat}`.slice(-2);
     }
 
-    public static log(message: any): void {
+    public static log(...message: any): void {
         console.log(`${this.getTimeString()}:`, message);
     }
 }

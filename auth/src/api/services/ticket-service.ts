@@ -1,19 +1,28 @@
 import jwt from 'jsonwebtoken';
 
-import { Random } from '../../util/helper';
 import { Validation } from '../interfaces/jwt-validator';
 import { Cookie, Ticket, Token } from '../../core/ticket';
-import { TokenHandler } from '../interfaces/token-handler';
+import { TicketHandler } from '../interfaces/ticket-handler';
 import { User } from '../../core/models/user';
-import { Inject } from '../../util/di';
+import { Inject, InjectService } from '../../util/di';
 import { KeyService } from './key-service';
 import { KeyHandler } from '../interfaces/key-handler';
+import SessionService from './session-service';
+import { SessionHandler } from '../interfaces/session-handler';
+import { UserService } from './user-service';
+import { UserHandler } from '../interfaces/user-handler';
 
-export class TokenService implements TokenHandler {
+export class TicketService implements TicketHandler {
     public name = 'TokenHandler';
 
     @Inject(KeyService)
     private readonly keyHandler: KeyHandler;
+
+    @InjectService(SessionService)
+    private readonly sessionHandler: SessionHandler;
+
+    @InjectService(UserService)
+    private readonly userHandler: UserHandler;
 
     public verifyCookie(cookieAsString: string): Validation<Cookie> {
         try {
@@ -48,12 +57,10 @@ export class TokenService implements TokenHandler {
     public async create(user: User): Promise<Validation<Ticket>> {
         if (!Object.keys(user).length) {
             return { isValid: false, message: 'User is empty.' };
-            // throw new Error('user is empty.');
         }
-        const sessionId = Random.cryptoKey(32);
-        user.setSession(sessionId);
-        const cookie = this.generateCookie(sessionId);
-        const token = this.generateToken(sessionId, user);
+        const session = this.sessionHandler.addSession(user);
+        const cookie = this.generateCookie(session);
+        const token = this.generateToken(session, user);
         return { isValid: true, message: 'successful', result: { cookie, token, user } };
     }
 
@@ -63,12 +70,45 @@ export class TokenService implements TokenHandler {
             return { isValid: true, message: 'Successful', result: { token, cookie, user } };
         } catch {
             return { isValid: false, message: 'Cookie has wrong format' };
-            // throw new Error('Cookie has wrong format.');
         }
     }
 
-    public isValid(token: string): Validation<Token> {
-        return this.verifyToken(token);
+    public async refreshToken(cookieAsString: string): Promise<Validation<Ticket>> {
+        const result = this.verifyCookie(cookieAsString);
+        if (!result.result) {
+            return { isValid: false, message: 'No cookie provided!' };
+        }
+        const cookie = result.result;
+        if (!this.sessionHandler.hasSession(cookie.sessionId)) {
+            return { isValid: false, message: 'You are not signed in!' };
+        }
+        const userId = this.sessionHandler.getUserIdBySessionId(cookie.sessionId);
+        if (!userId) {
+            return { isValid: false, message: 'Wrong user!' };
+        }
+        const userResult = await this.userHandler.getUserByUserId(userId);
+        if (!userResult.result) {
+            return { isValid: false, message: 'Wrong user!' };
+        }
+        const token = this.generateToken(cookie.sessionId, userResult.result);
+        return {
+            isValid: true,
+            message: 'Successful',
+            result: { cookie: cookieAsString, token, user: userResult.result }
+        };
+    }
+
+    public isValid(tokenString: string): boolean {
+        const tokenResult = this.verifyToken(tokenString);
+        const token = tokenResult.result;
+        console.log('isValid', token);
+        if (!token) {
+            return false;
+        }
+        if (!this.sessionHandler.hasSession(token.sessionId)) {
+            return false;
+        }
+        return true;
     }
 
     private generateToken(sessionId: string, user: User): string {
@@ -79,11 +119,11 @@ export class TokenService implements TokenHandler {
                 expiresIn: '10m'
             }
         );
-        return token;
+        return `bearer ${token}`;
     }
 
     private generateCookie(sessionId: string): string {
         const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), { expiresIn: '1d' });
-        return cookie;
+        return `bearer ${cookie}`;
     }
 }

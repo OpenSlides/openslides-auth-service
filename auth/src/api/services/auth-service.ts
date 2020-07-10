@@ -5,9 +5,9 @@ import { HashingService } from './hashing-service';
 import { Validation } from '../interfaces/jwt-validator';
 import { Logger } from './logger';
 import SessionService from './session-service';
-import { Cookie, Ticket } from '../../core/ticket';
-import { TokenHandler } from '../interfaces/token-handler';
-import { TokenService } from './token-service';
+import { Cookie, Ticket, Token } from '../../core/ticket';
+import { TicketHandler } from '../interfaces/ticket-handler';
+import { TicketService } from './ticket-service';
 import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
 
@@ -17,8 +17,8 @@ export class AuthService implements AuthHandler {
     @Inject(UserService)
     private userService: UserHandler;
 
-    @Inject(TokenService)
-    private tokenHandler: TokenHandler;
+    @Inject(TicketService)
+    private ticketHandler: TicketHandler;
 
     @Inject(HashingService)
     private hashHandler: HashingHandler;
@@ -37,33 +37,24 @@ export class AuthService implements AuthHandler {
         }
 
         const result = await this.userService.getUserByCredentials(username, password);
-        Logger.log(`user: ${result.result}`);
+        Logger.log(`user:`, result.result);
         if (!result.result) {
             return { isValid: false, message: result.message };
         }
 
-        this.sessionHandler.addSession(result.result);
-        return await this.tokenHandler.create(result.result);
+        return await this.ticketHandler.create(result.result);
     }
 
     public async whoAmI(cookieAsString: string): Promise<Validation<Ticket>> {
-        const result = this.sessionHandler.isValid(cookieAsString);
-        if (!result.result) {
-            return { isValid: false, message: 'No cookie provided!' };
-        }
-        const userResult = await this.userService.getUserBySessionId(result.result.sessionId);
-        if (!userResult.result) {
-            return { isValid: false, message: 'Wrong user!' };
-        }
-        return await this.tokenHandler.refresh(cookieAsString, result.result.sessionId, userResult.result);
+        return await this.ticketHandler.refreshToken(cookieAsString);
     }
 
-    public logout(cookie: Cookie): Validation<void> {
-        if (!cookie) {
-            return { isValid: false, message: 'No cookie provided!' };
+    public logout(token: Token): Validation<void> {
+        if (!token) {
+            return { isValid: false, message: 'No token provided!' };
         }
-        if (!this.sessionHandler.clearSessionById(cookie.sessionId)) {
-            return { isValid: false, message: 'Wrong cookie!' };
+        if (!this.sessionHandler.clearSessionById(token.userId)) {
+            return { isValid: false, message: 'Wrong token!' };
         }
         return { isValid: true, message: 'successful' };
     }
@@ -72,15 +63,15 @@ export class AuthService implements AuthHandler {
         return this.sessionHandler.getAllActiveSessions();
     }
 
-    public clearSessionById(cookie: Cookie): Validation<void> {
-        if (!this.sessionHandler.clearSessionById(cookie.sessionId)) {
+    public clearUserSessionByUserId(userId: string): Validation<void> {
+        if (!this.sessionHandler.clearSessionById(userId)) {
             return { isValid: false, message: 'You have no permissions!' };
         }
         return { isValid: true, message: 'successful' };
     }
 
-    public clearAllSessionsExceptThemselves(cookie: Cookie): Validation<void> {
-        if (!this.sessionHandler.clearAllSessionsExceptThemselves(cookie.sessionId)) {
+    public clearAllSessionsExceptThemselves(userId: string): Validation<void> {
+        if (!this.sessionHandler.clearAllSessionsExceptThemselves(userId)) {
             return { isValid: false, message: 'You have no permissions!' };
         }
         return { isValid: true, message: 'successful' };

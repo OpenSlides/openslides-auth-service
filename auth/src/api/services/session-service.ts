@@ -2,45 +2,41 @@ import { Constructable, Inject } from '../../util/di';
 import { Validation } from '../interfaces/jwt-validator';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Cookie } from '../../core/ticket';
-import { TokenService } from './token-service';
+import { TicketService } from './ticket-service';
 import { User } from '../../core/models/user';
-import { TokenHandler } from '../interfaces/token-handler';
+import { TicketHandler } from '../interfaces/ticket-handler';
+import { Random } from '../../util/helper';
 
 @Constructable(SessionHandler)
 export default class SessionService implements SessionHandler {
     public name = 'SessionHandler';
 
-    @Inject(TokenService)
-    private readonly tokenHandler: TokenHandler;
-
-    private activeSessions: Map<string, User> = new Map();
-
-    public isValid(token: string): Validation<Cookie> {
-        const result = this.tokenHandler.verifyCookie(token);
-        if (!result.isValid) {
-            return { isValid: false, message: 'The cookie is wrong' };
-        }
-        if (result.result && !this.activeSessions.has(result.result.sessionId)) {
-            return { isValid: false, message: 'Not logged in!' };
-        }
-        return result;
-    }
+    private activeSessions: Map<string, string[]> = new Map();
 
     public getAllActiveSessions(): string[] {
         return Array.from(this.activeSessions.keys());
     }
 
-    public clearSessionById(sessionId: string): boolean {
-        if (this.activeSessions.has(sessionId)) {
-            this.activeSessions.delete(sessionId);
+    public getUserIdBySessionId(sessionId: string): string | null {
+        for (const key of this.activeSessions.keys()) {
+            if (this.activeSessions.get(key)?.some(session => session === sessionId)) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    public clearSessionById(userId: string): boolean {
+        if (this.activeSessions.has(userId)) {
+            this.activeSessions.delete(userId);
             return true;
         } else {
             return false;
         }
     }
 
-    public clearAllSessionsExceptThemselves(exceptSessionId: string): boolean {
-        const sessions = this.getAllActiveSessions().filter(session => session !== exceptSessionId);
+    public clearAllSessionsExceptThemselves(exceptUserId: string): boolean {
+        const sessions = this.getAllActiveSessions().filter(session => session !== exceptUserId);
         for (const session of sessions) {
             this.activeSessions.delete(session);
         }
@@ -51,12 +47,10 @@ export default class SessionService implements SessionHandler {
         return this.activeSessions.has(sessionId);
     }
 
-    public addSession(user: User): boolean {
-        if (!this.hasSession(user.sessionId)) {
-            this.activeSessions.set(user.sessionId, user);
-            return true;
-        } else {
-            return false;
-        }
+    public addSession(user: User): string {
+        const newSession = Random.cryptoKey();
+        user.addSession(newSession);
+        this.activeSessions.set(user.id, user.sessions);
+        return newSession;
     }
 }

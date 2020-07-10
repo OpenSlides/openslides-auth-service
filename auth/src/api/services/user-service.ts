@@ -40,25 +40,25 @@ export class UserService implements UserHandler {
             'default_password',
             'id'
         ]);
-        const user: User = new User(userObj['1']);
-        console.log('user', user);
-        // if (!user) {
-        //     return { isValid: false, message: 'Username or password is incorrect' };
-        // }
-        // if (user.password.slice(32) !== this.hashingHandler.hash(password)) {
-        //     return { isValid: false, message: 'Username or password is incorrect' };
-        // }
+        if (Object.keys(userObj).length > 1) {
+            return { isValid: false, message: 'Multiple users with same credentials!' };
+        }
+        const user: User = new User(userObj[Object.keys(userObj)[0]]);
+        if (!user) {
+            return { isValid: false, message: 'Username or password is incorrect' };
+        }
+        if (
+            (!user.password && user.default_password.slice(32) !== this.hashingHandler.hash(password)) ||
+            user.password.slice(32) !== this.hashingHandler.hash(password)
+        ) {
+            return { isValid: false, message: 'Username or password is incorrect' };
+        }
         return { isValid: true, message: 'successful', result: user };
     }
 
-    public async getUserBySessionId(sessionId: string): Promise<Validation<User>> {
-        return { isValid: false, message: 'Not implemented' };
-    }
-
-    public async getUserByUserId(userId: string): Promise<any> {
-        return (await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']))[
-            User.COLLECTION
-        ];
+    public async getUserByUserId(userId: string): Promise<Validation<User>> {
+        const userCollection = await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']);
+        return { isValid: true, message: 'Successful', result: userCollection[userId] };
     }
 
     public async hasUser(username: string): Promise<boolean> {

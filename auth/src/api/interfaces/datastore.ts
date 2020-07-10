@@ -1,10 +1,15 @@
 import { Config } from '../../config';
 import { InjectableClass } from '../../util/di';
 
-interface GetManyAnswer<T> {
-    [key: string]: {
-        [key: string]: T;
-    };
+export type Position = number;
+
+export interface GetManyAnswer<T> {
+    [key: string]: T;
+}
+
+export interface ExistsAnswer {
+    exists: boolean;
+    position: Position;
 }
 
 export abstract class Datastore extends InjectableClass {
