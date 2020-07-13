@@ -1,7 +1,7 @@
 {
     "name": "openslides-auth-service",
     "version": "1.0.0",
-    "description": "Service for OpenSlides which ...",
+    "description": "Service for OpenSlides which authenticates users",
     "main": "./build/server.js",
     "directories": {
         "test": "auth/tests"

@@ -11,6 +11,7 @@ export default class AuthenticationServer implements BaseServer {
     public static readonly ALLOWED_ORIGINS = [
         process.env.INSTANCE_DOMAIN,
         'http://localhost:4200',
+        'http://localhost:4210',
         'http://localhost:9004',
         Config.DATASTORE_READER,
         Config.DATASTORE_WRITER
@@ -60,6 +61,7 @@ export default class AuthenticationServer implements BaseServer {
     private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {
         const origin = req.headers.origin;
         const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
+        Logger.log(`${req.method} -- ${req.path}`);
         if (AuthenticationServer.ALLOWED_ORIGINS.indexOf(requestingOrigin) > -1) {
             res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
             Logger.log(`${requestingOrigin} -- is allowed:`);

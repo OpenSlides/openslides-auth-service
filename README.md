@@ -8,9 +8,9 @@ You can setup the whole project simply by running `make build`.
 
 ## Production
 
-For production purposes you can just run the command `make prod`. This will ensures, that a production image is built and then starts the built image in a docker-container.
+For production purposes, you can just run the command `make prod`. This will ensures, that a production image is created and then starts the created image in a docker container.
 
-Now the server runs and is accessible on port `8000`.
+Now, the server runs and is accessible on port `9004`.
 
 ## Development
 

@@ -48,7 +48,7 @@ export class UserService implements UserHandler {
         }
         if (
             (!user.password && user.default_password.slice(32) !== this.hashingHandler.hash(password)) ||
-            user.password.slice(32) !== this.hashingHandler.hash(password)
+            (user.password && user.password.slice(32) !== this.hashingHandler.hash(password))
         ) {
             return { isValid: false, message: 'Username or password is incorrect' };
         }

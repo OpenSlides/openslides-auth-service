@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   auth:
@@ -16,6 +16,8 @@ services:
       - DATASTORE_READER_PORT=9010
     volumes:
       - ./auth/src:/app/src
+    tmpfs:
+      - /app/tmp
     ports:
       - "9004:9004"
     networks:

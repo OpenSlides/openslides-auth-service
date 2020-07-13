@@ -20,7 +20,7 @@ export default class RouteService implements RouteHandler {
 
         const result = await this.authHandler.login(username, password);
         if (!result.result) {
-            response.status(400).json({
+            response.json({
                 success: false,
                 message: result.message
             });

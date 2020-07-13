@@ -3,6 +3,10 @@ FROM node:latest
 RUN apt-get -y update && apt-get -y upgrade && \
     apt-get install --no-install-recommends -y wait-for-it
 
+WORKDIR /tmp
+
+COPY auth/key-gen.sh ./
+
 WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
@@ -12,16 +16,8 @@ RUN npm install
 # Application lays in /app/src
 COPY ./auth ./
 COPY auth/entrypoint.sh ./
-COPY auth/key-gen.sh ./
 
 EXPOSE 9004
-
-# Create a new user and set this as root
-RUN adduser --disabled-password --gecos '' newuser \
-    && adduser newuser sudo \
-    && echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers
-
-USER newuser
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["npm", "run", "dev"]
