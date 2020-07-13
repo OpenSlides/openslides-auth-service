@@ -17,11 +17,6 @@ export default class Container {
         return Container.instance;
     }
 
-    public register<T>(dependency: Dependency<T>, provider: Type<T>): this {
-        this.registry.set(dependency, provider);
-        return this;
-    }
-
     public getService<T>(dependency: Type<T>, input?: any): T {
         let provider = this.serviceRegistry.get(dependency) as T;
         if (!provider) {

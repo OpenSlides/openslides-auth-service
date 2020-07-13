@@ -1,8 +1,6 @@
 import Container from '../di/container';
 import { Type } from './utils';
 
-export interface InjectedData {}
-
 export function InjectService<T>(injection: Type<T>, input?: any): any {
     return (target: Type<T>, propertyKey: string | symbol, descriptor?: PropertyDescriptor): any => {
         const service = Container.getInstance().getService<T>(injection, input);

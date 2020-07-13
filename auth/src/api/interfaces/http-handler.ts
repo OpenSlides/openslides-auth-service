@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export enum HttpProtocol {
     HTTPS = 'https',
     HTTP = 'http'
@@ -20,22 +18,6 @@ export abstract class HttpHandler {
         accept: 'application/json',
         'Content-Type': 'application/json'
     };
-
-    public name = 'HttpHandler';
-
-    protected async send<T>(
-        url: string,
-        method: HttpMethod,
-        data?: { [key: string]: any },
-        headers: HttpHeaders = {},
-        responseType: string = 'json'
-    ): Promise<any> {
-        return new Promise(async (resolve, reject) => {
-            axios({ url, method, data, headers })
-                .then(answer => resolve(answer.data))
-                .catch(error => reject(error));
-        });
-    }
 
     public abstract async get(url: string, data?: any, headers?: HttpHeaders, responseType?: string): Promise<any>;
     public abstract async post(url: string, data?: any, headers?: HttpHeaders): Promise<any>;

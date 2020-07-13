@@ -3,7 +3,7 @@ import { uuid } from 'uuidv4';
 import { Database } from '../interfaces/database';
 import { Datastore } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
-import { Constructable, Inject } from '../../util/di';
+import { Inject } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';

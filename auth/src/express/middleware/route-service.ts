@@ -2,10 +2,10 @@ import express from 'express';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
-import { Constructable, Inject } from '../../util/di';
+import { Inject } from '../../util/di';
 import { Logger } from '../../api/services/logger';
 import { RouteHandler } from '../../api/interfaces/route-handler';
-import { Cookie, Token } from '../../core/ticket';
+import { Token } from '../../core/ticket';
 
 export default class RouteService implements RouteHandler {
     public name = 'RouteHandler';

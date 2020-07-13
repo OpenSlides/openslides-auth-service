@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { Inject, InjectService } from '../../util/di';
+import { Inject } from '../../util/di';
 import { RouteHandler } from '../../api/interfaces/route-handler';
 import RouteService from '../middleware/route-service';
 import TicketValidator from '../middleware/ticket-validator';

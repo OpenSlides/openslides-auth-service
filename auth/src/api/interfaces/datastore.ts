@@ -1,5 +1,4 @@
 import { Config } from '../../config';
-import { InjectableClass } from '../../util/di';
 
 export type Position = number;
 

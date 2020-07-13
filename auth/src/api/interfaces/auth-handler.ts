@@ -1,5 +1,4 @@
-import { InjectableClass } from '../../util/di';
-import { Cookie, Ticket, Token } from '../../core/ticket';
+import { Ticket, Token } from '../../core/ticket';
 import { Validation } from './validation';
 
 export abstract class AuthHandler {
