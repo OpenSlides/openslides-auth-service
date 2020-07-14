@@ -67,6 +67,8 @@ export default class AuthenticationServer implements BaseServer {
             Logger.log(`${requestingOrigin} -- is allowed:`);
         } else {
             Logger.log(`${requestingOrigin} -- blocked.`);
+            res.json({ success: false, message: 'Domain has been blocked!' });
+            return;
         }
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
         res.setHeader(
