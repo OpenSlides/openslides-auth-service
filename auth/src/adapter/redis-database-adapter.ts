@@ -1,10 +1,11 @@
 import Redis from 'redis';
 
 import { Database } from '../api/interfaces/database';
+import { Logger } from '../api/services/logger';
 
 export class RedisDatabaseAdapter extends Database {
-    private readonly redisPort = parseInt(process.env.STORAGE_PORT || '', 10) || 6379;
-    private readonly redisHost = process.env.STORAGE_HOST || '';
+    private readonly redisPort = parseInt(process.env.CACHE_PORT || '', 10) || 6379;
+    private readonly redisHost = process.env.CACHE_HOST || '';
     private database: Redis.RedisClient;
 
     /**
@@ -119,14 +120,14 @@ export class RedisDatabaseAdapter extends Database {
         if (this.database) {
             return;
         }
-        // try {
-        //     this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
-        //     if (process.env.NODE_ENV === 'development') {
-        //         this.clear();
-        //     }
-        // } catch (e) {
-        //     Logger.log('Database is not available.');
-        // }
+        try {
+            this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
+            if (process.env.NODE_ENV === 'development') {
+                this.clear();
+            }
+        } catch (e) {
+            Logger.log('Database is not available.');
+        }
     }
 
     private getPrefixedKey(prefix: string, key: string): string {

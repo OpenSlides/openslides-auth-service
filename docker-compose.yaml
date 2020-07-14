@@ -1,28 +1,28 @@
-version: "3"
+version: "3.8"
 
 services:
   auth:
     image: openslides-auth
     restart: always
-    # depends_on:
-    #   - message_bus
-    #   - storage
-    # environment:
-    #   - STORAGE_HOST=storage
-    #   - MESSAGE_BUS_HOST=message_bus
+    depends_on:
+      - message_bus
+      - cache
+    environment:
+      - CACHE_HOST=cache
+      - MESSAGE_BUS_HOST=message_bus
     volumes:
       - ./auth/src:/app/src
     ports:
       - "9004:9004"
     networks:
       - auth
-  # message_bus:
-  #   image: redis:alpine
-  #   networks:
-  #     - auth
-  # storage:
-  #   image: redis:alpine
-  #   networks:
-  #     - auth
+  message_bus:
+    image: redis:alpine
+    networks:
+      - auth
+  cache:
+    image: redis:alpine
+    networks:
+      - auth
 networks:
   auth:

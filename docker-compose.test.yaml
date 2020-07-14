@@ -6,10 +6,10 @@ services:
     restart: always
     depends_on:
       - message_bus
-      - storage
+      - cache
     environment:
-      - STORAGE_HOST=storage
-      - STORAGE_PORT=6379
+      - CACHE_HOST=storage
+      - CACHE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
     volumes:
       - ./auth/src:/app/src
@@ -23,7 +23,7 @@ services:
     networks:
       - auth
 
-  storage:
+  cache:
     image: redis:alpine
     expose:
       - 6379
@@ -35,12 +35,12 @@ services:
     command: dockerize -wait tcp://auth:9004 -timeout 10s bash -c "npm run test"
     environment:
       - AUTH_URL=http://auth:9004
-      - STORAGE_HOST=storage
-      - STORAGE_PORT=6379
+      - CACHE_HOST=storage
+      - CACHE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
     depends_on:
       - auth
-      - storage
+      - cache
       - message_bus
     networks:
       - auth
