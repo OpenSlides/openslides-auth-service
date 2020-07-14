@@ -33,3 +33,31 @@ Docker-containers have to have access to the same network, to communicate to eac
 3. As well service-A has to have the network `foo` under its network-tab as service-B has to have the network `container-1_foo` under its network-tab
 
 4. Now service-A can communicate to service-B by calling `service-B`
+
+## Workflows
+
+Here, some example workflows are described:
+
+#### Complete workflow without connection to datastore
+
+![Complete workflow without connection to datastore](res/pictures/complete-workflow-without-datastore.svg)
+
+#### Workflow login
+
+![Login](res/pictures/login.svg)
+
+#### Who-am-I request
+
+![whoami](res/pictures/who-am-i.svg)
+
+#### Workflow logout
+
+![Logout](res/pictures/logout.svg)
+
+#### Request protected resource
+
+![Protected resource](res/pictures/request-protected-resource.svg)
+
+#### Complete workflow
+
+![Complete worflow](res/pictures/complete-workflow.svg)
