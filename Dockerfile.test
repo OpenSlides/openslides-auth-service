@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:13
 
 # Dockerize is needed to sync containers startup
 ENV DOCKERIZE_VERSION v0.6.0
