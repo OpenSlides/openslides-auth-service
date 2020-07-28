@@ -15,7 +15,6 @@ export abstract class Datastore {
     public name = 'Datastore';
 
     protected datastoreReader = `${Config.DATASTORE_READER}/internal/datastore/reader`;
-    protected datastoreWriter = `${Config.DATASTORE_WRITER}/internal/datastore/writer`;
 
     public abstract async filter<T>(
         collection: string,

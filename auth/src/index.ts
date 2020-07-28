@@ -6,7 +6,7 @@ import { Inject } from './util/di';
 import { Logger } from './api/services/logger';
 
 class Server {
-    public static readonly PORT: number = parseInt(process.env.PORT || '', 10) || 9004;
+    public static readonly PORT: number = parseInt(process.env.AUTH_PORT || '', 10) || 9004;
     public static readonly DOMAIN: string = process.env.INSTANCE_DOMAIN || 'http://localhost';
 
     public get port(): number {
