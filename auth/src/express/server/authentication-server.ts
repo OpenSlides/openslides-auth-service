@@ -3,20 +3,10 @@ import express from 'express';
 import { createServer, Server } from 'http';
 
 import { BaseServer } from '../../api/interfaces/base-server';
-import { Config } from '../../config';
 import { Logger } from '../../api/services/logger';
 import Routes from '../routes/routes';
 
 export default class AuthenticationServer implements BaseServer {
-    public static readonly ALLOWED_ORIGINS = [
-        process.env.INSTANCE_DOMAIN,
-        'http://localhost:4200',
-        'http://localhost:4210',
-        'http://localhost:9004',
-        Config.DATASTORE_READER,
-        Config.DATASTORE_WRITER
-    ];
-
     public name = 'AuthenticationServer';
 
     private app: express.Application;
@@ -62,14 +52,7 @@ export default class AuthenticationServer implements BaseServer {
         const origin = req.headers.origin;
         const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
         Logger.log(`${req.method} -- ${req.path}`);
-        if (AuthenticationServer.ALLOWED_ORIGINS.indexOf(requestingOrigin) > -1) {
-            res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
-            Logger.log(`${requestingOrigin} -- is allowed:`);
-        } else {
-            Logger.log(`${requestingOrigin} -- blocked.`);
-            res.json({ success: false, message: 'Domain has been blocked!' });
-            return;
-        }
+        res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
         res.setHeader(
             'Access-Control-Allow-Headers',

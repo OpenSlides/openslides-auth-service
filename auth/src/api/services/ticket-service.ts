@@ -66,7 +66,7 @@ export class TicketService implements TicketHandler {
 
     public async refresh(cookieAsString?: string): Promise<Validation<Ticket>> {
         if (!cookieAsString) {
-            return { isValid: false, message: 'No token provided!' };
+            return { isValid: false, message: 'No cookie provided!' };
         }
         if (!cookieAsString.toLowerCase().startsWith('bearer')) {
             return { isValid: false, message: 'Wrong token' };

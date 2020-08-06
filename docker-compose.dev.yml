@@ -12,26 +12,13 @@ services:
       - CACHE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
       - MESSAGE_BUS_PORT=6379
-      - DATASTORE_READER_HOST=reader
-      - DATASTORE_READER_PORT=9010
     volumes:
       - ./auth/src:/app/src
     tmpfs:
       - /app/tmp
     ports:
       - "9004:9004"
-    networks:
-      - auth
-      - datastore
   message_bus:
     image: redis:alpine
-    networks:
-      - auth
   cache:
     image: redis:alpine
-    networks:
-      - auth
-networks:
-  auth:
-  datastore:
-    driver: bridge
