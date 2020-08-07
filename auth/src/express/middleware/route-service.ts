@@ -1,13 +1,14 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { Inject } from '../../util/di';
 import { Logger } from '../../api/services/logger';
-import { RouteHandler } from '../../api/interfaces/route-handler';
+import { HttpData, RouteHandler } from '../../api/interfaces/route-handler';
 import { Token } from '../../core/ticket';
 
-export default class RouteService implements RouteHandler {
+export default class RouteService extends RouteHandler {
     public name = 'RouteHandler';
 
     @Inject(AuthService)
@@ -20,135 +21,113 @@ export default class RouteService implements RouteHandler {
 
         const result = await this.authHandler.login(username, password);
         if (!result.result) {
-            response.json({
-                success: false,
-                message: result.message
-            });
+            this.sendResponse(false, result.message, response, 403);
             return;
         }
 
-        response
-            .cookie('refreshId', result.result.cookie, {
-                maxAge: 7200000,
-                httpOnly: true,
-                secure: false
-            })
-            .send({
-                success: true,
-                message: 'Authentication successful!',
-                token: result.result.token
-            });
+        response.locals['newToken'] = result.result.token;
+        response.locals['newCookie'] = result.result.cookie;
+        this.sendResponse(true, 'Authentication successful!', response);
     }
 
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
-        const cookieAsString = request.cookies['refreshId'];
+        const cookieAsString = request.cookies[AuthHandler.COOKIE_NAME];
         const result = await this.authHandler.whoAmI(cookieAsString);
-        if (!result.result) {
-            response.json({
-                success: false,
-                message: result.message
-            });
+        if (!result.isValid) {
+            if (result.reason && result.reason instanceof JsonWebTokenError) {
+                response.clearCookie(AuthHandler.COOKIE_NAME);
+            }
+            this.sendResponse(false, result.message, response, 403);
             return;
         }
-        response.json({
-            success: true,
-            message: 'Authentication successful!',
-            token: result.result.token
-        });
+        if (result.isValid && !result.result) {
+            this.sendResponse(true, 'anonymous', response);
+            return;
+        }
+        response.locals['newToken'] = result.result?.token;
+        this.sendResponse(true, 'Authentication successful!', response);
     }
 
-    public logout(request: any, response: express.Response): void {
-        const token = request['token'] as Token;
+    public logout(request: express.Request, response: express.Response): void {
+        const token = response.locals['token'] as Token;
         try {
             this.authHandler.logout(token);
-            response.clearCookie('refreshId').send({
-                success: true,
-                message: 'Successfully signed out!'
-            });
+            response.clearCookie(AuthHandler.COOKIE_NAME);
+            this.sendResponse(true, 'Successfully signed out!', response);
         } catch (e) {
-            response.json({
-                success: false,
-                message: e
-            });
+            this.sendResponse(false, e, response, 403);
         }
     }
 
-    public getListOfSessions(request: express.Request, response: express.Response): void {
-        response.status(200).json({
-            success: true,
-            message: this.authHandler.getListOfSessions()
-        });
+    public async getListOfSessions(request: express.Request, response: express.Response): Promise<void> {
+        this.sendResponse(true, 'Successful', response, 200, { sessions: await this.authHandler.getListOfSessions() });
     }
 
-    public clearUserSessionByUserId(request: any, response: express.Response): void {
-        const token = request['token'] as Token;
+    public clearUserSessionByUserId(request: express.Request, response: express.Response): void {
+        const userId = request.body['userId'];
         try {
-            this.authHandler.clearUserSessionByUserId(token.userId);
-            response.json({
-                success: true,
-                message: 'Cleared!'
-            });
+            this.authHandler.clearUserSessionByUserId(userId);
+            this.sendResponse(true, 'Cleared!', response);
         } catch (e) {
-            response.json({
-                success: false,
-                message: e
-            });
+            this.sendResponse(false, e, response, 403);
         }
     }
 
-    public clearAllSessionsExceptThemselves(request: any, response: express.Response): void {
-        const token = request['token'] as Token;
+    public clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void {
+        const token = response.locals['token'] as Token;
         try {
             this.authHandler.clearAllSessionsExceptThemselves(token.userId);
-            response.json({
-                success: true,
-                message: 'Cleared!'
-            });
+            this.sendResponse(true, 'Cleared!', response);
         } catch (e) {
-            response.json({
-                success: false,
-                message: 'You have no permission!'
-            });
+            this.sendResponse(false, e, response, 403);
         }
     }
 
     public hash(request: express.Request, response: express.Response): void {
         const toHash = request.body['toHash'];
-        response.json({
-            success: true,
-            message: this.authHandler.toHash(toHash)
-        });
+        this.sendResponse(true, this.authHandler.toHash(toHash), response);
     }
 
-    public async notFound(request: express.Request, response: express.Response): Promise<void> {
-        response.status(404).json({
-            success: false,
-            message: 'Your requested resource is not found...'
-        });
+    public async notFound(request: Request, response: Response): Promise<void> {
+        this.sendResponse(false, 'Your requested resource is not found...', response, 404);
     }
 
-    /**
-     * @deprecated
-     * @param _
-     * @param response
-     */
-    public index(_: any, response: express.Response): void {
-        response.json({
-            success: true,
-            message: 'Hello World'
-        });
+    public index(_: any, response: Response): void {
+        this.sendResponse(true, 'Authentication service is available', response);
     }
 
-    /**
-     * @deprecated
-     * @param _
-     * @param response
-     */
-    public secureIndex(_: any, response: express.Response): void {
-        response.json({
-            success: true,
-            secure: true,
-            message: 'Yeah! A secured page'
+    public apiIndex(_: any, response: Response): void {
+        this.sendResponse(true, 'Yeah! An api resource!', response);
+    }
+
+    public authenticate(_: any, response: Response): void {
+        const token = response.locals['token'] as Token;
+        this.sendResponse(true, 'Successful', response, 200, { userId: token.userId, sessionId: token.sessionId });
+    }
+
+    private sendResponse(
+        success: boolean,
+        message: string,
+        response: Response,
+        code: number = 200,
+        data: HttpData = {}
+    ): void {
+        if (response.locals['newToken']) {
+            response.setHeader('Authentication', response.locals['newToken']);
+            response.setHeader('Access-Control-Expose-Headers', 'authentication, Authentication');
+        }
+        if (response.locals['newCookie']) {
+            response.cookie(AuthHandler.COOKIE_NAME, response.locals['newCookie'], {
+                maxAge: 720000,
+                secure: false,
+                httpOnly: true
+            });
+        }
+        Logger.log(`Successful: ${success} --- Message: ${message}`);
+        response.status(code).send({
+            success,
+            message,
+            ...data
         });
     }
 }

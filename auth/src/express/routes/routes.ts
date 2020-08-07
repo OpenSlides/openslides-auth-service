@@ -31,7 +31,7 @@ export default class Routes {
 
     private configRoutes(): void {
         this.app.all(
-            this.getSecureUrl('/*'),
+            this.getPublicSecureUrl('/*'),
             (request, response, next) => this.validator.validate(request, response, next),
             (request, response, next) => {
                 next();
@@ -45,33 +45,43 @@ export default class Routes {
         this.app.post(this.getPublicUrl('/who-am-i'), (request, response) =>
             this.routeHandler.whoAmI(request, response)
         );
-        this.app.post(`${this.getInternalUrlPrefix()}/hash`);
+        this.app.post(this.getPrivateUrl('/hash'), (request, response) => this.routeHandler.hash(request, response));
     }
 
     private initApiRoutes(): void {
-        this.app.get(this.getSecureUrl('/hello'), this.routeHandler.secureIndex);
-        this.app.post(this.getSecureUrl('/logout'), (request, response) => this.routeHandler.logout(request, response));
-        this.app.get(this.getSecureUrl('/list-sessions'), this.routeHandler.getListOfSessions);
-        this.app.post(
-            this.getSecureUrl('/clear-all-sessions-except-themselves'),
-            this.routeHandler.clearAllSessionsExceptThemselves
+        this.app.post(this.getPrivateSecureUrl('/authenticate'), (request, response) =>
+            this.routeHandler.authenticate(request, response)
         );
-        this.app.delete(this.getSecureUrl('/clear-session-by-id'), this.routeHandler.clearUserSessionByUserId);
+        this.app.get(this.getPublicSecureUrl('/hello'), (request, response) =>
+            this.routeHandler.apiIndex(request, response)
+        );
+        this.app.post(this.getPublicSecureUrl('/logout'), (request, response) =>
+            this.routeHandler.logout(request, response)
+        );
+        this.app.get(this.getPublicSecureUrl('/list-sessions'), (request, response) =>
+            this.routeHandler.getListOfSessions(request, response)
+        );
+        this.app.post(this.getPublicSecureUrl('/clear-all-sessions-except-themselves'), (request, response) =>
+            this.routeHandler.clearAllSessionsExceptThemselves(request, response)
+        );
+        this.app.delete(this.getPublicSecureUrl('/clear-session-by-id'), (request, response) =>
+            this.routeHandler.clearUserSessionByUserId(request, response)
+        );
     }
 
-    private getExternalUrlPrefix(): string {
-        return 'system/auth';
+    private getPrivateUrl(urlPath: string): string {
+        return `${this.INTERNAL_URL_PREFIX}${urlPath}`;
     }
 
-    private getInternalUrlPrefix(): string {
-        return 'internal/auth';
+    private getPrivateSecureUrl(urlPath: string): string {
+        return `${this.INTERNAL_URL_PREFIX}${this.SECURE_URL_PREFIX}${urlPath}`;
     }
 
     private getPublicUrl(urlPath: string): string {
         return `${this.EXTERNAL_URL_PREFIX}${urlPath}`;
     }
 
-    private getSecureUrl(urlPath: string): string {
+    private getPublicSecureUrl(urlPath: string): string {
         return `${this.EXTERNAL_URL_PREFIX}${this.SECURE_URL_PREFIX}${urlPath}`;
     }
 }
