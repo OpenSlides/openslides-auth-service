@@ -1,10 +1,8 @@
 import express from 'express';
 
-export interface HttpData {
-    [key: string]: any;
-}
+import { Middleware } from '../base/middleware';
 
-export abstract class RouteHandler {
+export abstract class RouteHandler extends Middleware {
     /**
      * Function to test connectivity to auth-service
      *

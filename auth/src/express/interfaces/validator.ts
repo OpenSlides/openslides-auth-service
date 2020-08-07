@@ -1,6 +1,8 @@
 import express from 'express';
 
-export abstract class Validator {
+import { Middleware } from '../base/middleware';
+
+export abstract class Validator extends Middleware {
     public abstract async validate(
         request: express.Request,
         response: express.Response,

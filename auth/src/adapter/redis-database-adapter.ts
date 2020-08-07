@@ -1,4 +1,4 @@
-import Redis from 'redis';
+import Redis from 'ioredis';
 
 import { Database } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
@@ -6,21 +6,24 @@ import { Logger } from '../api/services/logger';
 export class RedisDatabaseAdapter extends Database {
     private readonly redisPort = parseInt(process.env.CACHE_PORT || '', 10) || 6379;
     private readonly redisHost = process.env.CACHE_HOST || '';
-    private database: Redis.RedisClient;
+    private database: Redis.Redis;
 
     /**
      * Constructor.
      *
      * Initialize the database and redis commands declared above, if the database is not already initialized.
      */
-    public constructor(public readonly modelConstructor: new <T>(...args: any) => T) {
+    public constructor(
+        private readonly prefix: string,
+        private readonly modelConstructor?: new <T>(...args: any) => T
+    ) {
         super();
         this.init();
     }
 
-    public async keys(prefix: string): Promise<string[]> {
+    public async keys(): Promise<string[]> {
         return new Promise((resolve, reject) => {
-            this.database.sinter(`${this.getPrefix(prefix)}:index`, (error, results) => {
+            this.database.smembers(`${this.getPrefix()}:index`, (error, results) => {
                 if (error) {
                     return reject(error);
                 }
@@ -29,9 +32,9 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async set<T>(prefix: string, key: string, obj: T): Promise<boolean> {
-        const successful = await new Promise((resolve, reject) => {
-            this.database.setnx(this.getPrefixedKey(prefix, key), JSON.stringify(obj), (error, result) => {
+    public async set<T>(key: string, obj: T): Promise<void> {
+        await new Promise((resolve, reject) => {
+            this.database.hset(this.getHashKey(), this.getPrefixedKey(key), JSON.stringify(obj), (error, result) => {
                 if (error) {
                     return reject(error);
                 }
@@ -39,20 +42,18 @@ export class RedisDatabaseAdapter extends Database {
             });
         });
         await new Promise((resolve, reject) => {
-            this.database.sadd(`${this.getPrefix(prefix)}:index`, key, (error, result) => {
+            this.database.sadd(`${this.getPrefix()}:index`, key, (error, result) => {
                 if (error) {
                     return reject(error);
                 }
                 resolve(result);
             });
         });
-        this.keys(prefix).then(answer => Logger.log('All keys: ', answer));
-        return successful === 1;
     }
 
-    public async get<T>(prefix: string, key: string): Promise<T | null> {
+    public async get<T>(key: string): Promise<T> {
         return new Promise((resolve, reject) => {
-            this.database.get(this.getPrefixedKey(prefix, key), (error, result) => {
+            this.database.hget(this.getHashKey(), this.getPrefixedKey(key), (error, result) => {
                 if (error) {
                     reject(error);
                 }
@@ -64,9 +65,9 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async remove(prefix: string, key: string): Promise<boolean> {
+    public async remove(key: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            this.database.del([this.getPrefixedKey(prefix, key)], (error, result) => {
+            this.database.hdel(this.getHashKey(), [this.getPrefixedKey(key)], (error, result) => {
                 if (error) {
                     reject(error);
                 }
@@ -75,48 +76,26 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async getAll<T>(prefix: string): Promise<T[]> {
-        const keys = await this.keys(prefix);
-        return (await Promise.all(keys.map(key => this.get<T>(prefix, key)))) as T[];
-    }
-
-    public async findAllByValue(prefix: string, value: string): Promise<string[]> {
-        const keys = await this.keys(prefix);
-        const result = [];
-        for (const key of keys) {
-            if ((await this.get(prefix, key)) === value) {
-                result.push(key);
-            }
-        }
-        return result;
-    }
-
-    public async removeAllByFn(prefix: string, fn: (key: string, value: string) => boolean): Promise<boolean> {
-        for (const key of await this.keys(prefix)) {
-            const value = await this.get<string>(prefix, key);
-            if (value && fn(key, value)) {
-                await this.remove(prefix, key);
-            }
-        }
-        return true;
-    }
-
     private init(): void {
         if (this.database) {
             return;
         }
         try {
-            this.database = Redis.createClient({ port: this.redisPort, host: this.redisHost });
+            this.database = new Redis(this.redisPort, this.redisHost);
         } catch (e) {
             Logger.log('Database is not available.');
         }
     }
 
-    private getPrefix(prefix: string): string {
-        return `auth:${prefix}`;
+    private getHashKey(): string {
+        return `${Database.PREFIX}:${this.prefix}`;
     }
 
-    private getPrefixedKey(prefix: string, key: string): string {
-        return `${this.getPrefix(prefix)}:${key}`;
+    private getPrefix(): string {
+        return `${Database.PREFIX}:${this.prefix}`;
+    }
+
+    private getPrefixedKey(key: string): string {
+        return `${this.getPrefix()}:${key}`;
     }
 }

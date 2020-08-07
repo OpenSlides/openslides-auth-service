@@ -8,9 +8,9 @@ export function InjectService<T>(injection: Type<T>, input?: any): any {
     };
 }
 
-export function Inject<T>(injection: Type<T>, input?: any): any {
+export function Inject<T>(injection: Type<T>, ...input: any): any {
     return (target: any, propertyKey: string | symbol, descriptor?: PropertyDescriptor): any => {
-        const service = Container.getInstance().get<T>(injection, input);
+        const service = Container.getInstance().get<T>(injection, ...input);
         Reflect.set(target, propertyKey, service);
     };
 }

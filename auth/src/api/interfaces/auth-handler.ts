@@ -7,8 +7,8 @@ export abstract class AuthHandler {
     public abstract login(username: string, password: string): Promise<Validation<Ticket>>;
     public abstract whoAmI(cookieAsString: string): Promise<Validation<Ticket>>;
     public abstract logout(token: Token): void;
-    public abstract async getListOfSessions(): Promise<string[]>;
-    public abstract clearUserSessionByUserId(userId: string): void;
-    public abstract clearAllSessionsExceptThemselves(userId: number): void;
+    public abstract getListOfSessions(): Promise<string[]>;
+    public abstract clearUserSessionByUserId(userId: string): Promise<Validation<void>>;
+    public abstract clearAllSessionsExceptThemselves(userId: string): Promise<Validation<void>>;
     public abstract toHash(toHash: string): string;
 }

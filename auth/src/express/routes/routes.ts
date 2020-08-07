@@ -1,10 +1,10 @@
 import * as express from 'express';
 
 import { Inject } from '../../util/di';
-import { RouteHandler } from '../../api/interfaces/route-handler';
+import { RouteHandler } from '../interfaces/route-handler';
 import RouteService from '../middleware/route-service';
 import TicketValidator from '../middleware/ticket-validator';
-import { Validator } from '../../api/interfaces/validator';
+import { Validator } from '../interfaces/validator';
 
 export default class Routes {
     private readonly EXTERNAL_URL_PREFIX = '/system/auth';

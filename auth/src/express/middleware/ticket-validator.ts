@@ -4,9 +4,9 @@ import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Inject } from '../../util/di';
 import { TicketHandler } from '../../api/interfaces/ticket-handler';
 import { TicketService } from '../../api/services/ticket-service';
-import { Validator } from '../../api/interfaces/validator';
+import { Validator } from '../interfaces/validator';
 
-export default class TicketValidator implements Validator {
+export default class TicketValidator extends Validator {
     @Inject(TicketService)
     private readonly ticketHandler: TicketHandler;
 
@@ -25,7 +25,7 @@ export default class TicketValidator implements Validator {
             }
             next();
         } else {
-            return response.status(403).json(answer);
+            return this.sendResponse(false, answer.message, response, 403);
         }
     }
 }
