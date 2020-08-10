@@ -11,6 +11,7 @@ services:
       - CACHE_HOST=cache
       - CACHE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
+      - CREATE_KEYS=1
     volumes:
       - ./auth/src:/app/src
     ports:

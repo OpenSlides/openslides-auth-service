@@ -12,6 +12,7 @@ services:
       - CACHE_PORT=6379
       - MESSAGE_BUS_HOST=message_bus
       - MESSAGE_BUS_PORT=6379
+      - CREATE_KEYS=0
     volumes:
       - ./auth/src:/app/src
     tmpfs:
