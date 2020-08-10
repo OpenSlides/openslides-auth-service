@@ -1,20 +1,26 @@
 build-dev:
 	docker build -t openslides-auth-dev -f Dockerfile.dev .
 
-run-dev: | build-dev
-	docker-compose -f docker-compose.dev.yml up
+run-bash: | build-dev
+	docker-compose -f docker-compose.dev.yml up -d
+	docker-compose -f docker-compose.dev.yml exec auth wait-for-it auth:9004
+	docker-compose -f docker-compose.dev.yml exec auth bash
+	docker-compose -f docker-compose.dev.yml down
+
+stop-run:
 	docker-compose -f docker-compose.dev.yml down
 
 build-prod:
 	docker build -t openslides-auth -f Dockerfile .
 
-run-prod: | build-prod
-	docker-compose -f docker-compose.prod.yml up
-	docker-compose -f docker-compose.prod.yml down
+run-test: | build-dev
+	echo "########################################################################"
+	echo "###################### Start full system tests #########################"
+	echo "########################################################################"
+	docker-compose -f docker-compose.dev.yml up -d
+	docker-compose -f docker-compose.dev.yml exec auth wait-for-it auth:9004
+	docker-compose -f docker-compose.dev.yml exec auth npm run test
+	docker-compose -f docker-compose.dev.yml down
 
-build-test:
-	docker build -t openslides-auth-test -f Dockerfile.test .
-
-run-test: | build-test
-	docker-compose -f docker-compose.test.yml up --abort-on-container-exit
-	docker-compose -f docker-compose.test.yml down
+run-down: 
+	docker-compose -f docker-compose.dev.yml down

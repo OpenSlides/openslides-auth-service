@@ -61,12 +61,17 @@ export class SessionService extends SessionHandler {
         const currentSessions = (await this.userDatabase.get<string[]>(user.id)) || [];
         const newSession = Random.cryptoKey();
         currentSessions.push(newSession);
-        await this.sessionDatabase.set(newSession, user.id);
-        await this.userDatabase.set(user.id, currentSessions);
+        await Promise.all([
+            this.sessionDatabase.set(newSession, user.id),
+            this.userDatabase.set(user.id, currentSessions)
+        ]);
         return newSession;
     }
 
     private async removeSession(sessionId: string): Promise<void> {
-        await Promise.all([this.sessionDatabase.remove(sessionId), this.messageBus.sendEvent('logout', sessionId)]);
+        await Promise.all([
+            this.sessionDatabase.remove(sessionId),
+            this.messageBus.sendEvent('logout', sessionId)
+        ]).catch(reason => console.log('could not remove session:', reason));
     }
 }

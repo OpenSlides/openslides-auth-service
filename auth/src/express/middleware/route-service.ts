@@ -56,10 +56,10 @@ export default class RouteService extends RouteHandler {
         this.sendResponse(true, 'Successful', response, 200, { sessions: await this.authHandler.getListOfSessions() });
     }
 
-    public clearUserSessionByUserId(request: express.Request, response: express.Response): void {
-        const userId = request.body['userId'];
+    public clearUserSessionById(request: express.Request, response: express.Response): void {
+        const userId = request.body['sessionId'];
         try {
-            this.authHandler.clearUserSessionByUserId(userId);
+            this.authHandler.clearUserSessionById(userId);
             this.sendResponse(true, 'Cleared!', response);
         } catch (e) {
             this.sendResponse(false, e, response, 403);

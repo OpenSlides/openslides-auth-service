@@ -28,7 +28,7 @@ export abstract class RouteHandler extends Middleware {
     public abstract whoAmI(request: express.Request, response: express.Response): Promise<void>;
     public abstract logout(request: express.Request, response: express.Response): void;
     public abstract getListOfSessions(request: express.Request, response: express.Response): Promise<void>;
-    public abstract clearUserSessionByUserId(request: express.Request, response: express.Response): void;
+    public abstract clearUserSessionById(request: express.Request, response: express.Response): void;
     public abstract clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void;
     public abstract hash(request: express.Request, response: express.Response): void;
 }

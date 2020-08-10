@@ -35,10 +35,7 @@ export default class Routes {
     }
 
     private initValidation(urlPrefix: string): void {
-        this.app.all(
-            urlPrefix,
-            (request, response, next) => this.validator.validate(request, response, next),
-        );
+        this.app.all(urlPrefix, (request, response, next) => this.validator.validate(request, response, next));
     }
 
     private initPublicRoutes(): void {
@@ -67,7 +64,7 @@ export default class Routes {
             this.routeHandler.clearAllSessionsExceptThemselves(request, response)
         );
         this.app.delete(this.getPublicSecureUrl('/clear-session-by-id'), (request, response) =>
-            this.routeHandler.clearUserSessionByUserId(request, response)
+            this.routeHandler.clearUserSessionById(request, response)
         );
     }
 
