@@ -5,8 +5,6 @@ RUN apt-get -y update && apt-get -y upgrade && \
 
 WORKDIR /tmp
 
-COPY auth/key-gen.sh ./
-
 WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
@@ -14,6 +12,7 @@ COPY auth/package*.json ./
 RUN npm install
 
 # Application lays in /app/src
+COPY ./dev-keys /tmp/keys
 COPY ./auth ./
 COPY auth/entrypoint.sh ./
 

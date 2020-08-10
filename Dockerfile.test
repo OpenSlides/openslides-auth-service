@@ -15,6 +15,7 @@ RUN npm install
 
 # Application lays in /app/src
 COPY ./auth ./
+COPY ./dev-keys /tmp/keys
 
 # Now the source-files can be transpiled
 RUN npm run build
