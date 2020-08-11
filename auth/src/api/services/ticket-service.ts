@@ -1,8 +1,9 @@
-import jwt from 'jsonwebtoken';
+import jwt, { TokenExpiredError } from 'jsonwebtoken';
 
 import { Inject, InjectService } from '../../util/di';
 import { KeyHandler } from '../interfaces/key-handler';
 import { KeyService } from './key-service';
+import { Logger } from './logger';
 import { SessionHandler } from '../interfaces/session-handler';
 import { SessionService } from './session-service';
 import { Cookie, Ticket, Token } from '../../core/ticket';
@@ -31,8 +32,8 @@ export class TicketService implements TicketHandler {
                 message: 'Successful',
                 result: jwt.verify(cookieAsString, this.keyHandler.getPrivateCookieKey()) as Cookie
             };
-        } catch {
-            return { isValid: false, message: 'Wrong cookie' };
+        } catch (e) {
+            return { isValid: false, message: 'Wrong cookie', reason: e };
         }
     }
 
@@ -43,8 +44,8 @@ export class TicketService implements TicketHandler {
                 message: 'successful',
                 result: jwt.verify(tokenAsString, this.keyHandler.getPrivateTokenKey()) as Token
             };
-        } catch {
-            return { isValid: false, message: 'Wrong token' };
+        } catch (e) {
+            return { isValid: false, message: 'Wrong token', reason: e };
         }
     }
 
@@ -58,7 +59,7 @@ export class TicketService implements TicketHandler {
         if (!Object.keys(user).length) {
             return { isValid: false, message: 'User is empty.' };
         }
-        const session = this.sessionHandler.addSession(user);
+        const session = await this.sessionHandler.addSession(user);
         const cookie = this.generateCookie(session);
         const token = this.generateToken(session, user);
         return { isValid: true, message: 'successful', result: { cookie, token, user } };
@@ -66,20 +67,20 @@ export class TicketService implements TicketHandler {
 
     public async refresh(cookieAsString?: string): Promise<Validation<Ticket>> {
         if (!cookieAsString) {
-            return { isValid: false, message: 'No cookie provided!' };
+            return { isValid: true, message: 'anonymous' }; // login as guest
         }
-        if (!cookieAsString.toLowerCase().startsWith('bearer')) {
+        if (!cookieAsString.toLowerCase().startsWith('bearer ')) {
             return { isValid: false, message: 'Wrong token' };
         }
         const result = this.verifyCookie(cookieAsString.slice(7));
         if (!result.result) {
-            return { isValid: false, message: 'No cookie provided!' };
+            return { ...result } as Validation<Ticket>;
         }
         const cookie = result.result;
         if (!this.sessionHandler.hasSession(cookie.sessionId)) {
             return { isValid: false, message: 'You are not signed in!' };
         }
-        const userId = this.sessionHandler.getUserIdBySessionId(cookie.sessionId);
+        const userId = await this.sessionHandler.getUserIdBySessionId(cookie.sessionId);
         if (!userId) {
             return { isValid: false, message: 'Wrong user!' };
         }
@@ -95,47 +96,38 @@ export class TicketService implements TicketHandler {
         };
     }
 
-    public validateToken(tokenString?: string): Validation<Token> {
-        if (!tokenString) {
-            return { isValid: false, message: 'No token provided!' };
+    public async validateTicket(tokenString?: string, cookieString?: string): Promise<Validation<Token>> {
+        if (!tokenString || !cookieString) {
+            return { isValid: false, message: 'No ticket provided!' };
         }
-        if (!tokenString.toLowerCase().startsWith('bearer')) {
-            return { isValid: false, message: 'Wrong token' };
+        if (!tokenString.toLowerCase().startsWith('bearer ') || !cookieString.toLowerCase().startsWith('bearer ')) {
+            return { isValid: false, message: 'Wrong ticket' };
         }
+        const answer: Validation<Token> = { isValid: true, message: 'Successful' };
         const tokenResult = this.verifyToken(tokenString.slice(7));
-        const token = tokenResult.result;
-        if (!token) {
-            return tokenResult;
+        if (!tokenResult.isValid) {
+            if (tokenResult.reason instanceof TokenExpiredError) {
+                const newToken = (await this.refresh(cookieString)).result?.token as string;
+                answer.result = this.decode(newToken);
+                answer.header = { token: newToken };
+            } else {
+                return tokenResult;
+            }
+        } else {
+            answer.result = tokenResult.result;
         }
-        if (!this.sessionHandler.hasSession(token.sessionId)) {
-            return { isValid: false, message: 'You are not signed in!' };
-        }
-        return { isValid: true, message: 'Successful', result: token };
+        return answer;
     }
 
     private generateToken(sessionId: string, user: User): string {
-        const token = jwt.sign(
-            { username: user.username, expiresIn: '10m', sessionId, userId: user.id },
-            this.keyHandler.getPrivateTokenKey(),
-            {
-                expiresIn: '10m'
-            }
-        );
+        const token = jwt.sign({ expiresIn: '10m', sessionId, userId: user.id }, this.keyHandler.getPrivateTokenKey(), {
+            expiresIn: '10m'
+        });
         return `bearer ${token}`;
     }
 
     private generateCookie(sessionId: string): string {
         const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), { expiresIn: '1d' });
         return `bearer ${cookie}`;
-    }
-
-    private validateJWT(token?: string): Validation<void> {
-        if (!token) {
-            return { isValid: false, message: 'No token provided!' };
-        }
-        if (!token.toLowerCase().startsWith('bearer')) {
-            return { isValid: false, message: 'Wrong token' };
-        }
-        return { isValid: true, message: 'Successful' };
     }
 }

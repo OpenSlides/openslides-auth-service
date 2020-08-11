@@ -1,9 +1,9 @@
 import express from 'express';
 
 export abstract class Validator {
-    public abstract validate(
+    public abstract async validate(
         request: express.Request,
         response: express.Response,
         next: express.NextFunction
-    ): express.Response | void;
+    ): Promise<express.Response | void>;
 }

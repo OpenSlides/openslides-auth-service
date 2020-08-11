@@ -1,12 +1,8 @@
-import { uuid } from 'uuidv4';
-
-import { Database } from '../interfaces/database';
 import { Datastore } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { Inject } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
-import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
 import { Validation } from '../interfaces/validation';
@@ -17,20 +13,10 @@ export class UserService implements UserHandler {
     @Inject(DatastoreAdapter)
     private readonly datastore: Datastore;
 
-    @Inject(RedisDatabaseAdapter, User)
-    private readonly database: Database;
-
     @Inject(HashingService)
     private readonly hashingHandler: HashingHandler;
 
     private readonly userCollection: Map<string, User> = new Map();
-
-    public async create(username: string, password: string): Promise<User> {
-        const userId = uuid();
-        const user: User = new User({ username, password, userId });
-        const done = await this.database.set(User.COLLECTION, userId, user);
-        return user;
-    }
 
     public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
         const userObj = await this.datastore.filter<User>('user', 'username', username, [

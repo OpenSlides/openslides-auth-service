@@ -2,7 +2,6 @@ import { AuthHandler } from '../interfaces/auth-handler';
 import { Inject, InjectService } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
-import { Logger } from './logger';
 import { SessionService } from './session-service';
 import { Ticket, Token } from '../../core/ticket';
 import { TicketHandler } from '../interfaces/ticket-handler';
@@ -13,7 +12,7 @@ import { Validation } from '../interfaces/validation';
 
 export class AuthService implements AuthHandler {
     @Inject(UserService)
-    private userService: UserHandler;
+    private userHandler: UserHandler;
 
     @Inject(TicketService)
     private ticketHandler: TicketHandler;
@@ -29,12 +28,11 @@ export class AuthService implements AuthHandler {
             return { isValid: false, message: 'Authentication failed! No username or password provided!' };
         }
 
-        if (!(await this.userService.hasUser(username))) {
+        if (!(await this.userHandler.hasUser(username))) {
             return { isValid: false, message: 'Incorrect username or password!' };
         }
 
-        const result = await this.userService.getUserByCredentials(username, password);
-        Logger.log(`user:`, result.result);
+        const result = await this.userHandler.getUserByCredentials(username, password);
         if (!result.result) {
             return { isValid: false, message: result.message };
         }
@@ -43,24 +41,23 @@ export class AuthService implements AuthHandler {
     }
 
     public async whoAmI(cookieAsString: string): Promise<Validation<Ticket>> {
-        return await this.ticketHandler.refresh(cookieAsString);
+        const answer = await this.ticketHandler.refresh(cookieAsString);
+        return answer;
     }
 
-    public logout(token: Token): Validation<void> {
-        if (!token) {
-            return { isValid: false, message: 'No token provided!' };
+    public logout(token: Token): void {
+        this.sessionHandler.clearSessionById(token.sessionId);
+    }
+
+    public async getListOfSessions(): Promise<string[]> {
+        return await this.sessionHandler.getAllActiveSessions();
+    }
+
+    public async clearUserSessionByUserId(userId: string): Promise<Validation<void>> {
+        const result = await this.userHandler.getUserByUserId(userId);
+        if (!result.result) {
+            return { isValid: false, message: 'No user' };
         }
-        if (!this.sessionHandler.clearSessionById(token.userId)) {
-            return { isValid: false, message: 'Wrong token!' };
-        }
-        return { isValid: true, message: 'successful' };
-    }
-
-    public getListOfSessions(): string[] {
-        return this.sessionHandler.getAllActiveSessions();
-    }
-
-    public clearUserSessionByUserId(userId: string): Validation<void> {
         if (!this.sessionHandler.clearSessionById(userId)) {
             return { isValid: false, message: 'You have no permissions!' };
         }

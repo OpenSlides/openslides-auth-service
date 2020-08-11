@@ -1,11 +1,27 @@
 import { User } from '../../core/models/user';
 
 export abstract class SessionHandler {
-    public abstract getAllActiveSessions(): string[];
-    public abstract clearSessionById(sessionId: string): boolean;
-    public abstract clearAllSessionsExceptThemselves(exceptSessionId: string): boolean;
-    public abstract hasSession(sessionId: string): boolean;
-    public abstract getUserIdBySessionId(sessionId: string): string | null;
+    public static readonly SESSION_KEY = 'session';
+
+    public abstract async getAllActiveSessions(): Promise<string[]>;
+    /**
+     * Function to remove a specified session.
+     *
+     * @param sessionId The session that should be removed.
+     *
+     * @returns A boolean, if it was successful.
+     */
+    public abstract async clearSessionById(sessionId: string): Promise<boolean>;
+
+    /**
+     * Function to explicit signs out one user by a given id.
+     *
+     * @param userId The id of the user who should be signed out in all clients.
+     */
+    public abstract async clearSessionsFromUser(userId: string): Promise<void>;
+    public abstract async clearAllSessionsExceptThemselves(exceptSessionId: string): Promise<boolean>;
+    public abstract async hasSession(sessionId: string): Promise<boolean>;
+    public abstract async getUserIdBySessionId(sessionId: string): Promise<string | null>;
 
     /**
      * Function, that handles adding and returning of new sessions.
@@ -15,5 +31,5 @@ export abstract class SessionHandler {
      *
      * @returns The new created session.
      */
-    public abstract addSession(user: User): string;
+    public abstract async addSession(user: User): Promise<string>;
 }

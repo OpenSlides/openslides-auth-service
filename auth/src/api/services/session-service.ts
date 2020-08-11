@@ -1,48 +1,41 @@
+import { Database } from '../interfaces/database';
+import { Inject } from '../../util/di';
 import { Random } from '../../util/helper';
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { SessionHandler } from '../interfaces/session-handler';
 import { User } from '../../core/models/user';
 
 export class SessionService implements SessionHandler {
-    private activeSessions: Map<string, string[]> = new Map();
+    @Inject(RedisDatabaseAdapter)
+    private database: Database;
 
-    public getAllActiveSessions(): string[] {
-        return Array.from(this.activeSessions.keys());
+    public async getAllActiveSessions(): Promise<string[]> {
+        return await this.database.keys(SessionHandler.SESSION_KEY);
     }
 
-    public getUserIdBySessionId(sessionId: string): string | null {
-        for (const key of this.activeSessions.keys()) {
-            if (this.activeSessions.get(key)?.some(session => session === sessionId)) {
-                return key;
-            }
-        }
-        return null;
+    public async getUserIdBySessionId(sessionId: string): Promise<string | null> {
+        return await this.database.get(SessionHandler.SESSION_KEY, sessionId);
     }
 
-    public clearSessionById(userId: string): boolean {
-        if (this.activeSessions.has(userId)) {
-            this.activeSessions.delete(userId);
-            return true;
-        } else {
-            return false;
-        }
+    public async clearSessionById(sessionId: string): Promise<boolean> {
+        return await this.database.remove(SessionHandler.SESSION_KEY, sessionId);
     }
 
-    public clearAllSessionsExceptThemselves(exceptUserId: string): boolean {
-        const sessions = this.getAllActiveSessions().filter(session => session !== exceptUserId);
-        for (const session of sessions) {
-            this.activeSessions.delete(session);
-        }
-        return true;
+    public async clearSessionsFromUser(userId: string): Promise<void> {
+        await this.database.removeAllByFn(SessionHandler.SESSION_KEY, (key, value) => value === userId);
     }
 
-    public hasSession(sessionId: string): boolean {
-        return !!this.getUserIdBySessionId(sessionId);
+    public async clearAllSessionsExceptThemselves(exceptUserId: string): Promise<boolean> {
+        return await this.database.removeAllByFn(SessionHandler.SESSION_KEY, (key, value) => value !== exceptUserId);
     }
 
-    public addSession(user: User): string {
+    public async hasSession(sessionId: string): Promise<boolean> {
+        return !!(await this.database.get(SessionHandler.SESSION_KEY, sessionId));
+    }
+
+    public async addSession(user: User): Promise<string> {
         const newSession = Random.cryptoKey();
-        user.addSession(newSession);
-        this.activeSessions.set(user.id, user.sessions);
+        await this.database.set(SessionHandler.SESSION_KEY, newSession, user.id);
         return newSession;
     }
 }
