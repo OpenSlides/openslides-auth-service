@@ -8,11 +8,6 @@ lib-cov
 *.gz
 *.swp
 
-# Key files
-keys/*
-*.key
-*.pub
-
 pids
 logs
 results
