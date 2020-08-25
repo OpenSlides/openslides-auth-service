@@ -118,7 +118,6 @@ export default class RouteService extends RouteHandler {
         }
         if (response.locals['newCookie']) {
             response.cookie(AuthHandler.COOKIE_NAME, response.locals['newCookie'], {
-                maxAge: 720000,
                 secure: false,
                 httpOnly: true
             });
