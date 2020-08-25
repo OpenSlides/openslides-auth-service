@@ -64,8 +64,8 @@ export class AuthService implements AuthHandler {
         return { isValid: true, message: 'successful' };
     }
 
-    public clearAllSessionsExceptThemselves(userId: string): Validation<void> {
-        if (!this.sessionHandler.clearAllSessionsExceptThemselves(userId)) {
+    public clearAllSessionsExceptThemselves(userId: number): Validation<void> {
+        if (!this.sessionHandler.clearAllSessionsExceptThemselves(`${userId}`)) {
             return { isValid: false, message: 'You have no permissions!' };
         }
         return { isValid: true, message: 'successful' };

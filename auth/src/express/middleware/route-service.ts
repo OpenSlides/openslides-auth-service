@@ -34,9 +34,7 @@ export default class RouteService extends RouteHandler {
         const cookieAsString = request.cookies[AuthHandler.COOKIE_NAME];
         const result = await this.authHandler.whoAmI(cookieAsString);
         if (!result.isValid) {
-            if (result.reason && result.reason instanceof JsonWebTokenError) {
-                response.clearCookie(AuthHandler.COOKIE_NAME);
-            }
+            response.clearCookie(AuthHandler.COOKIE_NAME);
             this.sendResponse(false, result.message, response, 403);
             return;
         }
