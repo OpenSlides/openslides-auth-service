@@ -30,12 +30,14 @@ export default class Routes {
     }
 
     private configRoutes(): void {
+        this.initValidation(this.getPublicSecureUrl('/*'));
+        this.initValidation(this.getPrivateSecureUrl('/*'));
+    }
+
+    private initValidation(urlPrefix: string): void {
         this.app.all(
-            this.getPublicSecureUrl('/*'),
+            urlPrefix,
             (request, response, next) => this.validator.validate(request, response, next),
-            (request, response, next) => {
-                next();
-            }
         );
     }
 

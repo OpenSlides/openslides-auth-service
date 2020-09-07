@@ -9,6 +9,6 @@ export abstract class AuthHandler {
     public abstract logout(token: Token): void;
     public abstract async getListOfSessions(): Promise<string[]>;
     public abstract clearUserSessionByUserId(userId: string): void;
-    public abstract clearAllSessionsExceptThemselves(userId: string): void;
+    public abstract clearAllSessionsExceptThemselves(userId: number): void;
     public abstract toHash(toHash: string): string;
 }

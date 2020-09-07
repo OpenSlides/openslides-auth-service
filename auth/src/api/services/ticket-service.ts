@@ -1,9 +1,9 @@
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 
+import { anonymous } from '../../core/models/anonymous';
 import { Inject, InjectService } from '../../util/di';
 import { KeyHandler } from '../interfaces/key-handler';
 import { KeyService } from './key-service';
-import { Logger } from './logger';
 import { SessionHandler } from '../interfaces/session-handler';
 import { SessionService } from './session-service';
 import { Cookie, Ticket, Token } from '../../core/ticket';
@@ -13,7 +13,7 @@ import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
 import { Validation } from '../interfaces/validation';
 
-export class TicketService implements TicketHandler {
+export class TicketService extends TicketHandler {
     public name = 'TokenHandler';
 
     @Inject(KeyService)
@@ -24,6 +24,12 @@ export class TicketService implements TicketHandler {
 
     @InjectService(UserService)
     private readonly userHandler: UserHandler;
+
+    private readonly anonymousMessage = {
+        isValid: true,
+        message: 'Successful',
+        reason: 'anonymous'
+    };
 
     public verifyCookie(cookieAsString: string): Validation<Cookie> {
         try {
@@ -67,7 +73,7 @@ export class TicketService implements TicketHandler {
 
     public async refresh(cookieAsString?: string): Promise<Validation<Ticket>> {
         if (!cookieAsString) {
-            return { isValid: true, message: 'anonymous' }; // login as guest
+            return this.anonymousMessage; // login as guest
         }
         if (!cookieAsString.toLowerCase().startsWith('bearer ')) {
             return { isValid: false, message: 'Wrong token' };
@@ -98,7 +104,7 @@ export class TicketService implements TicketHandler {
 
     public async validateTicket(tokenString?: string, cookieString?: string): Promise<Validation<Token>> {
         if (!tokenString || !cookieString) {
-            return { isValid: false, message: 'No ticket provided!' };
+            return { ...this.anonymousMessage, result: anonymous };
         }
         if (!tokenString.toLowerCase().startsWith('bearer ') || !cookieString.toLowerCase().startsWith('bearer ')) {
             return { isValid: false, message: 'Wrong ticket' };

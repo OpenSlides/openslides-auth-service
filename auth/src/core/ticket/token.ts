@@ -1,6 +1,5 @@
 export interface Token {
-    expiresAt: Date;
-    userId: string;
+    userId: number;
     sessionId: string;
     iat: number;
     exp: number;
