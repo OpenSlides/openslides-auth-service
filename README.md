@@ -22,6 +22,12 @@ This command will start the docker container and listen to changes in the `auth/
 
 If you want to run all tests, just run the command `make test`.
 
+## Libraries
+
+To avoid a separate request to the auth-service, you can install a library for a quick response.
+
+Local install using pip: `pip install -e "git+ssh://git@github.com/GabrielInTheWorld/openslides-auth-service#egg=authlib&subdirectory=auth/libraries/pip-auth"`
+
 ## Networks
 
 Docker-containers have to have access to the same network, to communicate to each other.
@@ -38,7 +44,7 @@ Docker-containers have to have access to the same network, to communicate to eac
 
 Here, some example workflows are described:
 
-#### Complete workflow without connection to datastore
+### Complete workflow without connection to datastore
 
 ![Complete workflow without connection to datastore](res/pictures/complete-workflow-without-datastore.svg)
 

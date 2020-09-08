@@ -38,6 +38,7 @@ Thumbs.db
 
 # Ignore built ts files
 */dist/**/*
+__pycache__
 
 # ignore yarn.lock
 yarn.lock
