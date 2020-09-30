@@ -1,27 +1,33 @@
 import { User } from '../../core/models/user';
 
 export abstract class SessionHandler {
-    public static readonly SESSION_KEY = 'session';
+    public static readonly SESSION_KEY = 'session:sessions';
+    public static readonly USER_KEY = 'session:users';
 
-    public abstract async getAllActiveSessions(): Promise<string[]>;
+    /**
+     * Gets an array with current signed in users.
+     *
+     * @returns An array, that contains current active user-ids.
+     */
+    public abstract getAllActiveUsers(): Promise<string[]>;
+
+    public abstract getAllActiveSessions(): Promise<string[]>;
+
     /**
      * Function to remove a specified session.
      *
      * @param sessionId The session that should be removed.
-     *
-     * @returns A boolean, if it was successful.
      */
-    public abstract async clearSessionById(sessionId: string): Promise<boolean>;
+    public abstract clearSessionById(sessionId: string): Promise<void>;
 
     /**
-     * Function to explicit signs out one user by a given id.
+     * Removes the current active sessions of one user except the passed one.
      *
-     * @param userId The id of the user who should be signed out in all clients.
+     * @param exceptSessionId The sessionId that is not removed.
      */
-    public abstract async clearSessionsFromUser(userId: string): Promise<void>;
-    public abstract async clearAllSessionsExceptThemselves(exceptSessionId: string): Promise<boolean>;
-    public abstract async hasSession(sessionId: string): Promise<boolean>;
-    public abstract async getUserIdBySessionId(sessionId: string): Promise<string | null>;
+    public abstract clearAllSessionsExceptThemselves(exceptSessionId: string): Promise<void>;
+    public abstract hasSession(sessionId: string): Promise<boolean>;
+    public abstract getUserIdBySessionId(sessionId: string): Promise<string>;
 
     /**
      * Function, that handles adding and returning of new sessions.
@@ -31,5 +37,5 @@ export abstract class SessionHandler {
      *
      * @returns The new created session.
      */
-    public abstract async addSession(user: User): Promise<string>;
+    public abstract addSession(user: User): Promise<string>;
 }

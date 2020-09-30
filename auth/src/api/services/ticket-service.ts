@@ -87,11 +87,9 @@ export class TicketService extends TicketHandler {
             return { isValid: false, message: 'You are not signed in!' };
         }
         const userId = await this.sessionHandler.getUserIdBySessionId(cookie.sessionId);
-        if (!userId) {
-            return { isValid: false, message: 'Wrong user!' };
-        }
         const userResult = await this.userHandler.getUserByUserId(userId);
         if (!userResult.result) {
+            this.sessionHandler.clearSessionById(cookie.sessionId);
             return { isValid: false, message: 'Wrong user!' };
         }
         const token = this.generateToken(cookie.sessionId, userResult.result);

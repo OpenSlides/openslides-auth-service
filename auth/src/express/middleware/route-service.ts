@@ -1,11 +1,10 @@
 import express, { Request, Response } from 'express';
-import { JsonWebTokenError } from 'jsonwebtoken';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { Inject } from '../../util/di';
 import { Logger } from '../../api/services/logger';
-import { HttpData, RouteHandler } from '../../api/interfaces/route-handler';
+import { RouteHandler } from '../interfaces/route-handler';
 import { Token } from '../../core/ticket';
 
 export default class RouteService extends RouteHandler {
@@ -35,7 +34,7 @@ export default class RouteService extends RouteHandler {
         const result = await this.authHandler.whoAmI(cookieAsString);
         if (!result.isValid) {
             response.clearCookie(AuthHandler.COOKIE_NAME);
-            this.sendResponse(false, result.message, response, 403);
+            this.sendResponse(false, `${result.message}: ${result.reason}`, response, 403);
             return;
         }
         if (result.isValid && !result.result) {
@@ -101,30 +100,5 @@ export default class RouteService extends RouteHandler {
     public authenticate(_: any, response: Response): void {
         const token = response.locals['token'] as Token;
         this.sendResponse(true, 'Successful', response, 200, { userId: token.userId, sessionId: token.sessionId });
-    }
-
-    private sendResponse(
-        success: boolean,
-        message: string,
-        response: Response,
-        code: number = 200,
-        data: HttpData = {}
-    ): void {
-        if (response.locals['newToken']) {
-            response.setHeader('Authentication', response.locals['newToken']);
-            response.setHeader('Access-Control-Expose-Headers', 'authentication, Authentication');
-        }
-        if (response.locals['newCookie']) {
-            response.cookie(AuthHandler.COOKIE_NAME, response.locals['newCookie'], {
-                secure: false,
-                httpOnly: true
-            });
-        }
-        Logger.log(`Successful: ${success} --- Message: ${message}`);
-        response.status(code).send({
-            success,
-            message,
-            ...data
-        });
     }
 }

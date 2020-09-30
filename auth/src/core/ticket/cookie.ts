@@ -1,4 +1,5 @@
 export interface Cookie {
     sessionId: string;
-    signature: string;
+    iat: number;
+    exp: number;
 }

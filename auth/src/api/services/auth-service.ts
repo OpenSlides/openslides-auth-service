@@ -25,11 +25,7 @@ export class AuthService implements AuthHandler {
 
     public async login(username: string, password: string): Promise<Validation<Ticket>> {
         if (!username || !password) {
-            return { isValid: false, message: 'Authentication failed! No username or password provided!' };
-        }
-
-        if (!(await this.userHandler.hasUser(username))) {
-            return { isValid: false, message: 'Incorrect username or password!' };
+            return { isValid: false, message: 'Authentication failed! Username or password is not provided!' };
         }
 
         const result = await this.userHandler.getUserByCredentials(username, password);
@@ -53,21 +49,13 @@ export class AuthService implements AuthHandler {
         return await this.sessionHandler.getAllActiveSessions();
     }
 
-    public async clearUserSessionByUserId(userId: string): Promise<Validation<void>> {
-        const result = await this.userHandler.getUserByUserId(userId);
-        if (!result.result) {
-            return { isValid: false, message: 'No user' };
-        }
-        if (!this.sessionHandler.clearSessionById(userId)) {
-            return { isValid: false, message: 'You have no permissions!' };
-        }
+    public async clearUserSessionByUserId(sessionId: string): Promise<Validation<void>> {
+        await this.sessionHandler.clearSessionById(sessionId);
         return { isValid: true, message: 'successful' };
     }
 
-    public clearAllSessionsExceptThemselves(userId: number): Validation<void> {
-        if (!this.sessionHandler.clearAllSessionsExceptThemselves(`${userId}`)) {
-            return { isValid: false, message: 'You have no permissions!' };
-        }
+    public async clearAllSessionsExceptThemselves(userId: string): Promise<Validation<void>> {
+        await this.sessionHandler.clearAllSessionsExceptThemselves(userId);
         return { isValid: true, message: 'successful' };
     }
 
