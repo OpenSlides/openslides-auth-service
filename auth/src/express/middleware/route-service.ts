@@ -32,12 +32,8 @@ export default class RouteService extends RouteHandler {
     public async whoAmI(request: express.Request, response: express.Response): Promise<void> {
         const cookieAsString = request.cookies[AuthHandler.COOKIE_NAME];
         const result = await this.authHandler.whoAmI(cookieAsString);
-        if (!result.isValid) {
+        if (!result.isValid || (result.isValid && !result.result)) {
             response.clearCookie(AuthHandler.COOKIE_NAME);
-            this.sendResponse(false, `${result.message}: ${result.reason}`, response, 403);
-            return;
-        }
-        if (result.isValid && !result.result) {
             this.sendResponse(true, 'anonymous', response);
             return;
         }
@@ -73,7 +69,7 @@ export default class RouteService extends RouteHandler {
     public clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void {
         const token = response.locals['token'] as Token;
         try {
-            this.authHandler.clearAllSessionsExceptThemselves(token.userId);
+            this.authHandler.clearAllSessionsExceptThemselves(token.sessionId);
             this.sendResponse(true, 'Cleared!', response);
         } catch (e) {
             this.sendResponse(false, e, response, 403);
