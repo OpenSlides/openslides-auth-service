@@ -14,7 +14,7 @@ export namespace Config {
 
 export namespace Keys {
     const encoding = 'utf8';
-    const pathToKeys = '/tmp/keys';
+    const pathToKeys = '/keys';
 
     export function publicTokenKey(): string {
         return fs.readFileSync(getFile('rsa-token.key.pub'), encoding);

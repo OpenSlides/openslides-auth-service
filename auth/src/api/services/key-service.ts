@@ -2,28 +2,31 @@ import { Keys } from '../../config';
 import { KeyHandler } from '../interfaces/key-handler';
 
 export class KeyService extends KeyHandler {
+    protected privateTokenKey: string;
+    protected privateCookieKey: string;
+    protected publicTokenKey: string;
+    protected publicCookieKey: string;
+
+    public constructor() {
+        super();
+
+        // Load key files early to detect missing ones
+        this.privateTokenKey = Keys.privateTokenKey();
+        this.privateCookieKey = Keys.privateCookieKey();
+        this.publicTokenKey = Keys.publicTokenKey();
+        this.publicCookieKey = Keys.publicCookieKey();
+    }
+
     public getPrivateTokenKey(): string {
-        if (!this.privateTokenKey) {
-            this.privateTokenKey = Keys.privateTokenKey();
-        }
         return this.privateTokenKey;
     }
     public getPrivateCookieKey(): string {
-        if (!this.privateCookieKey) {
-            this.privateCookieKey = Keys.privateCookieKey();
-        }
         return this.privateCookieKey;
     }
     public getPublicTokenKey(): string {
-        if (!this.publicTokenKey) {
-            this.publicTokenKey = Keys.publicTokenKey();
-        }
         return this.publicTokenKey;
     }
     public getPublicCookieKey(): string {
-        if (!this.publicCookieKey) {
-            this.publicCookieKey = Keys.publicCookieKey();
-        }
         return this.publicCookieKey;
     }
 }
