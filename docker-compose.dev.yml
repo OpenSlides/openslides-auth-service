@@ -15,8 +15,6 @@ services:
       - CREATE_KEYS=0
     volumes:
       - ./auth/src:/app/src
-    tmpfs:
-      - /app/tmp
     ports:
       - "9004:9004"
   message_bus:
