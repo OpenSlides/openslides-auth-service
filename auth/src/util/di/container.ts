@@ -4,8 +4,6 @@ import Dependency from './dependency';
 export default class Container {
     private static instance: Container;
 
-    private readonly registry = new Map<Dependency<any>, Type<any>>();
-
     private readonly serviceRegistry = new Map<Type<any>, any>();
 
     private constructor() {}

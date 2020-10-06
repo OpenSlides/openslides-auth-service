@@ -20,6 +20,14 @@ export default class AuthenticationServer implements BaseServer {
         this.initializeRoutes();
     }
 
+    public getApp(): express.Application {
+        return this.app;
+    }
+
+    public getServer(): Server {
+        return this.server;
+    }
+
     private createApp(): void {
         this.app = express();
     }
@@ -38,14 +46,6 @@ export default class AuthenticationServer implements BaseServer {
     private initializeRoutes(): void {
         this.routes = new Routes(this.app);
         this.routes.initRoutes();
-    }
-
-    public getApp(): express.Application {
-        return this.app;
-    }
-
-    public getServer(): Server {
-        return this.server;
     }
 
     private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {

@@ -33,7 +33,7 @@ test('POST auth', async () => {
 
 test('POST auth without cookie', async () => {
     await FakeRequest.login();
-    const answer = await Utils.requestInternalPostWithoutCredentials('api/authenticate');
+    const answer = await Utils.requestInternalPostWithoutCookies('api/authenticate');
     expect(answer.success).toBe(true);
     expect(answer.userId).toBe(0); // anonymous
 });
@@ -48,21 +48,13 @@ test('POST auth without access-token', async () => {
 test('POST auth with malified access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().manipulateAccessTokenInFakeUser();
-    try {
-        await FakeRequest.authenticate();
-    } catch (e) {
-        Validation.validateForbiddenRequest(e);
-    }
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
 });
 
 test('POST auth with wrong access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().removeACharacterFromAccessTokenInFakeUser();
-    try {
-        await FakeRequest.authenticate();
-    } catch (e) {
-        Validation.validateForbiddenRequest(e);
-    }
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
 });
 
 test('POST auth renew access-token', async () => {

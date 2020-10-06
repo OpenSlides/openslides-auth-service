@@ -24,9 +24,7 @@ afterAll(() => {
 });
 
 test('DELETE clear-all-sessions-except-themselves', async () => {
-    await FakeRequest.login();
-    await FakeRequest.login();
-    const user = await FakeRequest.login();
+    const user = await FakeRequest.loginForNTimes(3);
     const sessionInformation = Utils.getSessionInformationFromUser(user);
     await Utils.requestPost('api/clear-all-sessions-except-themselves', { sessionId: sessionInformation.sessionId });
     const sessions = await Utils.requestGet('api/list-sessions');

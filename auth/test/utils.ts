@@ -52,13 +52,13 @@ export namespace Utils {
         return sendResponse(response);
     }
 
-    async function makeRequestWithoutCredentials(
+    async function makeRequestWithoutCookies(
         method: HttpMethod,
         url: string,
         data?: HttpData,
         headers: HttpHeaders = {}
     ): Promise<ServerResponse> {
-        const response = await agent[method](url)
+        const response = await request[method](url)
             .set({
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -73,6 +73,13 @@ export namespace Utils {
     }
 
     export const credentials = { username: 'admin', password: 'admin' };
+
+    export const defaultResponse: ServerResponse = {
+        headers: {},
+        message: '',
+        result: '',
+        success: false
+    };
 
     export interface HttpData {
         [key: string]: any;
@@ -130,16 +137,16 @@ export namespace Utils {
         headers?: HttpHeaders
     ): Promise<ServerResponse> {
         const url = getExternalUrlToServer(path);
-        return await makeRequestWithoutCredentials(HttpMethod.POST, url, data, headers);
+        return await makeRequestWithoutCookies(HttpMethod.POST, url, data, headers);
     }
 
-    export async function requestInternalPostWithoutCredentials(
+    export async function requestInternalPostWithoutCookies(
         path: string,
         data?: HttpData,
         headers?: HttpHeaders
     ): Promise<ServerResponse> {
         const url = getInternalUrlToServer(path);
-        return await makeRequestWithoutCredentials(HttpMethod.POST, url, data, headers);
+        return await makeRequestWithoutCookies(HttpMethod.POST, url, data, headers);
     }
 
     export async function requestDelete(path: string, data?: HttpData): Promise<ServerResponse> {

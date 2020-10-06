@@ -11,8 +11,8 @@ export class RedisMessageBusAdapter extends MessageBus {
         this.init();
     }
 
-    public async sendEvent(topic: string, value: string): Promise<any> {
-        return await this.messageBus.xadd(topic, value);
+    public async sendEvent(topic: string, field: string, value: string): Promise<any> {
+        return await this.messageBus.xadd(topic, '*', field, value);
     }
 
     private init(): void {

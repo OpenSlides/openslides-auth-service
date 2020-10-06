@@ -39,25 +39,13 @@ test('GET login', async () => {
 });
 
 test('POST login without password', async () => {
-    try {
-        await Utils.requestPost('login', { username: 'admin' });
-    } catch (e) {
-        Validation.validateForbiddenRequest(e);
-    }
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login', { username: 'admin' }));
 });
 
 test('POST login without username', async () => {
-    try {
-        await Utils.requestPost('login', { password: 'admin' });
-    } catch (e) {
-        Validation.validateForbiddenRequest(e);
-    }
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login', { password: 'admin' }));
 });
 
 test('POST login without credentials', async () => {
-    try {
-        await Utils.requestPost('login');
-    } catch (e) {
-        Validation.validateForbiddenRequest(e);
-    }
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login'));
 });
