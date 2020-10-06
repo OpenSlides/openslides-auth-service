@@ -19,11 +19,12 @@ export class Client implements IClient {
     public readonly clientId: string;
     public clientSecret: string;
 
-    public constructor(input?: any) {
-        Object.assign(this, input);
-    }
     public codeChallenge?: string | undefined;
     public codeChallengeMethod?: any;
     public state: string;
     public scope: string;
+
+    public constructor(input?: any) {
+        Object.assign(this, input);
+    }
 }

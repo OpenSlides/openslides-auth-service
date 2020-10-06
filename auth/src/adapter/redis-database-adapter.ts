@@ -66,7 +66,7 @@ export class RedisDatabaseAdapter extends Database {
     }
 
     public async remove(key: string): Promise<boolean> {
-        return new Promise((resolve, reject) => {
+        const isDeleted = new Promise<boolean>((resolve, reject) => {
             this.database.hdel(this.getHashKey(), [this.getPrefixedKey(key)], (error, result) => {
                 if (error) {
                     reject(error);
@@ -74,6 +74,15 @@ export class RedisDatabaseAdapter extends Database {
                 resolve(result === 1);
             });
         });
+        const isRemoved = new Promise<boolean>((resolve, reject) => {
+            this.database.srem(`${this.getPrefix()}:index`, key, (error, result) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve(result === 1);
+            });
+        });
+        return (await isDeleted) && (await isRemoved);
     }
 
     private init(): void {

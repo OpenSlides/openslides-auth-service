@@ -49,13 +49,13 @@ export class AuthService implements AuthHandler {
         return await this.sessionHandler.getAllActiveSessions();
     }
 
-    public async clearUserSessionByUserId(sessionId: string): Promise<Validation<void>> {
+    public async clearUserSessionById(sessionId: string): Promise<Validation<void>> {
         await this.sessionHandler.clearSessionById(sessionId);
         return { isValid: true, message: 'successful' };
     }
 
-    public async clearAllSessionsExceptThemselves(userId: string): Promise<Validation<void>> {
-        await this.sessionHandler.clearAllSessionsExceptThemselves(userId);
+    public async clearAllSessionsExceptThemselves(sessionId: string): Promise<Validation<void>> {
+        await this.sessionHandler.clearAllSessionsExceptThemselves(sessionId);
         return { isValid: true, message: 'successful' };
     }
 

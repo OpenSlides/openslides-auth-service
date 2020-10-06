@@ -20,11 +20,11 @@
         "interface-over-type-literal": true,
         "jsdoc-format": true,
         "label-position": true,
-        "member-access": true,
+        "member-access": [true, "check-accessor", "check-constructor", "check-parameter-property"],
         "member-ordering": [
             true,
             {
-                "order": ["static-field", "instance-field", "static-method", "instance-method"]
+                "order": ["static-field", "public-instance-field", "protected-instance-field", "private-instance-field", "constructor", "static-method", "public-instance-method", "protected-instance-method", "private-instance-method"]
             }
         ],
         "no-arg": true,
@@ -53,7 +53,7 @@
         "ordered-imports": [
             true,
             {
-                "import-source-order": "case-sensitive",
+                "import-sources-order": "lowercase-first",
                 "grouped-imports": true,
                 "groups": [{
                         "name": "internal dependencies",

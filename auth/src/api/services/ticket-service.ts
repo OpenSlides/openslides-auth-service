@@ -107,6 +107,9 @@ export class TicketService extends TicketHandler {
         if (!tokenString.toLowerCase().startsWith('bearer ') || !cookieString.toLowerCase().startsWith('bearer ')) {
             return { isValid: false, message: 'Wrong ticket' };
         }
+        if (!(await this.sessionHandler.hasSession(this.decode<Cookie>(cookieString).sessionId))) {
+            return { isValid: false, message: 'Not signed in' };
+        }
         const answer: Validation<Token> = { isValid: true, message: 'Successful' };
         const tokenResult = this.verifyToken(tokenString.slice(7));
         if (!tokenResult.isValid) {

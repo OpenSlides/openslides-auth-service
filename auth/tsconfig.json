@@ -3,7 +3,7 @@
         "module": "commonjs",
         "strict": true,
         "baseUrl": "./",
-        "rootDir": "src",
+        "rootDir": ".",
         "outDir": "build",
         "sourceMap": true,
         "removeComments": true,
