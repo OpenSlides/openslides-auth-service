@@ -45,6 +45,9 @@ export default class Routes {
             this.routeHandler.whoAmI(request, response)
         );
         this.app.post(this.getPrivateUrl('/hash'), (request, response) => this.routeHandler.hash(request, response));
+        this.app.post(this.getPrivateUrl('/is-equals'), (request, response) =>
+            this.routeHandler.isEquals(request, response)
+        );
     }
 
     private initApiRoutes(): void {

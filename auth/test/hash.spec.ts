@@ -1,8 +1,18 @@
 import { Utils } from './utils';
 
 test('POST hash', async () => {
-    const hashValue = await Utils.requestInternalPost('hash', { toHash: 'helloworld' });
-    expect(hashValue.message).toBe(
-        'FZQkTVLy2MErFCu2H0e8Lq9QPW2cqEgMrp/PES9m5JZ9xej6mCheNtuK8bj/qLhMsV4PvPg2w964A8E/N2WaYA=='
-    );
+    const hashValue = await Utils.requestInternalPost('hash', {
+        toHash: 'helloworld'
+    });
+    expect(hashValue.hash.length).toBe(152);
+});
+
+test('POST is-equals', async () => {
+    const hashValue = await Utils.requestInternalPost('is-equals', {
+        toHash: 'helloworld',
+        toCompare:
+            '316af7b2ddc20ead599c38541fbe87e9a9e4e960d4017d6e59de188b41b2758fww7VCxnNrYsz6Z38Fv+' +
+            'Wf6o4Ait5IkAE21CyknNS05lHSIzwF5AAObWhjzkeqV+oQ/Xc1y7FPsPg+n8cZnZy6w=='
+    });
+    expect(hashValue.isEquals).toBe(true);
 });
