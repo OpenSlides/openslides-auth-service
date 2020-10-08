@@ -2,17 +2,16 @@ name: CI
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build-and-test-dev-image:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: create docker dev image
-      run: make build-dev
+      - name: Create docker dev image
+        run: make build-dev
 
-    - name: run tests in docker
-      run: make run-tests
-
+      - name: Run tests in docker
+        run: make run-tests
