@@ -33,6 +33,6 @@ def init_key(name, path):
 def get_file(name):
     if is_dev_mode():
         return key_dict[name]
-    path = f"/tmp/keys/{name}"
+    path = f"/keys/{name}"
     with open(path, "r") as file:
         return file.read()

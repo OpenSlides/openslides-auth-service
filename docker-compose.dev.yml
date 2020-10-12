@@ -11,6 +11,7 @@ services:
       - cache
     env_file: services.env
     volumes:
+      - ./auth/libraries:/app/libraries
       - ./auth/src:/app/src
       - ./auth/test:/app/test
     ports:

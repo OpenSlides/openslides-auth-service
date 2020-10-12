@@ -1,0 +1,9 @@
+AUTH_TEST_URL = "http://localhost:9004"
+AUTHENTICATION_HEADER = "Authentication"
+REFRESH_ID = "refreshId"
+USER_ID = "userId"
+
+ANONYMOUS_USER = 0
+INVALID_USER = -1
+
+HASHED_LENGTH = 152

@@ -30,6 +30,7 @@ run-tests: | build-dev
 	docker-compose -f docker-compose.dev.yml up -d
 	docker-compose -f docker-compose.dev.yml exec -T auth wait-for-it auth:9004
 	docker-compose -f docker-compose.dev.yml exec -T auth npm run test
+	docker-compose -f docker-compose.dev.yml exec -T auth pytest
 	docker-compose -f docker-compose.dev.yml down
 
 stop-run:
