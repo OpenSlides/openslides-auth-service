@@ -11,4 +11,5 @@ export abstract class AuthHandler {
     public abstract clearUserSessionById(sessionId: string): Promise<Validation<void>>;
     public abstract clearAllSessionsExceptThemselves(sessionId: string): Promise<Validation<void>>;
     public abstract toHash(toHash: string): string;
+    public abstract isEquals(toHash: string, toCompare: string): boolean;
 }

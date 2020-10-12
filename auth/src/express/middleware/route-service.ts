@@ -78,7 +78,15 @@ export default class RouteService extends RouteHandler {
 
     public hash(request: express.Request, response: express.Response): void {
         const toHash = request.body['toHash'];
-        this.sendResponse(true, this.authHandler.toHash(toHash), response);
+        this.sendResponse(true, 'Successful', response, 200, { hash: this.authHandler.toHash(toHash) });
+    }
+
+    public isEquals(request: express.Request, response: express.Response): void {
+        const toHash = request.body['toHash'];
+        const toCompare = request.body['toCompare'];
+        this.sendResponse(true, 'Successful', response, 200, {
+            isEquals: this.authHandler.isEquals(toHash, toCompare)
+        });
     }
 
     public async notFound(request: Request, response: Response): Promise<void> {

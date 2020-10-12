@@ -62,4 +62,8 @@ export class AuthService implements AuthHandler {
     public toHash(input: string): string {
         return this.hashHandler.hash(input);
     }
+
+    public isEquals(toHash: string, toCompare: string): boolean {
+        return this.hashHandler.isEquals(toHash, toCompare);
+    }
 }

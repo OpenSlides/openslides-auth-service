@@ -19,12 +19,7 @@ export class UserService implements UserHandler {
     private readonly userCollection: Map<string, User> = new Map();
 
     public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
-        const userObj = await this.datastore.filter<User>('user', 'username', username, [
-            'username',
-            'password',
-            'default_password',
-            'id'
-        ]);
+        const userObj = await this.datastore.filter<User>('user', 'username', username, ['username', 'password', 'id']);
         if (Object.keys(userObj).length > 1) {
             return { isValid: false, message: 'Multiple users with same credentials!' };
         }
@@ -32,10 +27,7 @@ export class UserService implements UserHandler {
         if (!user) {
             return { isValid: false, message: 'Username or password is incorrect' };
         }
-        if (
-            (!user.password && user.default_password.slice(32) !== this.hashingHandler.hash(password)) ||
-            (user.password && user.password.slice(32) !== this.hashingHandler.hash(password))
-        ) {
+        if (!this.isPasswordCorrect(password, user.password)) {
             return { isValid: false, message: 'Username or password is incorrect' };
         }
         return { isValid: true, message: 'successful', result: user };
@@ -53,5 +45,9 @@ export class UserService implements UserHandler {
 
     public getAllUsers(): User[] {
         return Array.from(this.userCollection.values());
+    }
+
+    private isPasswordCorrect(input: string, toCompare: string): boolean {
+        return this.hashingHandler.isEquals(input, toCompare);
     }
 }
