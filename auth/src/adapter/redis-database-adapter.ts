@@ -4,8 +4,6 @@ import { Database } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
 
 export class RedisDatabaseAdapter extends Database {
-    private readonly redisPort = parseInt(process.env.CACHE_PORT || '', 10) || 6379;
-    private readonly redisHost = process.env.CACHE_HOST || '';
     private database: Redis.Redis;
 
     /**
@@ -19,6 +17,20 @@ export class RedisDatabaseAdapter extends Database {
     ) {
         super();
         this.init();
+    }
+
+    private init(): void {
+        if (!process.env.CACHE_PORT || !process.env.CACHE_HOST) {
+            throw new Error('No cache is defined.');
+        }
+        try {
+            const host = process.env.CACHE_HOST;
+            const port = parseInt(process.env.CACHE_PORT, 10);
+            console.log(`Message bus: ${host}:${port}`)
+            this.database = new Redis(port, host);
+        } catch (e) {
+            Logger.log('Error while connecting to the cache:', e);
+        }
     }
 
     public async keys(): Promise<string[]> {
@@ -83,17 +95,6 @@ export class RedisDatabaseAdapter extends Database {
             });
         });
         return (await isDeleted) && (await isRemoved);
-    }
-
-    private init(): void {
-        if (this.database) {
-            return;
-        }
-        try {
-            this.database = new Redis(this.redisPort, this.redisHost);
-        } catch (e) {
-            Logger.log('Database is not available.');
-        }
     }
 
     private getHashKey(): string {

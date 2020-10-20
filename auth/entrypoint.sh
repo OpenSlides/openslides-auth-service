@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 export CACHE_PORT="${CACHE_PORT:-6379}"
 export MESSAGE_BUS_PORT="${MESSAGE_BUS_PORT:-6379}"
 
