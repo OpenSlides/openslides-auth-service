@@ -1,7 +1,12 @@
-FROM node:13
+# FROM node:13 AS main-service
+FROM python:3.9.0-slim-buster
 
 RUN apt-get -y update && apt-get -y upgrade && \
-    apt-get install --no-install-recommends -y wait-for-it
+    apt-get install --no-install-recommends -y wait-for-it && \
+    apt-get install -y make git curl
+
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
 
 WORKDIR /app
 
@@ -13,6 +18,9 @@ RUN npm install
 COPY ./dev-keys /keys
 COPY ./auth ./
 COPY auth/entrypoint.sh ./
+
+# Install pip-dependencies.
+RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt
 
 EXPOSE 9004
 

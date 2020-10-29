@@ -26,7 +26,6 @@ coverage
 node_modules
 bower_components
 .virtualenv
-__pycache__
 
 # Editors
 .idea
@@ -36,8 +35,10 @@ __pycache__
 .DS_Store
 Thumbs.db
 
-# Ignore built ts files
+# Ignore built files
 */dist/**/*
+__pycache__
+.pytest_cache
 
 # ignore yarn.lock
 yarn.lock
