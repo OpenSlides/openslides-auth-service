@@ -27,5 +27,5 @@ class HashingHandler:
         return (
             hash_reference[0:64]
             if hash_reference is not None and len(hash_reference) == HASHED_LENGTH
-            else secrets.token_hex(64)
+            else secrets.token_hex(32)
         )
