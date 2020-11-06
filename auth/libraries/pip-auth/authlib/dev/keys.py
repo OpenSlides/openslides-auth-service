@@ -1,3 +1,4 @@
+# flake8: noqa
 private_cookie_key = """-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
 NhAAAAAwEAAQAAAQEAxE7Ep+0MrzGXBeaaaaBUOSBWnc78BqtslNpccog1M2NYLdwLy8tj

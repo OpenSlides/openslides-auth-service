@@ -1,9 +1,15 @@
+import jwt from 'jsonwebtoken';
+
+import { Keys } from '../src/config';
 import { FakeUser } from './fake-user';
+import { Utils } from './utils';
 
 export class FakeUserService {
     private static instance: FakeUserService;
 
     private fakeUser: FakeUser = new FakeUser();
+
+    private readonly tokenKey = Keys.privateTokenKey();
 
     private constructor() {}
 
@@ -23,11 +29,16 @@ export class FakeUserService {
     }
 
     public setAccessTokenToExpired(): void {
-        this.fakeUser.accessToken =
-            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-            'eyJleHBpcmVzSW4iOiIxMG0iLCJzZXNzaW9uSWQiOiI2NjUzYWMwNmJhNjVkYmQzNDE5NTQwOGQ1MDI5NjU1ZSIsIn' +
-            'VzZXJJZCI6MSwiaWF0IjoxNTk3MTQ5NDI0LCJleHAiOjE1OTcxNTAwMjR9.' +
-            'z21-bSIj_xZAoCbwXTqqf_ODAIEbbeSehYIE33dmYUs';
+        const oldAccessToken = this.fakeUser.accessToken.slice(7);
+        const token = jwt.decode(oldAccessToken) as Utils.TokenPayload;
+        const expiredAccessToken = jwt.sign(
+            { exp: new Date(0).getTime(), sessionId: token.sessionId, userId: 1 },
+            this.tokenKey,
+            {
+                algorithm: 'HS256'
+            }
+        );
+        this.fakeUser.accessToken = `bearer ${expiredAccessToken}`;
     }
 
     public removeACharacterFromAccessTokenInFakeUser(): void {

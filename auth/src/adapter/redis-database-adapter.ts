@@ -26,7 +26,7 @@ export class RedisDatabaseAdapter extends Database {
         try {
             const host = process.env.CACHE_HOST;
             const port = parseInt(process.env.CACHE_PORT, 10);
-            console.log(`Message bus: ${host}:${port}`)
+            Logger.log(`Database: ${host}:${port}`);
             this.database = new Redis(port, host);
         } catch (e) {
             Logger.log('Error while connecting to the cache:', e);

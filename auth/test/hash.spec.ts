@@ -7,6 +7,13 @@ test('POST hash', async () => {
     expect(hashValue.hash.length).toBe(152);
 });
 
+test('POST hash random salt', async () => {
+    const toHash = {toHash: 'a password'}
+    const hashValue = await Utils.requestInternalPost('hash', toHash)
+    const toCompare = await Utils.requestInternalPost('hash', toHash)
+    expect(hashValue.hash).not.toBe(toCompare.hash)
+})
+
 test('POST is-equals', async () => {
     const hashValue = await Utils.requestInternalPost('is-equals', {
         toHash: 'helloworld',

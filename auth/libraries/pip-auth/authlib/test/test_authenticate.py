@@ -1,7 +1,10 @@
 import jwt
 
 from .base import BaseTestEnvironment
-from ..exceptions import AuthenticateException
+from ..config import get_private_cookie_key, get_private_token_key
+from urllib import parse
+from ..constants import USER_ID_PROPERTY
+from datetime import datetime
 
 
 class TestAuthenticate(BaseTestEnvironment):
@@ -36,8 +39,23 @@ class TestAuthenticate(BaseTestEnvironment):
 
     def test_authenticate_with_expired_access_token(self):
         response = self.fake_request.login()
-        answer = self.auth_handler.authenticate(
-            {"Authentication": self.get_expired_access_token()}, response.cookies
+        cookie = parse.unquote(response.cookies["refreshId"])[7:]
+
+        session_id = jwt.decode(cookie, get_private_cookie_key(), algorithms=["HS256"])[
+            "sessionId"
+        ]
+        expired_token_payload = {
+            "sessionId": session_id,
+            USER_ID_PROPERTY: 1,
+            "exp": datetime.utcfromtimestamp(0),
+        }
+        raw_token = jwt.encode(
+            expired_token_payload, get_private_token_key(), algorithm="HS256"
         )
-        self.assertEqual(1, answer[0])
-        self.assertIsNotNone(answer[1])
+        expired_token = "bearer " + raw_token.decode("utf-8")
+
+        user_id, access_token = self.auth_handler.authenticate(
+            {"Authentication": expired_token}, response.cookies
+        )
+        self.assertEqual(1, user_id)
+        self.assertIsNotNone(access_token)

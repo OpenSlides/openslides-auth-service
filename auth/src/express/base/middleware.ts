@@ -26,6 +26,7 @@ export abstract class Middleware {
             });
         }
         Logger.debug(`Successful: ${success} --- Message: ${message}`);
+        Logger.debug(`Sending response: ${JSON.stringify(data)}`);
         response.status(code).send({
             success,
             message,

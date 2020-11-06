@@ -1,6 +1,7 @@
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 
 import { anonymous } from '../../core/models/anonymous';
+import { BaseException } from '../../core/exceptions/base-exception';
 import { Inject, InjectService } from '../../util/di';
 import { KeyHandler } from '../interfaces/key-handler';
 import { KeyService } from './key-service';
@@ -12,6 +13,7 @@ import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
 import { UserService } from './user-service';
 import { Validation } from '../interfaces/validation';
+import { ValidationException } from '../../core/exceptions/validation-exception';
 
 export class TicketService extends TicketHandler {
     public name = 'TokenHandler';
@@ -58,7 +60,11 @@ export class TicketService extends TicketHandler {
     public decode<T>(tokenString: string): T {
         const parts = tokenString.split('.');
         const payload = Buffer.from(parts[1], 'base64').toString('utf8');
-        return JSON.parse(payload) as T;
+        try {
+            return JSON.parse(payload) as T;
+        } catch (e) {
+            throw new ValidationException('Malformed JSON. Unable to decode.');
+        }
     }
 
     public async create(user: User): Promise<Validation<Ticket>> {
@@ -104,12 +110,37 @@ export class TicketService extends TicketHandler {
         if (!tokenString || !cookieString) {
             return { ...this.anonymousMessage, result: anonymous };
         }
-        if (!tokenString.toLowerCase().startsWith('bearer ') || !cookieString.toLowerCase().startsWith('bearer ')) {
-            return { isValid: false, message: 'Wrong ticket' };
+        try {
+            this.checkBearerTicket(tokenString, cookieString);
+            await this.checkSessionOfTicket(tokenString, cookieString);
+            return this.checkAndRefreshToken(tokenString, cookieString);
+        } catch (e) {
+            if (e instanceof BaseException || e instanceof Error) {
+                return { isValid: false, message: e.message };
+            }
+            return { isValid: false, message: 'Unknown error occurred.', reason: e };
         }
-        if (!(await this.sessionHandler.hasSession(this.decode<Cookie>(cookieString).sessionId))) {
-            return { isValid: false, message: 'Not signed in' };
+    }
+
+    private checkBearerTicket(tokenString: string, cookieString: string): void {
+        const tokenBegin = 'bearer ';
+        if (!tokenString.toLowerCase().startsWith(tokenBegin) || !cookieString.toLowerCase().startsWith(tokenBegin)) {
+            throw new ValidationException('Wrong ticket!');
         }
+    }
+
+    private async checkSessionOfTicket(tokenString: string, cookieString: string): Promise<void> {
+        const cookie = this.decode<Cookie>(cookieString);
+        const token = this.decode<Token>(tokenString);
+        if (cookie.sessionId !== token.sessionId) {
+            throw new ValidationException('Mismatched sessions!');
+        }
+        if (!(await this.sessionHandler.hasSession(cookie.sessionId))) {
+            throw new ValidationException('Not signed in!');
+        }
+    }
+
+    private async checkAndRefreshToken(tokenString: string, cookieString: string): Promise<Validation<Token>> {
         const answer: Validation<Token> = { isValid: true, message: 'Successful' };
         const tokenResult = this.verifyToken(tokenString.slice(7));
         if (!tokenResult.isValid) {
@@ -128,13 +159,17 @@ export class TicketService extends TicketHandler {
 
     private generateToken(sessionId: string, user: User): string {
         const token = jwt.sign({ expiresIn: '10m', sessionId, userId: user.id }, this.keyHandler.getPrivateTokenKey(), {
-            expiresIn: '10m'
+            expiresIn: '10m',
+            algorithm: 'HS256'
         });
         return `bearer ${token}`;
     }
 
     private generateCookie(sessionId: string): string {
-        const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), { expiresIn: '1d' });
+        const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), {
+            expiresIn: '1d',
+            algorithm: 'HS256'
+        });
         return `bearer ${cookie}`;
     }
 }
