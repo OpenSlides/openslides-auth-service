@@ -1,6 +1,6 @@
 from ..auth_handler import AuthHandler
 from .base import BaseTestEnvironment
-from ..constants import AUTH_TEST_URL, HASHED_LENGTH
+from ..constants import HASHED_LENGTH
 
 
 class TestHashing(BaseTestEnvironment):

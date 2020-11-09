@@ -2,12 +2,11 @@ import unittest
 import requests
 
 from ..auth_handler import AuthHandler
-from ..constants import AUTH_TEST_URL
 from .fake_request import FakeRequest
 
 
 class BaseTestEnvironment(unittest.TestCase):
-    auth_handler = AuthHandler(AUTH_TEST_URL)
+    auth_handler = AuthHandler()
     fake_request = FakeRequest()
 
     def get_invalid_access_token(self):

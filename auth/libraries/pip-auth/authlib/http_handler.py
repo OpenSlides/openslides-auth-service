@@ -2,18 +2,23 @@ import requests
 from typing import Optional, Tuple, Dict, Any, Callable
 
 from .exceptions import AuthenticateException
-
+import os
 
 class HttpHandler:
-    auth_url = ""
+    def __init__(self, debug_fn: Any=print) -> None:
+        self.auth_endpoint = self.get_endpoint(debug_fn)
 
-    def __init__(self, auth_url: str) -> None:
-        self.auth_url = auth_url
+    def get_endpoint(self, debug_fn: Any=print) -> str:
+        host = os.environ.get("AUTH_HOST", "localhost")
+        port = int(os.environ.get("AUTH_PORT", 9004))
+        endpoint = f"http://{host}:{port}"
+        debug_fn(f"Auth endpoint: {endpoint}")
+        return endpoint
 
     def send_request(self, path: str, headers=None, payload=None) -> requests.Response:
         response = None
         try:
-            url = f"{self.auth_url}/system/auth{self.format_url(path)}"
+            url = f"{self.auth_endpoint}/system/auth{self.format_url(path)}"
             response = requests.post(url, data=payload, headers=headers)
         except requests.exceptions.ConnectionError as e:
             raise AuthenticateException(
@@ -26,7 +31,7 @@ class HttpHandler:
     ) -> requests.Response:
         response = None
         try:
-            url = f"{self.auth_url}/internal/auth{self.format_url(path)}"
+            url = f"{self.auth_endpoint}/internal/auth{self.format_url(path)}"
             response = requests.post(url, headers=headers, cookies=cookies)
         except requests.exceptions.ConnectionError as e:
             raise AuthenticateException(
