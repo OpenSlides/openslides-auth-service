@@ -1,4 +1,3 @@
-AUTH_TEST_URL = "http://localhost:9004"
 AUTHENTICATION_HEADER = "Authentication"
 REFRESH_ID = "refreshId"
 USER_ID = "userId"

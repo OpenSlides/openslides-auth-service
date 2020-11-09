@@ -23,10 +23,9 @@ class AuthHandler:
     A function to print debug-messages can optionally be passed.
     """
 
-    def __init__(self, auth_path: str, debug_fn: Any = print) -> None:
-        self.auth_url = auth_path
+    def __init__(self, debug_fn: Any = print) -> None:
         self.debug_fn = debug_fn
-        self.http_handler = HttpHandler(auth_path)
+        self.http_handler = HttpHandler(debug_fn)
         self.validator = Validator(self.http_handler, debug_fn)
         self.hashing_handler = HashingHandler()
 
