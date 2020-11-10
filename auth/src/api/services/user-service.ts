@@ -1,8 +1,9 @@
-import { Datastore } from '../interfaces/datastore';
+import { Datastore, GetManyAnswer } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { Inject } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
+import { Logger } from './logger';
 import { User } from '../../core/models/user';
 import { UserHandler } from '../interfaces/user-handler';
 import { Validation } from '../interfaces/validation';
@@ -19,31 +20,30 @@ export class UserService implements UserHandler {
     private readonly userCollection: Map<string, User> = new Map();
 
     public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
-        const userObj = await this.datastore.filter<User>('user', 'username', username, [
-            'username',
-            'password',
-            'id',
-            'is_active'
-        ]);
-        if (Object.keys(userObj).length > 1) {
-            return { isValid: false, message: 'Multiple users with same credentials!' };
+        Logger.debug(`Gets user by credentials: ${username} and ${password}`);
+        try {
+            return await this.readUserFromDatastoreByCredentials(username, password);
+        } catch (e) {
+            Logger.debug(`Fails with the following error:`, e);
+            return {
+                isValid: false,
+                message: e
+            };
         }
-        const user: User = new User(userObj[Object.keys(userObj)[0]]);
-        if (!user) {
-            return { isValid: false, message: 'Username or password is incorrect' };
-        }
-        if (!user.is_active) {
-            return { isValid: false, message: 'The account is deactivated' };
-        }
-        if (!this.isPasswordCorrect(password, user.password)) {
-            return { isValid: false, message: 'Username or password is incorrect' };
-        }
-        return { isValid: true, message: 'successful', result: user };
     }
 
     public async getUserByUserId(userId: string): Promise<Validation<User>> {
-        const userCollection = await this.datastore.filter<User>('user', 'id', userId, ['username', 'password', 'id']);
-        return { isValid: true, message: 'Successful', result: userCollection[userId] };
+        try {
+            Logger.debug(`Gets user by its id: ${userId}`);
+            const userCollection = await this.getUserCollectionFromDatastore('id', userId);
+            return { isValid: true, message: 'Successful', result: userCollection[userId] };
+        } catch (e) {
+            Logger.debug(`Fails with the following error:`, e);
+            return {
+                isValid: false,
+                message: e
+            };
+        }
     }
 
     public async hasUser(username: string): Promise<boolean> {
@@ -57,5 +57,32 @@ export class UserService implements UserHandler {
 
     private isPasswordCorrect(input: string, toCompare: string): boolean {
         return this.hashingHandler.isEquals(input, toCompare);
+    }
+
+    private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<Validation<any>> {
+        const userObj = await this.getUserCollectionFromDatastore('username', username);
+        Logger.debug('User object from datastore: ', userObj);
+        if (Object.keys(userObj).length > 1) {
+            throw new Error('Multiple users with same credentials!');
+        }
+        const user: User = new User(userObj[Object.keys(userObj)[0]]);
+        if (!user) {
+            throw new Error('Username or password is incorrect!');
+        }
+        if (!user.is_active) {
+            throw new Error('The account is deactivated.');
+        }
+        if (!this.isPasswordCorrect(password, user.password)) {
+            throw new Error('Username or password is incorrect!');
+        }
+        return { isValid: true, message: 'successful', result: user };
+    }
+
+    private async getUserCollectionFromDatastore(property: keyof User, value: string): Promise<GetManyAnswer<User>> {
+        if (!value) {
+            Logger.error(`Property ${property} is ${value}`);
+            throw new Error(`Property ${property} is ${value}`);
+        }
+        return await this.datastore.filter<User>('user', property, value, ['username', 'password', 'id', 'is_active']);
     }
 }

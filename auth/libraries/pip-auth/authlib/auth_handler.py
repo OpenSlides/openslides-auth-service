@@ -23,11 +23,15 @@ class AuthHandler:
     def authenticate(
         self, headers: Optional[Dict], cookies: Optional[Dict]
     ) -> Tuple[int, Optional[str]]:
+        self.debug_fn(f"Try to authenticate with")
+        self.debug_fn(f"Headers: {headers}")
+        self.debug_fn(f"Cookies: {cookies}")
         if not headers or not cookies:
             return ANONYMOUS_USER, None
         return self.validator.verify(headers, cookies)
 
     def hash(self, to_hash: str) -> str:
+        self.debug_fn(f"Hash {to_hash}: {self.hashing_handler.hash(to_hash)}")
         return self.hashing_handler.hash(to_hash)
 
     def is_equals(self, to_hash: str, to_compare: str) -> bool:

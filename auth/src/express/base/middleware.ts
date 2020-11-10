@@ -1,11 +1,8 @@
 import { Response } from 'express';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
+import { HttpData } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
-
-export interface HttpData {
-    [key: string]: any;
-}
 
 export abstract class Middleware {
     protected sendResponse(
@@ -25,8 +22,8 @@ export abstract class Middleware {
                 httpOnly: true
             });
         }
-        Logger.debug(`Successful: ${success} --- Message: ${message}`);
-        Logger.debug(`Sending response: ${JSON.stringify(data)}`);
+        Logger.debug(`Successful: ${code} ${success} --- Message: ${message}`);
+        Logger.debug(`Sending response:`, data);
         response.status(code).send({
             success,
             message,

@@ -2,6 +2,8 @@ export namespace Config {
     export const DATABASE_PATH = 'database/';
     export const DATASTORE_READER = getReaderUrl();
 
+    const VERBOSE_TRUE_FIELDS = ['1', 'y', 'yes', 'true', 'on'];
+
     function getReaderUrl(): string {
         const readerHost = process.env.DATASTORE_READER_HOST;
         const readerPort = process.env.DATASTORE_READER_PORT;
@@ -12,6 +14,6 @@ export namespace Config {
     }
 
     export function isDevMode(): boolean {
-        return process.env.OPENSLIDES_DEVELOPMENT === '1';
+        return VERBOSE_TRUE_FIELDS.includes(process.env.OPENSLIDES_DEVELOPMENT || '');
     }
 }

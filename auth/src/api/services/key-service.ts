@@ -1,5 +1,6 @@
 import { Config } from '../../config';
 import { KeyHandler } from '../interfaces/key-handler';
+import { Logger } from './logger';
 
 const AUTH_DEV_KEY = 'auth-dev-key';
 
@@ -23,6 +24,7 @@ export class KeyService extends KeyHandler {
     }
 
     private loadKeys(): void {
+        Logger.debug('KeyService.loadKeys -- is in dev-mode:', Config.isDevMode());
         if (!process.env.AUTH_TOKEN_KEY && !Config.isDevMode()) {
             throw new Error('No token key defined.');
         }

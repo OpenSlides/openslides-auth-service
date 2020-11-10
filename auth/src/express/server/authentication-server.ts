@@ -1,23 +1,32 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import { createServer, Server } from 'http';
+import responseTime from 'response-time';
 
 import { BaseServer } from '../../api/interfaces/base-server';
+import { Inject } from '../../util/di';
+import { ErrorHandler } from '../interfaces/error-handler';
+import { LogErrorHandler } from '../middleware/log-error-handler';
 import { Logger } from '../../api/services/logger';
 import Routes from '../routes/routes';
 
-export default class AuthenticationServer implements BaseServer {
+export default class AuthenticationServer extends BaseServer {
     public name = 'AuthenticationServer';
+
+    @Inject(LogErrorHandler)
+    private logErrorHandler: ErrorHandler;
 
     private app: express.Application;
     private server: Server;
     private routes: Routes;
 
     public constructor() {
+        super();
         this.createApp();
         this.createServer();
         this.initializeConfig();
         this.initializeRoutes();
+        this.initializeErrorHandlers();
     }
 
     public getApp(): express.Application {
@@ -41,6 +50,7 @@ export default class AuthenticationServer implements BaseServer {
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
         this.app.use(cookieParser());
+        this.app.use(responseTime());
     }
 
     private initializeRoutes(): void {
@@ -48,10 +58,19 @@ export default class AuthenticationServer implements BaseServer {
         this.routes.initRoutes();
     }
 
+    private initializeErrorHandlers(): void {
+        this.app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) =>
+            this.logErrorHandler.handleError(error, req, res, next)
+        );
+    }
+
     private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {
         const origin = req.headers.origin;
         const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
-        Logger.log(`${req.method} -- ${req.path}`);
+        Logger.log(`${req.protocol}://${req.headers.host}: ${req.method} -- ${req.originalUrl}`);
+        Logger.debug(`Params:`, req.params);
+        Logger.debug(`Body:`, req.body);
+        Logger.debug(`Header:`, req.headers);
         res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
         res.setHeader(
