@@ -27,6 +27,14 @@ export class TicketService extends TicketHandler {
     @InjectService(UserService)
     private readonly userHandler: UserHandler;
 
+    private get cookieKey(): string {
+        return this.keyHandler.getCookieKey();
+    }
+
+    private get tokenKey(): string {
+        return this.keyHandler.getTokenKey();
+    }
+
     private readonly anonymousMessage = {
         isValid: true,
         message: 'Successful',
@@ -38,7 +46,7 @@ export class TicketService extends TicketHandler {
             return {
                 isValid: true,
                 message: 'Successful',
-                result: jwt.verify(cookieAsString, this.keyHandler.getPrivateCookieKey()) as Cookie
+                result: jwt.verify(cookieAsString, this.cookieKey) as Cookie
             };
         } catch (e) {
             return { isValid: false, message: 'Wrong cookie', reason: e };
@@ -50,7 +58,7 @@ export class TicketService extends TicketHandler {
             return {
                 isValid: true,
                 message: 'successful',
-                result: jwt.verify(tokenAsString, this.keyHandler.getPrivateTokenKey()) as Token
+                result: jwt.verify(tokenAsString, this.tokenKey) as Token
             };
         } catch (e) {
             return { isValid: false, message: 'Wrong token', reason: e };
@@ -81,7 +89,7 @@ export class TicketService extends TicketHandler {
         if (!cookieAsString) {
             return this.anonymousMessage; // login as guest
         }
-        if (!cookieAsString.toLowerCase().startsWith('bearer ')) {
+        if (!this.isBearer(cookieAsString)) {
             return { isValid: false, message: 'Wrong token' };
         }
         const result = this.verifyCookie(cookieAsString.slice(7));
@@ -123,8 +131,7 @@ export class TicketService extends TicketHandler {
     }
 
     private checkBearerTicket(tokenString: string, cookieString: string): void {
-        const tokenBegin = 'bearer ';
-        if (!tokenString.toLowerCase().startsWith(tokenBegin) || !cookieString.toLowerCase().startsWith(tokenBegin)) {
+        if (!this.isBearer(tokenString) || !this.isBearer(cookieString)) {
             throw new ValidationException('Wrong ticket!');
         }
     }
@@ -157,8 +164,13 @@ export class TicketService extends TicketHandler {
         return answer;
     }
 
+    private isBearer(jwtEncoded: string): boolean {
+        const bearerBegin = 'bearer ';
+        return jwtEncoded.toLowerCase().startsWith(bearerBegin);
+    }
+
     private generateToken(sessionId: string, user: User): string {
-        const token = jwt.sign({ expiresIn: '10m', sessionId, userId: user.id }, this.keyHandler.getPrivateTokenKey(), {
+        const token = jwt.sign({ expiresIn: '10m', sessionId, userId: user.id }, this.tokenKey, {
             expiresIn: '10m',
             algorithm: 'HS256'
         });
@@ -166,10 +178,7 @@ export class TicketService extends TicketHandler {
     }
 
     private generateCookie(sessionId: string): string {
-        const cookie = jwt.sign({ sessionId }, this.keyHandler.getPrivateCookieKey(), {
-            expiresIn: '1d',
-            algorithm: 'HS256'
-        });
+        const cookie = jwt.sign({ sessionId }, this.cookieKey, { expiresIn: '1d', algorithm: 'HS256' });
         return `bearer ${cookie}`;
     }
 }

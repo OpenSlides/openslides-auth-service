@@ -1,13 +1,15 @@
 import jwt
 
 from .base import BaseTestEnvironment
-from ..config import get_private_cookie_key, get_private_token_key
+from ..config import Environment
 from urllib import parse
 from ..constants import USER_ID_PROPERTY
 from datetime import datetime
 
 
 class TestAuthenticate(BaseTestEnvironment):
+    environment = Environment()
+
     def test_authenticate(self):
         response = self.fake_request.login()
         user_id = self.auth_handler.authenticate(response.headers, response.cookies)[0]
@@ -41,16 +43,16 @@ class TestAuthenticate(BaseTestEnvironment):
         response = self.fake_request.login()
         cookie = parse.unquote(response.cookies["refreshId"])[7:]
 
-        session_id = jwt.decode(cookie, get_private_cookie_key(), algorithms=["HS256"])[
-            "sessionId"
-        ]
+        session_id = jwt.decode(
+            cookie, self.environment.get_cookie_key(), algorithms=["HS256"]
+        )["sessionId"]
         expired_token_payload = {
             "sessionId": session_id,
             USER_ID_PROPERTY: 1,
             "exp": datetime.utcfromtimestamp(0),
         }
         raw_token = jwt.encode(
-            expired_token_payload, get_private_token_key(), algorithm="HS256"
+            expired_token_payload, self.environment.get_token_key(), algorithm="HS256"
         )
         expired_token = "bearer " + raw_token.decode("utf-8")
 

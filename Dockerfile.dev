@@ -15,7 +15,6 @@ COPY auth/package*.json ./
 RUN npm install
 
 # Application lays in /app/src
-COPY ./dev-keys /keys
 COPY ./auth ./
 COPY auth/entrypoint.sh ./
 
@@ -23,6 +22,9 @@ COPY auth/entrypoint.sh ./
 RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 EXPOSE 9004
+
+ENV AUTH_TOKEN_KEY auth-dev-key
+ENV AUTH_COOKIE_KEY auth-dev-key
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["npm", "run", "dev"]

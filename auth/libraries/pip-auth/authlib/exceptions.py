@@ -6,3 +6,8 @@ class InvalidCredentialsException(Exception):
 class AuthenticateException(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class KeyException(Exception):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

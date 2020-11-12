@@ -1,32 +1,34 @@
-import { Keys } from '../../config';
 import { KeyHandler } from '../interfaces/key-handler';
 
 export class KeyService extends KeyHandler {
-    protected privateTokenKey: string;
-    protected privateCookieKey: string;
-    protected publicTokenKey: string;
-    protected publicCookieKey: string;
+    protected tokenKey = '';
+    protected cookieKey = '';
 
     public constructor() {
         super();
 
         // Load key files early to detect missing ones
-        this.privateTokenKey = Keys.privateTokenKey();
-        this.privateCookieKey = Keys.privateCookieKey();
-        this.publicTokenKey = Keys.publicTokenKey();
-        this.publicCookieKey = Keys.publicCookieKey();
+        this.loadKeys();
     }
 
-    public getPrivateTokenKey(): string {
-        return this.privateTokenKey;
+    public getCookieKey(): string {
+        return this.cookieKey;
     }
-    public getPrivateCookieKey(): string {
-        return this.privateCookieKey;
+
+    public getTokenKey(): string {
+        return this.tokenKey;
     }
-    public getPublicTokenKey(): string {
-        return this.publicTokenKey;
-    }
-    public getPublicCookieKey(): string {
-        return this.publicCookieKey;
+
+    private loadKeys(): void {
+        if (!process.env.AUTH_TOKEN_KEY) {
+            throw new Error('No token key defined.');
+        }
+        this.tokenKey = process.env.AUTH_TOKEN_KEY;
+
+        if (!process.env.AUTH_COOKIE_KEY) {
+            throw new Error('No cookie key defined.');
+        }
+
+        this.cookieKey = process.env.AUTH_COOKIE_KEY;
     }
 }

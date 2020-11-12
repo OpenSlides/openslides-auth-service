@@ -1,39 +1,26 @@
-from authlib.dev.keys import key_dict
+import os
+
+from .exceptions import KeyException
 
 
-keys = {}
+class Environment:
+    def __init__(self) -> None:
+        self.__load_keys()
 
+    def __load_keys(self) -> None:
+        auth_token_key = os.getenv("AUTH_TOKEN_KEY")
+        auth_cookie_key = os.getenv("AUTH_COOKIE_KEY")
+        if not auth_token_key:
+            raise KeyException("No AUTH_TOKEN_KEY defined.")
 
-def is_dev_mode():
-    return True
+        if not auth_cookie_key:
+            raise KeyException("No AUTH_COOKIE_KEY defined.")
 
+        self.auth_token_key = auth_token_key
+        self.auth_cookie_key = auth_cookie_key
 
-def get_public_token_key():
-    return init_key("public_token_key", "rsa-token.key.pub")
+    def get_token_key(self):
+        return self.auth_token_key
 
-
-def get_public_cookie_key():
-    return init_key("public_cookie_key", "rsa-cookie.key.pub")
-
-
-def get_private_token_key():
-    return init_key("private_token_key", "rsa-token.key")
-
-
-def get_private_cookie_key():
-    return init_key("private_cookie_key", "rsa-cookie.key")
-
-
-def init_key(name, path):
-    global keys
-    if name not in keys:
-        keys[name] = get_file(path)
-    return keys[name]
-
-
-def get_file(name):
-    if is_dev_mode():
-        return key_dict[name]
-    path = f"/keys/{name}"
-    with open(path, "r") as file:
-        return file.read()
+    def get_cookie_key(self):
+        return self.auth_cookie_key
