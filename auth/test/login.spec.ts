@@ -1,3 +1,4 @@
+import { FakeDatastoreAdapter } from './fake-datastore-adapter';
 import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
@@ -12,11 +13,13 @@ let database: TestDatabaseAdapter;
 beforeAll(async () => {
     database = new TestDatabaseAdapter();
     await database.init();
+    await FakeDatastoreAdapter.updateAdmin({ is_active: true });
 });
 
 afterEach(async () => {
     fakeUser.accessToken = '';
     await database.flushdb();
+    await FakeDatastoreAdapter.updateAdmin({ is_active: true });
 });
 
 afterAll(() => {
@@ -34,6 +37,11 @@ test('POST login twice - different session-ids', async () => {
     const sessionOne = Utils.getSessionInformationFromUser(await FakeRequest.login());
     const sessionTwo = Utils.getSessionInformationFromUser(await FakeRequest.login());
     expect(sessionOne.sessionId).not.toBe(sessionTwo.sessionId);
+});
+
+test('POST login while inactive', async () => {
+    await FakeDatastoreAdapter.updateAdmin({ is_active: false });
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.login());
 });
 
 test('GET login', async () => {
