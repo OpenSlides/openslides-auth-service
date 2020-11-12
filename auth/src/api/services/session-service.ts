@@ -44,7 +44,7 @@ export class SessionService extends SessionHandler {
 
     public async clearAllSessionsExceptThemselves(exceptSessionId: string): Promise<void> {
         const userId = await this.sessionDatabase.get<string>(exceptSessionId);
-        const currentSessions = await this.userDatabase.get<string[]>(userId);
+        const currentSessions = (await this.userDatabase.get<string[]>(userId)) || [];
         await Promise.all(
             currentSessions.map(session => {
                 if (session !== exceptSessionId) {

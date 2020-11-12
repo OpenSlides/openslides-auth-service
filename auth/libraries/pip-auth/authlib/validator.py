@@ -3,7 +3,7 @@ from urllib import parse
 
 import jwt
 
-from authlib.config import get_private_cookie_key, get_private_token_key
+from .config import Environment
 
 from .constants import (
     ANONYMOUS_USER,
@@ -23,19 +23,24 @@ class Validator:
     def __init__(self, http_handler: HttpHandler, debug_fn: Any = print) -> None:
         self.http_handler = http_handler
         self.debug_fn = debug_fn
+        self.environment = Environment()
 
     def verify(self, headers: Dict, cookies: Dict) -> Tuple[int, Optional[str]]:
         try:
             token_encoded, cookie_encoded = self.__extractTokenAndCookie(
                 headers, cookies
             )
-            if not isinstance(token_encoded, str) or not isinstance(cookie_encoded, str):
+            if not isinstance(token_encoded, str) or not isinstance(
+                cookie_encoded, str
+            ):
                 return ANONYMOUS_USER, None
             return self.__verify_ticket(token_encoded, cookie_encoded), None
         except jwt.exceptions.ExpiredSignatureError:
             return self.__verify_ticket_from_auth_service(headers, cookies)
 
-    def __extractTokenAndCookie(self, headers: Dict, cookies: Dict) -> Tuple[Optional[str], Optional[str]]:
+    def __extractTokenAndCookie(
+        self, headers: Dict, cookies: Dict
+    ) -> Tuple[Optional[str], Optional[str]]:
         try:
             token_encoded = headers.get(AUTHENTICATION_HEADER)
             if not isinstance(token_encoded, str):
@@ -57,8 +62,8 @@ class Validator:
         )
         # this may raise an ExpiredSignatureError. We check,
         # if the cookies signature is valid
-        self.__decode(cookie_encoded, get_private_cookie_key())
-        token = self.__decode(token_encoded, get_private_token_key())
+        self.__decode(cookie_encoded, self.environment.get_cookie_key())
+        token = self.__decode(token_encoded, self.environment.get_token_key())
         user_id = token.get(USER_ID_PROPERTY)
         if not isinstance(user_id, int):
             raise AuthenticateException("user_id is not an int")

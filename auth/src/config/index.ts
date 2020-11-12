@@ -11,31 +11,3 @@ export namespace Config {
         return `http://${process.env.DATASTORE_READER_HOST}:${parseInt(process.env.DATASTORE_READER_PORT, 10)}`;
     }
 }
-
-export namespace Keys {
-    const encoding = 'utf8';
-    const pathToKeys = '/keys';
-
-    export function publicTokenKey(): string {
-        return fs.readFileSync(getFile('rsa-token.key.pub'), encoding);
-    }
-
-    export function publicCookieKey(): string {
-        return fs.readFileSync(getFile('rsa-cookie.key.pub'), encoding);
-    }
-
-    export function privateTokenKey(): string {
-        return fs.readFileSync(getFile('rsa-token.key'), encoding);
-    }
-
-    export function privateCookieKey(): string {
-        return fs.readFileSync(getFile('rsa-cookie.key'), encoding);
-    }
-
-    function getFile(path: string): string {
-        if (!path.startsWith('/')) {
-            path = '/' + path;
-        }
-        return `${pathToKeys}${path}`;
-    }
-}
