@@ -1,20 +1,18 @@
-import jwt
-import requests
-import secrets
+from typing import Any, Dict, Optional, Tuple
 from urllib import parse
-from typing import Optional, Tuple, Dict, Any, Callable
-import simplejson as json
-from .http_handler import HttpHandler
-from .exceptions import InvalidCredentialsException, AuthenticateException
 
-from authlib.config import get_private_token_key, get_private_cookie_key
+import jwt
+
+from authlib.config import get_private_cookie_key, get_private_token_key
+
 from .constants import (
-    AUTHENTICATION_HEADER,
-    USER_ID,
-    REFRESH_ID,
     ANONYMOUS_USER,
-    INVALID_USER,
+    AUTHENTICATION_HEADER,
+    REFRESH_ID,
+    USER_ID_PROPERTY,
 )
+from .exceptions import AuthenticateException, InvalidCredentialsException
+from .http_handler import HttpHandler
 
 
 class Validator:
@@ -31,18 +29,55 @@ class Validator:
             token_encoded, cookie_encoded = self.__extractTokenAndCookie(
                 headers, cookies
             )
+            if not isinstance(token_encoded, str) or not isinstance(cookie_encoded, str):
+                return ANONYMOUS_USER, None
             return self.__verify_ticket(token_encoded, cookie_encoded), None
         except jwt.exceptions.ExpiredSignatureError:
             return self.__verify_ticket_from_auth_service(headers, cookies)
 
+    def __extractTokenAndCookie(self, headers: Dict, cookies: Dict) -> Tuple[Optional[str], Optional[str]]:
+        try:
+            token_encoded = headers.get(AUTHENTICATION_HEADER)
+            if not isinstance(token_encoded, str):
+                raise AuthenticateException("Wrong format of headers")
+        except KeyError:
+            raise AuthenticateException("Wrong format of headers")
+        try:
+            refresh_id = cookies.get(REFRESH_ID)
+            cookie_encoded = (
+                parse.unquote(refresh_id) if isinstance(refresh_id, str) else None
+            )
+        except KeyError:
+            raise AuthenticateException("Wrong format of cookies")
+        return token_encoded, cookie_encoded
+
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
-        if not isinstance(token_encoded, str) or not isinstance(cookie_encoded, str):
-            return ANONYMOUS_USER
-        self.__validate_wellformed_token_and_cookie(token_encoded, cookie_encoded)
-        token_encoded = token_encoded[7:]
-        cookie_encoded = cookie_encoded[7:]
-        self.__verify(cookie_encoded, get_private_cookie_key())
-        return self.__getUserIdFromAccessToken(token_encoded)
+        token_encoded, cookie_encoded = self.__assert_wellformed_token_and_cookie(
+            token_encoded, cookie_encoded
+        )
+        # this may raise an ExpiredSignatureError. We check,
+        # if the cookies signature is valid
+        self.__decode(cookie_encoded, get_private_cookie_key())
+        token = self.__decode(token_encoded, get_private_token_key())
+        user_id = token.get(USER_ID_PROPERTY)
+        if not isinstance(user_id, int):
+            raise AuthenticateException("user_id is not an int")
+        return user_id
+
+    def __assert_wellformed_token_and_cookie(
+        self, token: str, cookie: str
+    ) -> Tuple[str, str]:
+        if not self.__is_bearer(token):
+            raise InvalidCredentialsException("Wrong format of access-token")
+        if not self.__is_bearer(cookie):
+            raise InvalidCredentialsException("Wrong format of refresh-cookie")
+        return token[7:], cookie[7:]
+
+    def __decode(self, encoded_jwt: str, secret: str) -> Dict:
+        return jwt.decode(encoded_jwt, secret, algorithms=["HS256"])
+
+    def __is_bearer(self, encoded_jwt: str) -> bool:
+        return len(encoded_jwt) >= 7 and encoded_jwt.startswith("bearer ")
 
     def __verify_ticket_from_auth_service(
         self, headers: Dict, cookies: Dict
@@ -51,11 +86,14 @@ class Validator:
         Sends a request to the auth-service configured in the constructor.
         """
         response = self.http_handler.send_internal_request(
-            "/api/authenticate", headers, cookies
+            "/api/authenticate", headers=headers, cookies=cookies
         )
         if not response.ok:
+            self.debug_fn(
+                "Error from auth-service: " + response.content.decode("utf-8")
+            )
             raise AuthenticateException(
-                f"Authentication service sends HTTP {response.status_code}. Please contact administrator."
+                f"Authentication service sends HTTP {response.status_code}. "
             )
 
         user_id = self.__getUserIdFromResponseBody(response.json())
@@ -64,41 +102,8 @@ class Validator:
 
     def __getUserIdFromResponseBody(self, response_body) -> int:
         try:
-            return response_body[USER_ID]
+            return response_body[USER_ID_PROPERTY]
         except (TypeError, KeyError) as e:
             raise AuthenticateException(
                 f"Empty or bad response from authentication service: {e}"
             )
-
-    def __getUserIdFromAccessToken(self, access_token: str) -> int:
-        payload = self.__verify(access_token, get_private_token_key())
-        return payload.get(USER_ID)
-
-    def __validate_wellformed_token_and_cookie(self, token: str, cookie: str) -> None:
-        if not self.__is_bearer(token):
-            raise InvalidCredentialsException("Wrong format of access-token")
-        if not self.__is_bearer(cookie):
-            raise InvalidCredentialsException("Wrong format of refresh-cookie")
-
-    def __verify(self, encoded_jwt: str, secret: str) -> Dict:
-        return jwt.decode(encoded_jwt, secret, algorithms=["HS256"])
-
-    def __is_bearer(self, encoded_jwt: str) -> bool:
-        return len(encoded_jwt) >= 7 and encoded_jwt.startswith("bearer ")
-
-    def __extractTokenAndCookie(self, headers: Dict, cookies: Dict) -> Tuple[str, str]:
-        token_encoded = None
-        cookie_encoded = None
-        try:
-            token_encoded = headers.get(AUTHENTICATION_HEADER)
-        except KeyError:
-            raise AuthenticateException("Wrong format of headers")
-        try:
-            cookie_encoded = (
-                parse.unquote(cookies.get(REFRESH_ID))
-                if not cookies.get(REFRESH_ID) is None
-                else None
-            )
-        except KeyError:
-            raise AuthenticateException("Wrong format of cookies")
-        return token_encoded, cookie_encoded

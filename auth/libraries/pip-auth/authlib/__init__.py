@@ -1,1 +1,1 @@
-from .auth_handler import AuthHandler
+from .auth_handler import AuthHandler  # noqa

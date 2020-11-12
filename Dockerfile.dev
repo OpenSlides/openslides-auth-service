@@ -20,7 +20,7 @@ COPY ./auth ./
 COPY auth/entrypoint.sh ./
 
 # Install pip-dependencies.
-RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt
+RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 EXPOSE 9004
 

@@ -18,7 +18,7 @@ export class RedisMessageBusAdapter extends MessageBus {
         try {
             const host = process.env.MESSAGE_BUS_HOST;
             const port = parseInt(process.env.MESSAGE_BUS_PORT, 10);
-            console.log(`Message bus: ${host}:${port}`)
+            Logger.log(`Message bus: ${host}:${port}`);
             this.messageBus = new Redis(port, host);
         } catch (e) {
             Logger.log('Error while connecting to the message-bus:', e);

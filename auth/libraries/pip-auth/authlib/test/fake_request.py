@@ -1,8 +1,8 @@
 import requests
 
-from ..http_handler import HttpHandler
+AUTH_TEST_URL = "http://localhost:9004"
 
-credentials = {"username": "admin", "password": "admin"}
+from ..http_handler import HttpHandler
 
 
 class FakeRequest:
@@ -12,4 +12,6 @@ class FakeRequest:
         return requests.get(f"{self.http_handler.auth_endpoint}/system/auth/")
 
     def login(self):
-        return self.http_handler.send_request("login", payload=credentials)
+        return self.http_handler.send_request(
+            "login", payload={"username": "admin", "password": "admin"}
+        )

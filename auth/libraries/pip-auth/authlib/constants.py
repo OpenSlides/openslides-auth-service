@@ -1,8 +1,4 @@
 AUTHENTICATION_HEADER = "Authentication"
 REFRESH_ID = "refreshId"
-USER_ID = "userId"
-
+USER_ID_PROPERTY = "userId"
 ANONYMOUS_USER = 0
-INVALID_USER = -1
-
-HASHED_LENGTH = 152

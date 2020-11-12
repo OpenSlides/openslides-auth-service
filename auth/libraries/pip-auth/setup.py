@@ -1,5 +1,6 @@
 import setuptools
 
+
 # see: https://stackoverflow.com/questions/16584552/how-to-state-in-requirements-txt-a-direct-github-source
 # and: https://medium.com/@arocketman/creating-a-pip-package-on-a-private-repository-using-setuptools-fff608471e39
 

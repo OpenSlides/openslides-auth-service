@@ -30,6 +30,12 @@ test('POST login with credentials', async () => {
     Validation.validateAccessToken(result);
 });
 
+test('POST login twice - different session-ids', async () => {
+    const sessionOne = Utils.getSessionInformationFromUser(await FakeRequest.login());
+    const sessionTwo = Utils.getSessionInformationFromUser(await FakeRequest.login());
+    expect(sessionOne.sessionId).not.toBe(sessionTwo.sessionId);
+});
+
 test('GET login', async () => {
     try {
         await Utils.requestGet('login');

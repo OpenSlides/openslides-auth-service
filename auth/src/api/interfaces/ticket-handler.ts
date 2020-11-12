@@ -8,5 +8,5 @@ export abstract class TicketHandler {
     public abstract decode<T>(toDecode: string): T;
     public abstract create(user: User): Promise<Validation<Ticket>>;
     public abstract refresh(cookie?: string): Promise<Validation<Ticket>>;
-    public abstract async validateTicket(token?: string, cookie?: string): Promise<Validation<Token>>;
+    public abstract validateTicket(token?: string, cookie?: string): Promise<Validation<Token>>;
 }
