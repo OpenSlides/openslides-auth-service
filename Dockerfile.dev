@@ -23,8 +23,7 @@ RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./lib
 
 EXPOSE 9004
 
-ENV AUTH_TOKEN_KEY auth-dev-key
-ENV AUTH_COOKIE_KEY auth-dev-key
+ENV OS4_DEVELOPMENT 1
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["npm", "run", "dev"]

@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 export namespace Config {
     export const DATABASE_PATH = 'database/';
     export const DATASTORE_READER = getReaderUrl();
@@ -9,5 +7,9 @@ export namespace Config {
             throw new Error('No datastore reader is defined.');
         }
         return `http://${process.env.DATASTORE_READER_HOST}:${parseInt(process.env.DATASTORE_READER_PORT, 10)}`;
+    }
+
+    export function isDevMode(): boolean {
+        return process.env.OS4_DEVELOPMENT === '1';
     }
 }
