@@ -3,10 +3,12 @@ export namespace Config {
     export const DATASTORE_READER = getReaderUrl();
 
     function getReaderUrl(): string {
-        if (!process.env.DATASTORE_READER_HOST || !process.env.DATASTORE_READER_PORT) {
+        const readerHost = process.env.DATASTORE_READER_HOST;
+        const readerPort = process.env.DATASTORE_READER_PORT;
+        if (!readerHost || !readerPort) {
             throw new Error('No datastore reader is defined.');
         }
-        return `http://${process.env.DATASTORE_READER_HOST}:${parseInt(process.env.DATASTORE_READER_PORT, 10)}`;
+        return `http://${readerHost}:${parseInt(readerPort, 10)}`;
     }
 
     export function isDevMode(): boolean {

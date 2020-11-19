@@ -16,14 +16,14 @@ export abstract class Datastore {
 
     protected datastoreReader = `${Config.DATASTORE_READER}/internal/datastore/reader`;
 
-    public abstract async filter<T>(
+    public abstract filter<T>(
         collection: string,
         filterField: keyof T,
         filterValue: any,
         mappedFields: (keyof T)[]
     ): Promise<GetManyAnswer<T>>;
-    public abstract async get<T>(collection: string, id: any, mappedFields: (keyof T)[]): Promise<any>;
-    public abstract async exists<T>(
+    public abstract get<T>(collection: string, id: any, mappedFields: (keyof T)[]): Promise<any>;
+    public abstract exists<T>(
         collection: string,
         filterField: keyof T,
         filterValue: any

@@ -19,13 +19,21 @@ export class UserService implements UserHandler {
     private readonly userCollection: Map<string, User> = new Map();
 
     public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
-        const userObj = await this.datastore.filter<User>('user', 'username', username, ['username', 'password', 'id']);
+        const userObj = await this.datastore.filter<User>('user', 'username', username, [
+            'username',
+            'password',
+            'id',
+            'is_active'
+        ]);
         if (Object.keys(userObj).length > 1) {
             return { isValid: false, message: 'Multiple users with same credentials!' };
         }
         const user: User = new User(userObj[Object.keys(userObj)[0]]);
         if (!user) {
             return { isValid: false, message: 'Username or password is incorrect' };
+        }
+        if (!user.is_active) {
+            return { isValid: false, message: 'The account is deactivated' };
         }
         if (!this.isPasswordCorrect(password, user.password)) {
             return { isValid: false, message: 'Username or password is incorrect' };
