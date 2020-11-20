@@ -3,7 +3,7 @@ import os
 from .exceptions import KeyException
 
 AUTH_DEV_KEY = "auth-dev-key"
-DEVELEOPMENT_VARIABLE = "OS4_DEVELOPMENT"
+DEVELEOPMENT_VARIABLE = "OPENSLIDES_DEVELOPMENT"
 
 
 class Environment:

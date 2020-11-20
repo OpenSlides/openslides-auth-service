@@ -12,6 +12,6 @@ export namespace Config {
     }
 
     export function isDevMode(): boolean {
-        return process.env.OS4_DEVELOPMENT === '1';
+        return process.env.OPENSLIDES_DEVELOPMENT === '1';
     }
 }

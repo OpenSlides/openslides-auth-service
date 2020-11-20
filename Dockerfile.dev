@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./lib
 
 EXPOSE 9004
 
-ENV OS4_DEVELOPMENT 1
+ENV OPENSLIDES_DEVELOPMENT 1
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["npm", "run", "dev"]
