@@ -2,6 +2,7 @@ import { AuthHandler } from '../interfaces/auth-handler';
 import { Inject, InjectService } from '../../util/di';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { HashingService } from './hashing-service';
+import { Logger } from './logger';
 import { SessionService } from './session-service';
 import { Ticket, Token } from '../../core/ticket';
 import { TicketHandler } from '../interfaces/ticket-handler';
@@ -37,6 +38,7 @@ export class AuthService implements AuthHandler {
     }
 
     public async whoAmI(cookieAsString: string): Promise<Validation<Ticket>> {
+        Logger.debug(`whoAmI -- cookie: ${cookieAsString}`);
         const answer = await this.ticketHandler.refresh(cookieAsString);
         return answer;
     }

@@ -21,11 +21,13 @@ class Validator:
     """
 
     def __init__(self, http_handler: HttpHandler, debug_fn: Any = print) -> None:
+        debug_fn("Validator.__init__")
         self.http_handler = http_handler
         self.debug_fn = debug_fn
-        self.environment = Environment()
+        self.environment = Environment(debug_fn)
 
     def verify(self, headers: Dict, cookies: Dict) -> Tuple[int, Optional[str]]:
+        self.debug_fn("Validator.verify")
         try:
             token_encoded, cookie_encoded = self.__extractTokenAndCookie(
                 headers, cookies
@@ -41,6 +43,7 @@ class Validator:
     def __extractTokenAndCookie(
         self, headers: Dict, cookies: Dict
     ) -> Tuple[Optional[str], Optional[str]]:
+        self.debug_fn("Validator.__extractTokenAndCookie")
         try:
             token_encoded = headers.get(AUTHENTICATION_HEADER)
             if not isinstance(token_encoded, str):
@@ -57,6 +60,7 @@ class Validator:
         return token_encoded, cookie_encoded
 
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
+        self.debug_fn("Validator.__verify_ticket")
         token_encoded, cookie_encoded = self.__assert_wellformed_token_and_cookie(
             token_encoded, cookie_encoded
         )
@@ -72,6 +76,7 @@ class Validator:
     def __assert_wellformed_token_and_cookie(
         self, token: str, cookie: str
     ) -> Tuple[str, str]:
+        self.debug_fn("Validator.__assert_wellformed_token_and_cookie")
         if not self.__is_bearer(token):
             raise InvalidCredentialsException("Wrong format of access-token")
         if not self.__is_bearer(cookie):
@@ -79,9 +84,11 @@ class Validator:
         return token[7:], cookie[7:]
 
     def __decode(self, encoded_jwt: str, secret: str) -> Dict:
+        self.debug_fn("Validator.__decode")
         return jwt.decode(encoded_jwt, secret, algorithms=["HS256"])
 
     def __is_bearer(self, encoded_jwt: str) -> bool:
+        self.debug_fn("Validator.__is_bearer")
         return len(encoded_jwt) >= 7 and encoded_jwt.startswith("bearer ")
 
     def __verify_ticket_from_auth_service(
@@ -90,6 +97,7 @@ class Validator:
         """
         Sends a request to the auth-service configured in the constructor.
         """
+        self.debug_fn("Validator.__verify_ticket_from_auth_service")
         response = self.http_handler.send_internal_request(
             "/api/authenticate", headers=headers, cookies=cookies
         )
@@ -106,6 +114,7 @@ class Validator:
         return user_id, access_token
 
     def __getUserIdFromResponseBody(self, response_body) -> int:
+        self.debug_fn("Validator.__getUserIdFromResponseBody")
         try:
             return response_body[USER_ID_PROPERTY]
         except (TypeError, KeyError) as e:

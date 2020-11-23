@@ -1,6 +1,11 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 import { HttpHandler, HttpHeaders, HttpMethod } from '../interfaces/http-handler';
+import { Logger } from './logger';
+
+export interface HttpData {
+    [key: string]: any;
+}
 
 type AxiosResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
 
@@ -18,14 +23,29 @@ export class HttpService extends HttpHandler {
     private async send<T>(
         url: string,
         method: HttpMethod,
-        data?: { [key: string]: any },
+        data?: HttpData,
         headers: HttpHeaders = {},
         responseType: AxiosResponseType = 'json'
     ): Promise<T> {
-        return new Promise(async (resolve, reject) => {
-            axios({ url, method, data, headers, responseType })
-                .then(answer => resolve(answer.data))
-                .catch(error => reject(error));
-        });
+        Logger.debug(`Sending a request: ${method} ${url} ${JSON.stringify(data)} ${JSON.stringify(headers)}`);
+        return (await axios({ url, method, data, headers, responseType })
+            .then(response => response.data)
+            .catch(reason => this.handleError(reason, url, method, data, headers, responseType))) as any;
+    }
+
+    private handleError(
+        error: AxiosError,
+        url: string,
+        method: HttpMethod,
+        data?: HttpData,
+        headers?: HttpHeaders,
+        responseType?: AxiosResponseType
+    ): void {
+        Logger.error('HTTP-error occurred: ', error.message);
+        Logger.error(`Error is occurred while sending the following information: ${method} ${url} ${responseType}`);
+        Logger.error(
+            `Request contains the following data ${JSON.stringify(data)} and headers ${JSON.stringify(headers)}`
+        );
+        throw new Error(error.message);
     }
 }

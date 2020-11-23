@@ -1,3 +1,5 @@
+import { Config } from '../../config';
+
 export enum LogColor {
     Reset = '\x1b[0m',
     Bright = '\x1b[1m',
@@ -53,8 +55,14 @@ export class Logger {
     }
 
     public static debug(...message: any): void {
-        if (process.env.NODE_ENV === 'development') {
+        if (Config.isDevMode()) {
             this.info(LogColor.FgGreen, ...message);
+        }
+    }
+
+    public static error(...message: any): void {
+        if (Config.isDevMode()) {
+            this.info(LogColor.FgCyan, ...message);
         }
     }
 }

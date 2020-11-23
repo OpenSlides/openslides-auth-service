@@ -23,12 +23,14 @@ export class DatastoreAdapter extends Datastore {
             mapped_fields: mappedFields
         });
     }
+
     public async get<T>(collection: string, id: any, mappedFields?: (keyof T)[]): Promise<T> {
         return await this.httpHandler.get(`${this.datastoreReader}/get`, {
             fqid: `${collection}/${id}`,
             mapped_fields: mappedFields
         });
     }
+
     public async exists<T>(
         collection: string,
         filterField: keyof T,
