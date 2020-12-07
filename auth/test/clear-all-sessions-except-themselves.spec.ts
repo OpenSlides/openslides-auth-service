@@ -23,10 +23,10 @@ afterAll(() => {
     return;
 });
 
-test('DELETE clear-all-sessions-except-themselves', async () => {
+test('POST clear-all-sessions-except-themselves', async () => {
     const user = await FakeRequest.loginForNTimes(3);
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await Utils.requestPost('api/clear-all-sessions-except-themselves', { sessionId: sessionInformation.sessionId });
-    const sessions = await Utils.requestGet('api/list-sessions');
+    await Utils.requestPost('secure/clear-all-sessions-except-themselves', { sessionId: sessionInformation.sessionId });
+    const sessions = await Utils.requestGet('secure/list-sessions');
     expect(sessions.sessions.length).toBe(1);
 });

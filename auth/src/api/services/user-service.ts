@@ -66,7 +66,7 @@ export class UserService implements UserHandler {
             throw new Error('Multiple users with same credentials!');
         }
         const user: User = new User(userObj[Object.keys(userObj)[0]]);
-        if (!user) {
+        if (!user.isExisting()) {
             throw new Error('Username or password is incorrect!');
         }
         if (!user.is_active) {

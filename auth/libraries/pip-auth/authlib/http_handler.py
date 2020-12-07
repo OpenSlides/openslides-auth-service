@@ -7,6 +7,7 @@ import os
 
 class HttpHandler:
     def __init__(self, debug_fn: Any = print) -> None:
+        self.debug_fn = debug_fn
         self.auth_endpoint = self.get_endpoint(debug_fn)
 
     def get_endpoint(self, debug_fn: Any = print) -> str:
@@ -21,6 +22,7 @@ class HttpHandler:
     ) -> requests.Response:
         try:
             url = f"{self.auth_endpoint}/system/auth{self.format_url(path)}"
+            self.debug_fn(f"Send request to {url}")
             response = requests.post(
                 url, data=payload, headers=headers, cookies=cookies
             )

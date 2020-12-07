@@ -7,11 +7,15 @@ from .config import Environment
 
 from .constants import (
     ANONYMOUS_USER,
-    AUTHENTICATION_HEADER,
-    REFRESH_ID,
+    COOKIE_NAME,
+    HEADER_NAME,
     USER_ID_PROPERTY,
 )
-from .exceptions import AuthenticateException, InvalidCredentialsException
+from .exceptions import (
+    AuthenticateException,
+    InvalidCredentialsException,
+    InstanceError,
+)
 from .http_handler import HttpHandler
 
 
@@ -26,44 +30,21 @@ class Validator:
         self.debug_fn = debug_fn
         self.environment = Environment(debug_fn)
 
-    def verify(self, headers: Dict, cookies: Dict) -> Tuple[int, Optional[str]]:
+    def verify(
+        self, token_encoded: str, cookie_encoded: str
+    ) -> Tuple[int, Optional[str]]:
         self.debug_fn("Validator.verify")
         try:
-            token_encoded, cookie_encoded = self.__extractTokenAndCookie(
-                headers, cookies
-            )
-            if not isinstance(token_encoded, str) or not isinstance(
-                cookie_encoded, str
-            ):
-                return ANONYMOUS_USER, None
+            self.__assert_instance_of_encoded_jwt(token_encoded, "Token")
+            self.__assert_instance_of_encoded_jwt(cookie_encoded, "Cookie")
             return self.__verify_ticket(token_encoded, cookie_encoded), None
         except jwt.exceptions.ExpiredSignatureError:
-            return self.__verify_ticket_from_auth_service(headers, cookies)
-
-    def __extractTokenAndCookie(
-        self, headers: Dict, cookies: Dict
-    ) -> Tuple[Optional[str], Optional[str]]:
-        self.debug_fn("Validator.__extractTokenAndCookie")
-        try:
-            token_encoded = headers.get(AUTHENTICATION_HEADER)
-            if not isinstance(token_encoded, str):
-                raise AuthenticateException("Wrong format of headers")
-        except KeyError:
-            raise AuthenticateException("Wrong format of headers")
-        try:
-            refresh_id = cookies.get(REFRESH_ID)
-            cookie_encoded = (
-                parse.unquote(refresh_id) if isinstance(refresh_id, str) else None
-            )
-        except KeyError:
-            raise AuthenticateException("Wrong format of cookies")
-        return token_encoded, cookie_encoded
+            return self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
 
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
         self.debug_fn("Validator.__verify_ticket")
-        token_encoded, cookie_encoded = self.__assert_wellformed_token_and_cookie(
-            token_encoded, cookie_encoded
-        )
+        token_encoded = self.__get_jwt_from_bearer_jwt(token_encoded, "token")
+        cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
         # this may raise an ExpiredSignatureError. We check,
         # if the cookies signature is valid
         self.__decode(cookie_encoded, self.environment.get_cookie_key())
@@ -73,15 +54,18 @@ class Validator:
             raise AuthenticateException("user_id is not an int")
         return user_id
 
-    def __assert_wellformed_token_and_cookie(
-        self, token: str, cookie: str
-    ) -> Tuple[str, str]:
-        self.debug_fn("Validator.__assert_wellformed_token_and_cookie")
-        if not self.__is_bearer(token):
-            raise InvalidCredentialsException("Wrong format of access-token")
-        if not self.__is_bearer(cookie):
-            raise InvalidCredentialsException("Wrong format of refresh-cookie")
-        return token[7:], cookie[7:]
+    def __assert_instance_of_encoded_jwt(self, jwt: str, name: str = "jwt") -> None:
+        self.debug_fn("Validator.__assert_instance_of_encoded_jwt")
+        if not isinstance(jwt, str):
+            error_message = f"{jwt} is from type {type(jwt)} -- expected: string"
+            self.debug_fn(f"Throw Error\n{error_message}")
+            raise InstanceError(error_message)
+
+    def __get_jwt_from_bearer_jwt(self, string: str, name: str = "jwt") -> str:
+        self.debug_fn("Validator.__get_jwt_from_bearer_jwt")
+        if not self.__is_bearer(string):
+            raise InvalidCredentialsException(f"Wrong format of {name}: {string}")
+        return string[7:]
 
     def __decode(self, encoded_jwt: str, secret: str) -> Dict:
         self.debug_fn("Validator.__decode")
@@ -92,14 +76,16 @@ class Validator:
         return len(encoded_jwt) >= 7 and encoded_jwt.startswith("bearer ")
 
     def __verify_ticket_from_auth_service(
-        self, headers: Dict, cookies: Dict
+        self, token_encoded: str, cookie_encoded: str
     ) -> Tuple[int, Optional[str]]:
         """
         Sends a request to the auth-service configured in the constructor.
         """
         self.debug_fn("Validator.__verify_ticket_from_auth_service")
+        headers = {HEADER_NAME: token_encoded}
+        cookies = {COOKIE_NAME: cookie_encoded}
         response = self.http_handler.send_internal_request(
-            "/api/authenticate", headers=headers, cookies=cookies
+            "/authenticate", headers=headers, cookies=cookies
         )
         if not response.ok:
             self.debug_fn(
@@ -109,12 +95,12 @@ class Validator:
                 f"Authentication service sends HTTP {response.status_code}. "
             )
 
-        user_id = self.__getUserIdFromResponseBody(response.json())
-        access_token = response.headers.get(AUTHENTICATION_HEADER, None)
+        user_id = self.__get_user_id_from_response_body(response.json())
+        access_token = response.headers.get(HEADER_NAME, None)
         return user_id, access_token
 
-    def __getUserIdFromResponseBody(self, response_body) -> int:
-        self.debug_fn("Validator.__getUserIdFromResponseBody")
+    def __get_user_id_from_response_body(self, response_body) -> int:
+        self.debug_fn("Validator.__get_user_id_from_response_body")
         try:
             return response_body[USER_ID_PROPERTY]
         except (TypeError, KeyError) as e:

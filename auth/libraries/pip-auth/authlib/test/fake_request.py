@@ -1,8 +1,9 @@
 import requests
-
-AUTH_TEST_URL = "http://localhost:9004"
+from typing import Optional, Tuple
+from urllib import parse
 
 from ..http_handler import HttpHandler
+from ..constants import COOKIE_NAME, HEADER_NAME
 
 
 class FakeRequest:
@@ -11,7 +12,15 @@ class FakeRequest:
     def test_connection(self):
         return requests.get(f"{self.http_handler.auth_endpoint}/system/auth/")
 
-    def login(self):
+    def raw_login(self) -> any:
         return self.http_handler.send_request(
             "login", payload={"username": "admin", "password": "admin"}
+        )
+
+    def login(self) -> Tuple[Optional[str], Optional[str]]:
+        response = self.raw_login()
+        cookie = response.cookies.get(COOKIE_NAME, "")
+        return (
+            response.headers.get(HEADER_NAME, None),
+            parse.unquote(cookie),
         )

@@ -14,7 +14,7 @@ export abstract class RouteHandler extends Middleware {
      *
      * @param response HttpResponse
      */
-    public abstract apiIndex(request: express.Request, response: express.Response): void;
+    public abstract secureIndex(request: express.Request, response: express.Response): void;
 
     /**
      * Function to send back { userId, sessionId } after validating current access-token.
@@ -31,5 +31,5 @@ export abstract class RouteHandler extends Middleware {
     public abstract clearUserSessionById(request: express.Request, response: express.Response): void;
     public abstract clearAllSessionsExceptThemselves(request: express.Request, response: express.Response): void;
     public abstract hash(request: express.Request, response: express.Response): void;
-    public abstract isEquals(request: express.Request, response: express.Response): void
+    public abstract isEquals(request: express.Request, response: express.Response): void;
 }

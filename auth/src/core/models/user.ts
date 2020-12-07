@@ -9,4 +9,8 @@ export class User {
     public constructor(input?: any) {
         Object.assign(this, input);
     }
+
+    public isExisting(): boolean {
+        return !!Object.keys(this).length;
+    }
 }

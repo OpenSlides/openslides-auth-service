@@ -23,9 +23,9 @@ afterAll(() => {
     return;
 });
 
-test('DELETE clear-session-by-id', async () => {
+test('POST clear-session-by-id', async () => {
     const user = await FakeRequest.login();
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await Utils.requestDelete('api/clear-session-by-id', { sessionId: sessionInformation.sessionId });
+    await Utils.requestPost('secure/clear-session-by-id', { sessionId: sessionInformation.sessionId });
     await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
 });

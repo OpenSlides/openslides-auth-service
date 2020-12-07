@@ -131,8 +131,11 @@ export class TicketService extends TicketHandler {
     }
 
     private checkBearerTicket(tokenString: string, cookieString: string): void {
-        if (!this.isBearer(tokenString) || !this.isBearer(cookieString)) {
-            throw new ValidationException('Wrong ticket!');
+        if (!this.isBearer(tokenString)) {
+            throw new ValidationException('Access-Token has wrong format');
+        }
+        if (!this.isBearer(cookieString)) {
+            throw new ValidationException('Cookie has wrong format!');
         }
     }
 

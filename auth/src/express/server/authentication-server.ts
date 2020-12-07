@@ -1,22 +1,22 @@
 import cookieParser from 'cookie-parser';
-import express from 'express';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import { createServer, Server } from 'http';
 import responseTime from 'response-time';
 
 import { BaseServer } from '../../api/interfaces/base-server';
 import { Inject } from '../../util/di';
 import { ErrorHandler } from '../interfaces/error-handler';
-import { LogErrorHandler } from '../middleware/log-error-handler';
+import { LogErrorService } from '../middleware/log-error-service';
 import { Logger } from '../../api/services/logger';
 import Routes from '../routes/routes';
 
 export default class AuthenticationServer extends BaseServer {
     public name = 'AuthenticationServer';
 
-    @Inject(LogErrorHandler)
-    private logErrorHandler: ErrorHandler;
+    @Inject(LogErrorService)
+    private errorHandler: ErrorHandler;
 
-    private app: express.Application;
+    private app: Application;
     private server: Server;
     private routes: Routes;
 
@@ -29,7 +29,7 @@ export default class AuthenticationServer extends BaseServer {
         this.initializeErrorHandlers();
     }
 
-    public getApp(): express.Application {
+    public getApp(): Application {
         return this.app;
     }
 
@@ -46,10 +46,11 @@ export default class AuthenticationServer extends BaseServer {
     }
 
     private initializeConfig(): void {
-        this.app.use((req, res, next) => this.corsFunction(req, res, next));
-        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use((req, res, next) => this.logRequestInformation(req, res, next));
         this.app.use(express.json());
+        this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cookieParser());
+        this.app.use((req, res, next) => this.corsFunction(req, res, next));
         this.app.use(responseTime());
     }
 
@@ -59,18 +60,23 @@ export default class AuthenticationServer extends BaseServer {
     }
 
     private initializeErrorHandlers(): void {
-        this.app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) =>
-            this.logErrorHandler.handleError(error, req, res, next)
+        this.app.use((error: any, req: Request, res: Response, next: NextFunction) =>
+            this.errorHandler.handleError(error, req, res, next)
         );
     }
 
-    private corsFunction(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    private logRequestInformation(req: Request, res: Response, next: NextFunction): void {
+        Logger.log(`${req.protocol}://${req.headers.host}: ${req.method} -- ${req.originalUrl}`);
+        Logger.debug('Expected content-size:', req.headers['content-length']);
+        Logger.debug('Incoming request with the following headers:\n', req.headers);
+        next();
+    }
+
+    private corsFunction(req: Request, res: Response, next: NextFunction): void {
+        Logger.debug('Set CORS-function');
         const origin = req.headers.origin;
         const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
-        Logger.log(`${req.protocol}://${req.headers.host}: ${req.method} -- ${req.originalUrl}`);
-        Logger.debug(`Params:`, req.params);
-        Logger.debug(`Body:`, req.body);
-        Logger.debug(`Header:`, req.headers);
+        res.setHeader('Content-Type', 'application/json');
         res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
         res.setHeader(

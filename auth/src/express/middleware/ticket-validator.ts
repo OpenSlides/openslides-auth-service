@@ -18,7 +18,10 @@ export default class TicketValidator extends Validator {
         response: express.Response,
         next: express.NextFunction
     ): Promise<express.Response | void> {
-        Logger.debug(`Incoming request to validate: ${JSON.stringify(request.headers)}`);
+        Logger.debug(`TicketValidator.validate: Incoming request to validate from: ${request.headers.origin}`);
+        if (!request.headers || !request.cookies) {
+            return this.sendResponse(false, 'Undefined headers or cookies', response, 400);
+        }
         const tokenEncoded = (request.headers['authentication'] || request.headers['authorization']) as string;
         const cookieEncoded = request.cookies[AuthHandler.COOKIE_NAME];
         const answer = await this.ticketHandler.validateTicket(tokenEncoded, cookieEncoded);

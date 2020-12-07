@@ -21,14 +21,15 @@ class AuthHandler:
         self.hashing_handler = HashingHandler()
 
     def authenticate(
-        self, headers: Optional[Dict], cookies: Optional[Dict]
+        self, access_token: Optional[str], refresh_id: Optional[str]
     ) -> Tuple[int, Optional[str]]:
         self.debug_fn(f"Try to authenticate with")
-        self.debug_fn(f"Headers: {headers}")
-        self.debug_fn(f"Cookies: {cookies}")
-        if not headers or not cookies:
+        self.debug_fn(f"AccessToken: {access_token}")
+        self.debug_fn(f"RefreshId: {refresh_id}")
+        if not access_token or not refresh_id:
+            self.debug_fn("No access_token or refresh_id")
             return ANONYMOUS_USER, None
-        return self.validator.verify(headers, cookies)
+        return self.validator.verify(access_token, refresh_id)
 
     def hash(self, to_hash: str) -> str:
         self.debug_fn(f"Hash {to_hash}: {self.hashing_handler.hash(to_hash)}")
