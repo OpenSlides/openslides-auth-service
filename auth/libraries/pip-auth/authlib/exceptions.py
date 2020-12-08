@@ -17,3 +17,8 @@ class AuthenticateException(BaseException):
 class KeyException(BaseException):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class InstanceError(BaseException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

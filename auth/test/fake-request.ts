@@ -22,7 +22,7 @@ export namespace FakeRequest {
     }
 
     export async function authenticate(): Promise<Utils.ServerResponse> {
-        return await Utils.requestInternalPost('api/authenticate');
+        return await Utils.requestInternalPost('authenticate');
     }
 
     export async function sendRequestAndValidateForbiddenRequest(request: Promise<any>): Promise<void> {

@@ -25,6 +25,6 @@ afterAll(() => {
 
 test('GET list-sessions', async () => {
     await FakeRequest.login();
-    const sessions = await Utils.requestGet('api/list-sessions');
+    const sessions = await Utils.requestGet('secure/list-sessions');
     expect(sessions.sessions.length).toBe(1);
 });

@@ -26,14 +26,14 @@ afterAll(() => {
 
 test('POST auth', async () => {
     await FakeRequest.login();
-    const answer = await Utils.requestInternalPost('api/authenticate');
+    const answer = await Utils.requestInternalPost('authenticate');
     expect(answer.success).toBe(true);
     expect(answer.userId).toBe(1);
 });
 
 test('POST auth without cookie', async () => {
     await FakeRequest.login();
-    const answer = await Utils.requestInternalPostWithoutCookies('api/authenticate');
+    const answer = await Utils.requestInternalPostWithoutCookies('authenticate');
     expect(answer.success).toBe(true);
     expect(answer.userId).toBe(0); // anonymous
 });

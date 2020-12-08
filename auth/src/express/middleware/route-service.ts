@@ -97,7 +97,7 @@ export default class RouteService extends RouteHandler {
         this.sendResponse(true, 'Authentication service is available', response);
     }
 
-    public apiIndex(_: any, response: Response): void {
+    public secureIndex(_: any, response: Response): void {
         this.sendResponse(true, 'Yeah! An api resource!', response);
     }
 

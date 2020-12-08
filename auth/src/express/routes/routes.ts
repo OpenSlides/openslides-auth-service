@@ -9,7 +9,7 @@ import { Validator } from '../interfaces/validator';
 export default class Routes {
     private readonly EXTERNAL_URL_PREFIX = '/system/auth';
     private readonly INTERNAL_URL_PREFIX = '/internal/auth';
-    private readonly SECURE_URL_PREFIX = '/api';
+    private readonly SECURE_URL_PREFIX = '/secure';
 
     @Inject(TicketValidator)
     private validator: Validator;
@@ -26,7 +26,9 @@ export default class Routes {
     public initRoutes(): void {
         this.configRoutes();
         this.initPublicRoutes();
-        this.initApiRoutes();
+        this.initPrivateRoutes();
+        this.initSecureRoutes();
+        this.app.use((req, res) => this.routeHandler.notFound(req, res));
     }
 
     private configRoutes(): void {
@@ -44,18 +46,23 @@ export default class Routes {
         this.app.post(this.getPublicUrl('/who-am-i'), (request, response) =>
             this.routeHandler.whoAmI(request, response)
         );
+    }
+
+    private initPrivateRoutes(): void {
+        this.app.post(
+            this.getPrivateUrl('/authenticate'),
+            (request, response, next) => this.validator.validate(request, response, next),
+            (request, response) => this.routeHandler.authenticate(request, response)
+        );
         this.app.post(this.getPrivateUrl('/hash'), (request, response) => this.routeHandler.hash(request, response));
         this.app.post(this.getPrivateUrl('/is-equals'), (request, response) =>
             this.routeHandler.isEquals(request, response)
         );
     }
 
-    private initApiRoutes(): void {
-        this.app.post(this.getPrivateSecureUrl('/authenticate'), (request, response) =>
-            this.routeHandler.authenticate(request, response)
-        );
+    private initSecureRoutes(): void {
         this.app.get(this.getPublicSecureUrl('/hello'), (request, response) =>
-            this.routeHandler.apiIndex(request, response)
+            this.routeHandler.secureIndex(request, response)
         );
         this.app.post(this.getPublicSecureUrl('/logout'), (request, response) =>
             this.routeHandler.logout(request, response)
@@ -66,7 +73,7 @@ export default class Routes {
         this.app.post(this.getPublicSecureUrl('/clear-all-sessions-except-themselves'), (request, response) =>
             this.routeHandler.clearAllSessionsExceptThemselves(request, response)
         );
-        this.app.delete(this.getPublicSecureUrl('/clear-session-by-id'), (request, response) =>
+        this.app.post(this.getPublicSecureUrl('/clear-session-by-id'), (request, response) =>
             this.routeHandler.clearUserSessionById(request, response)
         );
     }

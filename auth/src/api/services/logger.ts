@@ -46,7 +46,7 @@ export class Logger {
         return `0${toFormat}`.slice(-2);
     }
 
-    private static info(color: LogColor, ...message: any): void {
+    private static info(color: string, ...message: any[]): void {
         console.log(`${color}${this.getTimeString()}:`, ...message, '\x1b[0m');
     }
 
@@ -62,7 +62,7 @@ export class Logger {
 
     public static error(...message: any): void {
         if (Config.isDevMode()) {
-            this.info(LogColor.FgCyan, ...message);
+            this.info(`${LogColor.FgRed} ${LogColor.Bright}`, ...message);
         }
     }
 }

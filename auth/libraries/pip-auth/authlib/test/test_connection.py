@@ -11,7 +11,7 @@ class TestConnection(BaseTestEnvironment):
         )
 
     def test_login(self):
-        response = self.fake_request.login()
+        response = self.fake_request.raw_login()
         response_body = response.json()
         self.assertEqual(200, response.status_code)
         self.assertEqual("Authentication successful!", response_body["message"])

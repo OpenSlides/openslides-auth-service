@@ -26,7 +26,7 @@ afterAll(() => {
 
 test('POST logout', async () => {
     await FakeRequest.login();
-    const response = await Utils.requestPost('api/logout');
+    const response = await Utils.requestPost('secure/logout');
     Validation.validateSuccessfulRequest(response);
     expect(response.message).toBe('Successfully signed out!');
 });
@@ -34,12 +34,12 @@ test('POST logout', async () => {
 test('POST logout without access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().unsetAccessTokenInFakeUser();
-    const response = await Utils.requestPost('api/logout');
+    const response = await Utils.requestPost('secure/logout');
     expect(response.success).toBe(true);
 });
 
 test('POST logout without cookie', async () => {
     await FakeRequest.login();
-    const response = await Utils.requestPostWithoutCredentials('api/logout');
+    const response = await Utils.requestPostWithoutCredentials('secure/logout');
     expect(response.success).toBe(true);
 });

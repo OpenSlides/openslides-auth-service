@@ -149,11 +149,6 @@ export namespace Utils {
         return await makeRequestWithoutCookies(HttpMethod.POST, url, data, headers);
     }
 
-    export async function requestDelete(path: string, data?: HttpData): Promise<ServerResponse> {
-        const url = getExternalUrlToServer(path);
-        return await makeRequest(HttpMethod.DELETE, url, data);
-    }
-
     export function decodeBase64<V>(encodedString: string): V {
         const buffer = Buffer.from(encodedString, 'base64');
         return JSON.parse(buffer.toString());
