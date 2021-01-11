@@ -28,7 +28,7 @@ export abstract class Middleware {
         Logger.debug(`Send data:`, data);
         response.status(code).send({
             success,
-            message,
+            message: message.toString(),
             ...data
         });
     }
