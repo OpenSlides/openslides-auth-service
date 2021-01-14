@@ -3,6 +3,11 @@ import { Inject } from '../util/di';
 import { HttpHandler } from '../api/interfaces/http-handler';
 import { HttpService } from '../api/services/http-service';
 
+interface FilterResponse<T> {
+    position: number; // The current position of the datastore
+    data: GetManyAnswer<T>;
+}
+
 export class DatastoreAdapter extends Datastore {
     @Inject(HttpService)
     private readonly httpHandler: HttpHandler;
@@ -13,7 +18,7 @@ export class DatastoreAdapter extends Datastore {
         filterValue: any,
         mappedFields?: (keyof T)[]
     ): Promise<GetManyAnswer<T>> {
-        return await this.httpHandler.post(`${this.datastoreReader}/filter`, {
+        const response = await this.httpHandler.post<FilterResponse<T>>(`${this.datastoreReader}/filter`, {
             collection,
             filter: {
                 field: filterField,
@@ -22,6 +27,7 @@ export class DatastoreAdapter extends Datastore {
             },
             mapped_fields: mappedFields
         });
+        return response.data;
     }
 
     public async get<T>(collection: string, id: any, mappedFields?: (keyof T)[]): Promise<T> {
