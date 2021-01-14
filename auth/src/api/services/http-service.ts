@@ -10,14 +10,19 @@ export interface HttpData {
 type AxiosResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
 
 export class HttpService extends HttpHandler {
-    public async get(url: string, data?: any, headers?: HttpHeaders, responseType?: AxiosResponseType): Promise<any> {
-        return this.send(url, HttpMethod.GET, headers, data, responseType);
+    public async get<T = any>(
+        url: string,
+        data?: any,
+        headers?: HttpHeaders,
+        responseType?: AxiosResponseType
+    ): Promise<T> {
+        return this.send<T>(url, HttpMethod.GET, headers, data, responseType);
     }
-    public async post(url: string, data?: any, headers?: HttpHeaders): Promise<any> {
-        return this.send(url, HttpMethod.POST, data, headers);
+    public async post<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T> {
+        return this.send<T>(url, HttpMethod.POST, data, headers);
     }
-    public async delete(url: string, data?: any, headers?: HttpHeaders): Promise<any> {
-        return this.send(url, HttpMethod.DELETE, data, headers);
+    public async delete<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T> {
+        return this.send<T>(url, HttpMethod.DELETE, data, headers);
     }
 
     private async send<T>(
