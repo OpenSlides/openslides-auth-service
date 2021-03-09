@@ -55,8 +55,12 @@ export class UserService implements UserHandler {
         return Array.from(this.userCollection.values());
     }
 
-    private isPasswordCorrect(input: string, toCompare: string): boolean {
-        return this.hashingHandler.isEquals(input, toCompare);
+    private isPasswordCorrect(user: User, sentPassword: string): boolean {
+        if (!user.password) {
+            return sentPassword === user.default_password;
+        } else {
+            return this.hashingHandler.isEquals(sentPassword, user.password);
+        }
     }
 
     private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<Validation<any>> {
@@ -72,7 +76,7 @@ export class UserService implements UserHandler {
         if (!user.is_active) {
             throw new Error('The account is deactivated.');
         }
-        if (!this.isPasswordCorrect(password, user.password)) {
+        if (!this.isPasswordCorrect(user, password)) {
             throw new Error('Username or password is incorrect!');
         }
         return { isValid: true, message: 'successful', result: user };
@@ -83,6 +87,12 @@ export class UserService implements UserHandler {
             Logger.error(`Property ${property} is ${value}`);
             throw new Error(`Property ${property} is ${value}`);
         }
-        return await this.datastore.filter<User>('user', property, value, ['username', 'password', 'id', 'is_active']);
+        return await this.datastore.filter<User>('user', property, value, [
+            'username',
+            'password',
+            'default_password',
+            'id',
+            'is_active'
+        ]);
     }
 }
