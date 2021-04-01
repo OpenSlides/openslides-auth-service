@@ -1,3 +1,4 @@
+import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { Datastore, GetManyAnswer } from '../interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { Inject } from '../../util/di';
@@ -63,17 +64,15 @@ export class UserService implements UserHandler {
         const userObj = await this.getUserCollectionFromDatastore('username', username);
         Logger.debug('User object from datastore: ', userObj);
         if (Object.keys(userObj).length > 1) {
+            Logger.error('Multiple users found for same username!');
             throw new Error('Multiple users with same credentials!');
         }
         const user: User = new User(userObj[Object.keys(userObj)[0]]);
-        if (!user.isExisting()) {
-            throw new Error('Username or password is incorrect!');
+        if (!user.isExisting() || !this.isPasswordCorrect(password, user.password)) {
+            throw new AuthenticationException('Username or password is incorrect.');
         }
         if (!user.is_active) {
-            throw new Error('The account is deactivated.');
-        }
-        if (!this.isPasswordCorrect(password, user.password)) {
-            throw new Error('Username or password is incorrect!');
+            throw new AuthenticationException('The account is deactivated.');
         }
         return { isValid: true, message: 'successful', result: user };
     }
