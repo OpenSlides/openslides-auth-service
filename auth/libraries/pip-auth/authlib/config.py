@@ -16,18 +16,18 @@ class Environment:
 
     def __load_keys(self) -> None:
         self.debug_fn("Environment.__load_keys")
-        default = AUTH_DEV_KEY if self.is_dev_mode() else None
-        self.debug_fn(f"Is dev-mode {self.is_dev_mode()} with default key {default}")
-        auth_token_key = os.getenv("AUTH_TOKEN_KEY", default)
-        auth_cookie_key = os.getenv("AUTH_COOKIE_KEY", default)
-        if not auth_token_key:
-            raise KeyException("No AUTH_TOKEN_KEY defined.")
-
-        if not auth_cookie_key:
-            raise KeyException("No AUTH_COOKIE_KEY defined.")
-
-        self.auth_token_key = auth_token_key
-        self.auth_cookie_key = auth_cookie_key
+        if self.is_dev_mode():
+            self.auth_token_key = AUTH_DEV_KEY
+            self.auth_cookie_key = AUTH_DEV_KEY
+        else:
+            token_secret_path = "/run/secrets/auth_token_key"
+            self.auth_token_key = self.read_file(token_secret_path)
+            if not self.auth_token_key:
+                raise KeyException("No AUTH_TOKEN_KEY defined in " + token_secret_path)
+            cookie_secret_path = "/run/secrets/auth_cookie_key"
+            self.auth_cookie_key = self.read_file(cookie_secret_path)
+            if not self.auth_cookie_key:
+                raise KeyException("No AUTH_COOKIE_KEY defined in " + cookie_secret_path)
 
     def get_token_key(self):
         return self.auth_token_key
@@ -40,3 +40,7 @@ class Environment:
             f"Is DEVELOPMENT: {DEVELEOPMENT_VARIABLE} == {os.getenv(DEVELEOPMENT_VARIABLE)}"
         )
         return os.getenv(DEVELEOPMENT_VARIABLE) in VERBOSE_TRUE_FIELDS
+
+    def read_file(self, path: str) -> str:
+        file = open(path, "r")
+        return file.read()
