@@ -10,8 +10,8 @@ VERBOSE_TRUE_FIELDS = ["y", "1", "yes", "true", "on"]
 
 class Environment:
     def __init__(self, debug_fn: Any = print) -> None:
-        print("Environment.__init__")
         self.debug_fn = debug_fn
+        self.debug_fn("Environment.__init__")
         self.__load_keys()
 
     def __load_keys(self) -> None:
