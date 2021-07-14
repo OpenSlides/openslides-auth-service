@@ -10,7 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Create docker dev image
+      - name: Build docker prod image
+        run: make build-prod
+
+      - name: Build docker dev image
         run: make build-dev
 
       - name: Build the stack
