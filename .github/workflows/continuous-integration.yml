@@ -13,5 +13,5 @@ jobs:
       - name: Create docker dev image
         run: make build-dev
 
-      - name: Run tests in docker
-        run: make run-tests
+      - name: Build the stack
+        run: docker-compose -f "docker-compose.dev.yml" up -d
