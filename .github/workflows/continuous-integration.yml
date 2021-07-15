@@ -8,6 +8,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: "https://github.com/OpenSlides/openslides-datastore-service.git"
+
+      - name: Build datastore
         run: make run-dev
 
       - uses: actions/checkout@v2
