@@ -1,10 +1,5 @@
 FROM node:14-buster-slim AS build
 
-RUN apt-get -y update && apt-get -y upgrade && \
-    apt-get install --no-install-recommends -y wait-for-it
-
-RUN apt-get clean
-
 WORKDIR /app
 
 # Install dependencies. the `node_modules` folder is in /app
@@ -21,14 +16,20 @@ RUN npm run build
 
 RUN npm prune --production
 
-FROM node:14-alpine
+FROM node:14-buster-slim
+
+RUN apt-get -y update && apt-get -y upgrade && \
+    apt-get install --no-install-recommends -y wait-for-it
+
+RUN apt-get clean
 
 WORKDIR /app
 
-COPY --from=build /app/build /app
-COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/build .
+COPY --from=build /app/entrypoint.sh .
+COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 9004
-ENTRYPOINT [ "/app/entrypoint.sh" ]
+ENTRYPOINT [ "sh", "./entrypoint.sh" ]
 
 CMD ["node", "index.js"]
