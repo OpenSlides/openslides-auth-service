@@ -1,4 +1,4 @@
-FROM node:14-buster-slim AS build
+FROM node:16 AS build
 
 WORKDIR /app
 
@@ -16,17 +16,13 @@ RUN npm run build
 
 RUN npm prune --production
 
-FROM node:14-buster-slim
-
-RUN apt-get -y update && apt-get -y upgrade && \
-    apt-get install --no-install-recommends -y wait-for-it
-
-RUN apt-get clean
+FROM node:16-alpine
 
 WORKDIR /app
 
 COPY --from=build /app/build .
 COPY --from=build /app/entrypoint.sh .
+COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 9004
