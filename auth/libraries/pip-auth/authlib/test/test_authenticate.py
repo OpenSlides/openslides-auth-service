@@ -5,6 +5,7 @@ from ..config import Environment
 from urllib import parse
 from ..constants import COOKIE_NAME, HEADER_NAME, USER_ID_PROPERTY
 from datetime import datetime
+from ..exceptions import InvalidCredentialsException
 
 
 class TestAuthenticate(BaseTestEnvironment):
@@ -27,12 +28,12 @@ class TestAuthenticate(BaseTestEnvironment):
 
     def test_authenticate_with_malified_access_token(self):
         cookie = self.fake_request.login()[1]
-        with self.assertRaises(jwt.exceptions.InvalidSignatureError):
+        with self.assertRaises(InvalidCredentialsException):
             self.auth_handler.authenticate(self.get_malified_access_token(), cookie)
 
     def test_authenticate_with_wrong_access_token(self):
         cookie = self.fake_request.login()[1]
-        with self.assertRaises(jwt.exceptions.InvalidSignatureError):
+        with self.assertRaises(InvalidCredentialsException):
             self.auth_handler.authenticate(self.get_invalid_access_token(), cookie)
 
     def test_authenticate_with_expired_access_token(self):

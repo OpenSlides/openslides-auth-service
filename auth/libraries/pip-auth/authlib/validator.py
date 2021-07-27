@@ -40,6 +40,8 @@ class Validator:
             return self.__verify_ticket(token_encoded, cookie_encoded), None
         except jwt.exceptions.ExpiredSignatureError:
             return self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
+        except jwt.exceptions.InvalidSignatureError:
+            raise InvalidCredentialsException("The signature of the jwt is invalid")
 
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
         self.debug_fn("Validator.__verify_ticket")
