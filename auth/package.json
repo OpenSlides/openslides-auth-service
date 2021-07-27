@@ -7,7 +7,6 @@
         "test": "auth/tests"
     },
     "scripts": {
-        "postinstall": "npm run uptodate",
         "cleanup": "npm run prettify-write && npm run linter-write",
         "start": "node build/src/index.js",
         "dev": "nodemon src/index.ts",
@@ -21,7 +20,7 @@
         "postbuild": "echo true > .buildstatus",
         "test": "jest --passWithNoTests --detectOpenHandles",
         "uptodate": "npm update && npm update --dev",
-        "make-badges": "node_modules/.bin/jest-badges-readme",
+        "make-badges": "istanbul-badges-readme",
         "make-readme": "npm t && npm run make-badges"
     },
     "repository": {
@@ -35,35 +34,34 @@
     },
     "homepage": "https://github.com/OpenSlides/openslides-auth-service#readme",
     "devDependencies": {
-        "@olavoparno/jest-badges-readme": "^1.4.1",
         "@types/cookie-parser": "^1.4.2",
-        "@types/express": "^4.17.9",
-        "@types/ioredis": "^4.17.8",
-        "@types/jest": "^25.2.1",
-        "@types/jsonwebtoken": "^8.3.8",
-        "@types/node": "^13.13.32",
-        "@types/response-time": "^2.3.4",
-        "@types/superagent": "^4.1.10",
-        "husky": "^4.3.0",
+        "@types/express": "^4.17.13",
+        "@types/ioredis": "^4.26.6",
+        "@types/jest": "^25.2.3",
+        "@types/jsonwebtoken": "^8.5.4",
+        "@types/node": "^13.13.52",
+        "@types/response-time": "^2.3.5",
+        "@types/superagent": "^4.1.12",
+        "husky": "^4.3.8",
+        "istanbul-badges-readme": "^1.4.0",
         "jest": "^25.5.4",
-        "nodemon": "^2.0.6",
+        "nodemon": "^2.0.12",
         "prettier": "^1.19.1",
         "superagent": "^5.3.1",
         "ts-jest": "^25.5.1",
-        "ts-node": "^8.8.2",
+        "ts-node": "^8.10.2",
         "tslint": "^6.1.3",
-        "typescript": "^3.8.3"
+        "typescript": "^3.9.10"
     },
     "dependencies": {
         "axios": "^0.21.1",
         "cookie-parser": "^1.4.5",
-        "dotenv": "^8.2.0",
+        "dotenv": "^8.6.0",
         "express": "^4.17.1",
-        "ioredis": "^4.19.2",
+        "ioredis": "^4.27.7",
         "jsonwebtoken": "^8.5.1",
         "reflect-metadata": "^0.1.13",
         "response-time": "^2.3.2",
-        "tslib": "^1.14.1",
-        "uuidv4": "^6.2.5"
+        "tslib": "^1.14.1"
     }
 }

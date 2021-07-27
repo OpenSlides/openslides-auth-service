@@ -26,6 +26,6 @@ COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 9004
-ENTRYPOINT [ "sh", "./entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
 
 CMD ["node", "index.js"]

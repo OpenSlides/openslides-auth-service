@@ -18,9 +18,9 @@ export class LogErrorService extends Middleware implements ErrorHandler {
         const received = error.received;
         Logger.error(`Expected size of request data: ${expectedSize} - Received content length: ${received}`);
         if (error instanceof BaseException) {
-            this.sendResponse(false, error.title, response, 500);
+            this.sendResponse(false, response, error.title, 500);
         } else {
-            this.sendResponse(false, `Something went wrong: ${errorPath}`, response, 500);
+            this.sendResponse(false, response, `Something went wrong: ${errorPath}`, 500);
         }
         return;
     }

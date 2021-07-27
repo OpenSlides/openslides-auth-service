@@ -1,11 +1,4 @@
-FROM python:3.9.0-slim-buster
-
-RUN apt-get -y update && apt-get -y upgrade && \
-    apt-get install --no-install-recommends -y wait-for-it && \
-    apt-get install -y make git curl netcat
-
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install -y nodejs
+FROM node:16-alpine
 
 WORKDIR /app
 
@@ -16,9 +9,6 @@ RUN npm install
 # Application lays in /app/src
 COPY ./auth ./
 COPY auth/entrypoint.sh ./
-
-# Install pip-dependencies.
-RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 EXPOSE 9004
 

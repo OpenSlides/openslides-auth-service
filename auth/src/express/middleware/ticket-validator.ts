@@ -20,7 +20,7 @@ export default class TicketValidator extends Validator {
     ): Promise<express.Response | void> {
         Logger.debug(`TicketValidator.validate: Incoming request to validate from: ${request.headers.origin}`);
         if (!request.headers || !request.cookies) {
-            return this.sendResponse(false, 'Undefined headers or cookies', response, 400);
+            return this.sendResponse(false, response, 'Undefined headers or cookies', 400);
         }
         const tokenEncoded = (request.headers['authentication'] || request.headers['authorization']) as string;
         const cookieEncoded = request.cookies[AuthHandler.COOKIE_NAME];
@@ -29,7 +29,7 @@ export default class TicketValidator extends Validator {
         Logger.debug(`cookieEncoded: ${cookieEncoded}`);
         Logger.debug(`answer: ${JSON.stringify(answer)}`);
         if (this.isAnonymous(answer)) {
-            return this.sendResponse(answer.isValid, answer.reason, response, 200, answer.result);
+            return this.sendResponse(answer.isValid, response, answer.reason, 200, answer.result);
         }
         if (answer.isValid) {
             response.locals['token'] = answer.result;
@@ -38,7 +38,7 @@ export default class TicketValidator extends Validator {
             }
             next();
         } else {
-            return this.sendResponse(false, answer.message, response, 403);
+            return this.sendResponse(false, response, answer.message, 403);
         }
     }
 

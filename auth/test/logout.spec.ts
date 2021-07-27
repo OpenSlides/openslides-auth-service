@@ -28,18 +28,17 @@ test('POST logout', async () => {
     await FakeRequest.login();
     const response = await Utils.requestPost('secure/logout');
     Validation.validateSuccessfulRequest(response);
-    expect(response.message).toBe('Successfully signed out!');
 });
 
 test('POST logout without access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().unsetAccessTokenInFakeUser();
     const response = await Utils.requestPost('secure/logout');
-    expect(response.success).toBe(true);
+    Validation.validateSuccessfulRequest(response, 'anonymous');
 });
 
 test('POST logout without cookie', async () => {
     await FakeRequest.login();
     const response = await Utils.requestPostWithoutCredentials('secure/logout');
-    expect(response.success).toBe(true);
+    Validation.validateSuccessfulRequest(response, 'anonymous');
 });

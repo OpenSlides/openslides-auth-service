@@ -63,3 +63,15 @@ test('POST login without username', async () => {
 test('POST login without credentials', async () => {
     await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login'));
 });
+
+test('POST login with wrong password', async () => {
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(
+        Utils.requestPost('login', { username: 'admin', password: 'xyz' })
+    );
+});
+
+test('POST login with wrong username', async () => {
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(
+        Utils.requestPost('login', { username: 'xyz', password: 'admin' })
+    );
+});

@@ -1,3 +1,4 @@
+import { FakeRequest } from './fake-request';
 import { Utils } from './utils';
 import { Validation } from './validation';
 
@@ -10,6 +11,11 @@ declare global {
 
 test('Server is available', async () => {
     const result = await Utils.requestGet('');
-    Validation.validateSuccessfulRequest(result);
-    expect(result.message).toBe('Authentication service is available');
+    Validation.validateSuccessfulRequest(result, 'Authentication service is available');
+});
+
+test('Secured routes are available', async () => {
+    await FakeRequest.login();
+    const result = await Utils.requestGet('secure/hello');
+    Validation.validateSuccessfulRequest(result, 'Yeah! An api resource!');
 });

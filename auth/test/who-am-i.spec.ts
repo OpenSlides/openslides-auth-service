@@ -27,14 +27,14 @@ afterAll(() => {
 test('POST who-am-i', async () => {
     await FakeRequest.login();
     const whoAmI = await Utils.requestPost('who-am-i');
-    Validation.validateSuccessfulRequest(whoAmI);
     Validation.validateAccessToken(whoAmI);
 });
 
 test('POST who-am-i without cookie', async () => {
     await FakeRequest.login();
     const whoAmI = await Utils.requestPostWithoutCredentials('who-am-i');
-    Validation.validateSuccessfulRequest(whoAmI); // anonymous
+    Validation.validateSuccessfulRequest(whoAmI, 'anonymous'); // anonymous
+    expect(whoAmI.headers['authentication']).not.toBeTruthy();
 });
 
 test('GET who-am-i', async () => {

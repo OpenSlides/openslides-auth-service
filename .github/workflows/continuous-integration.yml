@@ -10,8 +10,30 @@ jobs:
       - name: Build docker prod image
         run: make build-prod
 
-      - name: Build docker dev image
-        run: make build-dev
+      - name: Run prod image
+        working-directory: .github/startup-test
+        run: docker-compose up -d
 
-      - name: Run the tests
-        run: make run-tests
+      - name: Wait for auth-service
+        working-directory: .github/startup-test
+        run: docker-compose exec -T auth ./wait-for.sh auth:9004
+
+      - name: Test connection
+        working-directory: .github/startup-test
+        run: curl -I localhost:9004/system/auth
+
+      - name: Stop prod containers
+        working-directory: .github/startup-test
+        run: docker-compose down --volumes
+
+      - name: Run tests
+        run: make run-test
+
+      - name: Check prettify
+        run: make run-check-prettify
+
+      - name: Check lint
+        run: make run-check-lint
+
+      - name: Stop containers
+        run: make stop-dev
