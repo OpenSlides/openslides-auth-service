@@ -2,12 +2,10 @@ FROM python:3.9.0-slim-buster
 
 RUN apt-get -y update && apt-get -y upgrade && \
     apt-get install --no-install-recommends -y wait-for-it && \
-    apt-get install -y make git curl openssl
+    apt-get install -y make git curl
 
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
-
-ENV LD_LIBRARY_PATH=/usr/local/lib
 
 WORKDIR /app
 
