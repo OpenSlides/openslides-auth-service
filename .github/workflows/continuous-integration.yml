@@ -8,19 +8,19 @@ jobs:
       - name: Install git && openssl
         run: sudo apt-get install git openssl
 
-      - uses: actions/checkout@v2
-        with:
-          repository: OpenSlides/openslides-datastore-service
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: OpenSlides/openslides-datastore-service
 
-      - name: Build datastore
-        run: make run-dev
+      # - name: Build datastore
+      #   run: make run-dev
 
-      - uses: actions/checkout@v2
-      - name: Build docker prod image
-        run: make build-prod
+      # - uses: actions/checkout@v2
+      # - name: Build docker prod image
+      #   run: make build-prod
 
-      - name: Build docker dev image
-        run: make build-dev
+      # - name: Build docker dev image
+      #   run: make build-dev
 
       # - name: Start datastore-reader-dev--service
       #   id: docker_datastore-reader
@@ -42,5 +42,6 @@ jobs:
       #       MODULE: "writer"
       #       PORT: "9011"
 
+      - uses: actions/checkout@v2
       - name: Build the stack
         run: docker-compose -f "docker-compose.dev.yml" up -d
