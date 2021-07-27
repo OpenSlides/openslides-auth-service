@@ -5,6 +5,9 @@ jobs:
   build-and-test-dev-image:
     runs-on: ubuntu-latest
     steps:
+      - name: Install git && openssl
+        run: sudo apt-get install git openssl
+
       - uses: actions/checkout@v2
         with:
           repository: OpenSlides/openslides-datastore-service
