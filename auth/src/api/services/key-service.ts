@@ -5,7 +5,8 @@ import { KeyException } from '../../core/exceptions/key-exception';
 import { KeyHandler } from '../interfaces/key-handler';
 import { Logger } from './logger';
 
-const AUTH_DEV_KEY = 'auth-dev-key';
+const AUTH_DEV_TOKEN_KEY = 'auth-dev-token-key';
+const AUTH_DEV_COOKIE_KEY = 'auth-dev-cookie-key';
 
 export class KeyService extends KeyHandler {
     protected tokenKey = '';
@@ -29,8 +30,8 @@ export class KeyService extends KeyHandler {
     private loadKeys(): void {
         Logger.debug('KeyService.loadKeys -- is in dev-mode:', Config.isDevMode());
         if (Config.isDevMode()) {
-            this.tokenKey = AUTH_DEV_KEY;
-            this.cookieKey = AUTH_DEV_KEY;
+            this.tokenKey = AUTH_DEV_TOKEN_KEY;
+            this.cookieKey = AUTH_DEV_COOKIE_KEY;
         } else {
             const tokenKeyPath = '/run/secrets/auth_token_key';
             this.tokenKey = this.readFile(tokenKeyPath);

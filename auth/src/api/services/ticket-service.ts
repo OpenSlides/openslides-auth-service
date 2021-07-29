@@ -80,7 +80,7 @@ export class TicketService extends TicketHandler {
             return { isValid: false, message: 'User is empty.' };
         }
         const session = await this.sessionHandler.addSession(user);
-        const cookie = this.generateCookie(session);
+        const cookie = this.generateCookie(session, user);
         const token = this.generateToken(session, user);
         return { isValid: true, message: 'successful', result: { cookie, token, user } };
     }
@@ -180,8 +180,11 @@ export class TicketService extends TicketHandler {
         return `bearer ${token}`;
     }
 
-    private generateCookie(sessionId: string): string {
-        const cookie = jwt.sign({ sessionId }, this.cookieKey, { expiresIn: '1d', algorithm: 'HS256' });
+    private generateCookie(sessionId: string, user: User): string {
+        const cookie = jwt.sign({ sessionId, userId: user.id }, this.cookieKey, {
+            expiresIn: '1d',
+            algorithm: 'HS256'
+        });
         return `bearer ${cookie}`;
     }
 }
