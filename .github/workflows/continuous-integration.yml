@@ -15,7 +15,7 @@ jobs:
           docker-compose --version
 
       - name: Run tests with current version
-        continue_on_error: true
+        continue-on-error: true
         run: make run-tests
 
       - name: Downgrade to version 1.27.4
