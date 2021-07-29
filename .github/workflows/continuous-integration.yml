@@ -9,9 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      # - name: Create docker dev image
+      #   run: make build-dev
 
-      - name: Create docker dev image
-        run: make build-dev
+      - name: Current Version
+        run: |
+          docker-compose --version
 
-      - name: Run tests in docker
+      - name: Run tests with current version
+        continue_on_error: true
+        run: make run-tests
+
+      - name: Downgrade to version 1.27.4
+        run: |
+          sudo rm /usr/local/bin/docker-compose
+          URL=https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64
+          sudo curl -L $URL -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Verify version 1.27.4
+        run: |
+          docker-compose --version
+
+      - name: Run tests with new version
         run: make run-tests
