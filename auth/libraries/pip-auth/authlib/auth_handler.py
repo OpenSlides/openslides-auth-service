@@ -23,6 +23,9 @@ class AuthHandler:
     def authenticate(
         self, access_token: Optional[str], refresh_id: Optional[str]
     ) -> Tuple[int, Optional[str]]:
+        """
+        Tries to check and read a user_id from a given access_token and refresh_id.
+        """
         self.debug_fn(f"Try to authenticate with")
         self.debug_fn(f"AccessToken: {access_token}")
         self.debug_fn(f"RefreshId: {refresh_id}")
@@ -30,6 +33,20 @@ class AuthHandler:
             self.debug_fn("No access_token or refresh_id")
             return ANONYMOUS_USER, None
         return self.validator.verify(access_token, refresh_id)
+
+    def authenticate_only_refresh_id(self, refresh_id: Optional[str]) -> int:
+        """
+        This tries to check and read a user_id from a given refresh_id. It only returns an int or raises an error.
+
+        Use this with caution, because using only a refresh_id to verify a valid authentication is vulnerable
+        for CSRF-attacks.
+        """
+        self.debug_fn("Try to authenticate only with")
+        self.debug_fn(f"RefreshId: {refresh_id}")
+        if not refresh_id:
+            self.debug_fn("No refresh_id given")
+            return ANONYMOUS_USER
+        return self.validator.verify_only_cookie(refresh_id)
 
     def hash(self, to_hash: str) -> str:
         self.debug_fn(f"Hash {to_hash}: {self.hashing_handler.hash(to_hash)}")

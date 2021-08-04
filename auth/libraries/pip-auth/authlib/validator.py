@@ -33,6 +33,11 @@ class Validator:
     def verify(
         self, token_encoded: str, cookie_encoded: str
     ) -> Tuple[int, Optional[str]]:
+        """
+        This receives encoded jwts contained in a cookie and a token.
+        Then, it verifies, that the jwts are wellformed and still valid. 
+        Afterwards, this returns a user_id read from the decoded jwt contained in the token.
+        """
         self.debug_fn("Validator.verify")
         try:
             self.__assert_instance_of_encoded_jwt(token_encoded, "Token")
@@ -42,6 +47,24 @@ class Validator:
             return self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
         except jwt.exceptions.InvalidSignatureError:
             raise InvalidCredentialsException("The signature of the jwt is invalid")
+
+    def verify_only_cookie(self, cookie_encoded: str) -> int:
+        """
+        This receives only an encoded jwt contained in a cookie and verifies, that
+        the jwt is wellformed and still valid.
+        Afterwards, this returns a user_id read from the decoded jwt contained in the cookie.
+        It only returns an int or raises an error.
+
+        Use this with caution, because using only a cookie to verify a valid authentication is vulnerable
+        for CSRF-attacks.
+        """
+        self.debug_fn("Validator.verify_only_cookie")
+        cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
+        cookie = self.__decode(cookie_encoded, self.environment.get_cookie_key())
+        user_id = cookie.get(USER_ID_PROPERTY)
+        if not isinstance(user_id, int):
+            raise AuthenticateException("user_id is not an int")
+        return user_id
 
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
         self.debug_fn("Validator.__verify_ticket")

@@ -3,7 +3,8 @@ from typing import Any
 
 from .exceptions import KeyException
 
-AUTH_DEV_KEY = "auth-dev-key"
+AUTH_DEV_TOKEN_KEY = "auth-dev-token-key"
+AUTH_DEV_COOKIE_KEY = 'auth-dev-cookie-key'
 DEVELEOPMENT_VARIABLE = "OPENSLIDES_DEVELOPMENT"
 VERBOSE_TRUE_FIELDS = ["y", "1", "yes", "true", "on"]
 
@@ -17,8 +18,8 @@ class Environment:
     def __load_keys(self) -> None:
         self.debug_fn("Environment.__load_keys")
         if self.is_dev_mode():
-            self.auth_token_key = AUTH_DEV_KEY
-            self.auth_cookie_key = AUTH_DEV_KEY
+            self.auth_token_key = AUTH_DEV_TOKEN_KEY
+            self.auth_cookie_key = AUTH_DEV_COOKIE_KEY
         else:
             token_secret_path = "/run/secrets/auth_token_key"
             self.auth_token_key = self.read_file(token_secret_path)
