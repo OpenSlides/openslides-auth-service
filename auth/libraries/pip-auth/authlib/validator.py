@@ -47,6 +47,24 @@ class Validator:
             return self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
         except jwt.exceptions.InvalidSignatureError:
             raise InvalidCredentialsException("The signature of the jwt is invalid")
+        except jwt.exceptions.InvalidTokenError:
+            raise InvalidCredentialsException("The jwt is invalid")
+        except jwt.exceptions.DecodeError:
+            raise InvalidCredentialsException("The jwt is invalid")
+        except jwt.exceptions.InvalidAudienceError:
+            raise InvalidCredentialsException("The audience of the jwt is invalid")
+        except jwt.exceptions.InvalidAlgorithmError:
+            raise InvalidCredentialsException("Unsupported algorithm detected")
+        except jwt.exceptions.InvalidIssuerError: 
+            raise InvalidCredentialsException("Wrong issuer detected")
+        except jwt.exceptions.InvalidIssuedAtError:
+            raise InvalidCredentialsException("The 'iat'-timestamp is in the future")
+        except jwt.exceptions.ImmatureSignatureError:
+            raise InvalidCredentialsException("The 'nbf'-timestamp is in the future")
+        except jwt.exceptions.MissingRequiredClaimError:
+            raise InvalidCredentialsException("The jwt does not contain the required fields")
+        except jwt.exceptions.InvalidKeyError:
+            raise InvalidCredentialsException("The specified key for the jwt has a wrong format")
 
     def verify_only_cookie(self, cookie_encoded: str) -> int:
         """
