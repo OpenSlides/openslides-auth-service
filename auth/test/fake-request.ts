@@ -13,10 +13,10 @@ export namespace FakeRequest {
         });
     }
 
-    export async function loginForNTimes(n: number): Promise<Utils.ServerResponse> {
-        let response: Utils.ServerResponse = Utils.defaultResponse;
+    export async function loginForNTimes(n: number): Promise<Utils.ServerResponse[]> {
+        const response: Utils.ServerResponse[] = [];
         for (let i = 0; i < n; ++i) {
-            response = await login();
+            response.push(await login());
         }
         return response;
     }
@@ -29,7 +29,15 @@ export namespace FakeRequest {
         try {
             await request;
         } catch (e) {
-            Validation.validateForbiddenRequest(e);
+            if (Utils.isErrorResponse(e)) {
+                handleError(e);
+            } else {
+                Validation.validateForbiddenRequest(e);
+            }
         }
+    }
+
+    function handleError(error: Utils.ErrorResponse): void {
+        Validation.validateForbiddenRequest(error);
     }
 }

@@ -7,8 +7,8 @@ import { Logger } from '../../api/services/logger';
 export abstract class Middleware {
     protected sendResponse(
         success: boolean,
-        message: string,
         response: Response,
+        message: string = 'Action handled successfully',
         code: number = 200,
         data: HttpData = {}
     ): void {

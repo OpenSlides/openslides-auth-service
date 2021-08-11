@@ -27,22 +27,20 @@ afterAll(() => {
 test('POST auth', async () => {
     await FakeRequest.login();
     const answer = await Utils.requestInternalPost('authenticate');
-    expect(answer.success).toBe(true);
-    expect(answer.userId).toBe(1);
+    Validation.validateAuthentication(answer, 1);
 });
 
 test('POST auth without cookie', async () => {
     await FakeRequest.login();
     const answer = await Utils.requestInternalPostWithoutCookies('authenticate');
-    expect(answer.success).toBe(true);
-    expect(answer.userId).toBe(0); // anonymous
+    Validation.validateAuthentication(answer, 0, 'anonymous'); // anonymous
 });
 
 test('POST auth without access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().unsetAccessTokenInFakeUser();
     const answer = await FakeRequest.authenticate();
-    Validation.validateAuthentication(answer, 0); // anonymous
+    Validation.validateAuthentication(answer, 0, 'anonymous'); // anonymous
 });
 
 test('POST auth with malified access-token', async () => {
@@ -61,5 +59,5 @@ test('POST auth renew access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().setAccessTokenToExpired();
     const answer = await FakeRequest.authenticate();
-    expect(answer.success).toBe(true);
+    Validation.validateAccessToken(answer);
 });

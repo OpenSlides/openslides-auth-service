@@ -1,5 +1,7 @@
+import { Response } from 'express';
 import request from 'superagent';
 
+import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 
 export namespace Utils {
@@ -97,6 +99,11 @@ export namespace Utils {
         [key: string]: any;
     }
 
+    export interface ErrorResponse {
+        status: number;
+        response: Response;
+    }
+
     export interface SessionInformation {
         userId: number;
         sessionId: string;
@@ -105,6 +112,10 @@ export namespace Utils {
     export interface TokenPayload extends SessionInformation {
         iat: number;
         exp: number;
+    }
+
+    export function isErrorResponse(payload: any): payload is ErrorResponse {
+        return !!payload.status && !!payload.response;
     }
 
     export async function requestGet(path: string): Promise<ServerResponse> {
@@ -157,5 +168,19 @@ export namespace Utils {
     export function getSessionInformationFromUser(user: ServerResponse): SessionInformation {
         const tokenParts = user.headers.authentication.split('.');
         return decodeBase64<SessionInformation>(tokenParts[1]);
+    }
+
+    export async function getNSessions(n: number): Promise<SessionInformation[]> {
+        const sessions = [];
+        for (let i = 0; i < n; ++i) {
+            const response = await FakeRequest.login();
+            sessions.push(getSessionInformationFromUser(response));
+        }
+        return sessions;
+    }
+
+    export async function getAllActiveSessions(): Promise<string[]> {
+        const activeSessions = await requestGet('secure/list-sessions');
+        return activeSessions.sessions;
     }
 }
