@@ -6,7 +6,7 @@ export class User {
     public readonly id: string;
     public readonly is_active: boolean;
 
-    public constructor(input?: any) {
+    public constructor(input?: Partial<User>) {
         Object.assign(this, input);
     }
 

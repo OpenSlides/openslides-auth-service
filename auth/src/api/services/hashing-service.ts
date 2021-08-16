@@ -1,7 +1,6 @@
-import crypto from 'crypto';
-
-import { HashingHandler } from '../interfaces/hashing-handler';
 import { Random } from '../../util/helper';
+import { HashingHandler } from '../interfaces/hashing-handler';
+import crypto from 'crypto';
 
 export class HashingService extends HashingHandler {
     public hash(input: string): string {
@@ -28,11 +27,7 @@ export class HashingService extends HashingHandler {
      */
     private sha512(value: string, salt?: string): string {
         const withSalt = salt ? salt : Random.cryptoKey(64);
-        const hashValue = crypto
-            .createHash('sha512')
-            .update(value)
-            .update(withSalt)
-            .digest('base64');
+        const hashValue = crypto.createHash('sha512').update(value).update(withSalt).digest('base64');
         return withSalt + hashValue;
     }
 }

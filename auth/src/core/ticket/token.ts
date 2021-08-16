@@ -1,6 +1,3 @@
-export interface Token {
-    userId: number;
-    sessionId: string;
-    iat: number;
-    exp: number;
-}
+import { BaseJwt } from './base-jwt';
+
+export class Token extends BaseJwt {}

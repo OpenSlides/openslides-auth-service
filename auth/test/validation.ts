@@ -1,4 +1,5 @@
 import { Utils } from './utils';
+import { HttpResponse } from '../src/api/interfaces/http-handler';
 
 export namespace Validation {
     function isTokenPayload(arg: any): arg is Utils.TokenPayload {
@@ -6,7 +7,7 @@ export namespace Validation {
     }
 
     export function validateSuccessfulRequest(
-        response: Utils.ServerResponse,
+        response: HttpResponse,
         messageToValidate: string = 'Action handled successfully'
     ): void {
         expect(() => JSON.stringify(response)).not.toThrow();
@@ -14,9 +15,9 @@ export namespace Validation {
         expect(response.message).toBe(messageToValidate);
     }
 
-    export function validateAccessToken(response: Utils.ServerResponse): void {
+    export function validateAccessToken(response: HttpResponse): void {
         validateSuccessfulRequest(response);
-        const token = response.headers['authentication'];
+        const token = response.headers['authentication'] as string;
         expect(token).toBeTruthy();
         const tokenParts = token.split('.');
         expect(tokenParts.length).toBe(3);
@@ -24,7 +25,7 @@ export namespace Validation {
     }
 
     export function validateAuthentication(
-        response: Utils.ServerResponse,
+        response: HttpResponse,
         userIdToValidate: number,
         messageToValidate?: string
     ): void {

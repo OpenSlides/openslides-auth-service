@@ -1,68 +1,49 @@
-import jwt, { TokenExpiredError } from 'jsonwebtoken';
+import { Factory, Inject } from 'final-di';
+import jwt from 'jsonwebtoken';
 
-import { anonymous } from '../../core/models/anonymous';
-import { BaseException } from '../../core/exceptions/base-exception';
-import { Inject, InjectService } from '../../util/di';
-import { KeyHandler } from '../interfaces/key-handler';
-import { KeyService } from './key-service';
-import { SessionHandler } from '../interfaces/session-handler';
-import { SessionService } from './session-service';
-import { Cookie, Ticket, Token } from '../../core/ticket';
-import { TicketHandler } from '../interfaces/ticket-handler';
-import { User } from '../../core/models/user';
-import { UserHandler } from '../interfaces/user-handler';
-import { UserService } from './user-service';
-import { Validation } from '../interfaces/validation';
+import { AnonymousException } from '../../core/exceptions/anonymous-exception';
+import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { ValidationException } from '../../core/exceptions/validation-exception';
+import { User } from '../../core/models/user';
+import { Cookie, Ticket, Token } from '../../core/ticket';
+import { KeyHandler } from '../interfaces/key-handler';
+import { SessionHandler } from '../interfaces/session-handler';
+import { TicketHandler } from '../interfaces/ticket-handler';
+import { UserHandler } from '../interfaces/user-handler';
+import { KeyService } from './key-service';
+import { SessionService } from './session-service';
+import { UserService } from './user-service';
 
 export class TicketService extends TicketHandler {
-    public name = 'TokenHandler';
+    @Factory(KeyService)
+    private readonly _keyHandler: KeyHandler;
 
-    @Inject(KeyService)
-    private readonly keyHandler: KeyHandler;
+    @Inject(SessionService)
+    private readonly _sessionHandler: SessionHandler;
 
-    @InjectService(SessionService)
-    private readonly sessionHandler: SessionHandler;
-
-    @InjectService(UserService)
-    private readonly userHandler: UserHandler;
+    @Inject(UserService)
+    private readonly _userHandler: UserHandler;
 
     private get cookieKey(): string {
-        return this.keyHandler.getCookieKey();
+        return this._keyHandler.getCookieKey();
     }
 
     private get tokenKey(): string {
-        return this.keyHandler.getTokenKey();
+        return this._keyHandler.getTokenKey();
     }
 
-    private readonly anonymousMessage = {
-        isValid: true,
-        message: 'Successful',
-        reason: 'anonymous'
-    };
-
-    public verifyCookie(cookieAsString: string): Validation<Cookie> {
-        try {
-            return {
-                isValid: true,
-                message: 'Successful',
-                result: jwt.verify(cookieAsString, this.cookieKey) as Cookie
-            };
-        } catch (e) {
-            return { isValid: false, message: 'Wrong cookie', reason: e };
+    public verifyCookie(cookieAsString: string): Cookie {
+        if (this.isBearer(cookieAsString)) {
+            cookieAsString = cookieAsString.slice(7);
         }
+        return jwt.verify(cookieAsString, this.cookieKey) as Cookie;
     }
 
-    public verifyToken(tokenAsString: string): Validation<Token> {
-        try {
-            return {
-                isValid: true,
-                message: 'successful',
-                result: jwt.verify(tokenAsString, this.tokenKey) as Token
-            };
-        } catch (e) {
-            return { isValid: false, message: 'Wrong token', reason: e };
+    public verifyToken(tokenAsString: string): Token {
+        if (this.isBearer(tokenAsString)) {
+            tokenAsString = tokenAsString.slice(7);
         }
+        return jwt.verify(tokenAsString, this.tokenKey) as Token;
     }
 
     public decode<T>(tokenString: string): T {
@@ -75,59 +56,46 @@ export class TicketService extends TicketHandler {
         }
     }
 
-    public async create(user: User): Promise<Validation<Ticket>> {
+    public async create(user: User): Promise<Ticket> {
         if (!Object.keys(user).length) {
-            return { isValid: false, message: 'User is empty.' };
+            throw new AuthenticationException('Wrong user');
         }
-        const session = await this.sessionHandler.addSession(user);
+        const session = await this._sessionHandler.addSession(user);
         const cookie = this.generateCookie(session, user);
         const token = this.generateToken(session, user);
-        return { isValid: true, message: 'successful', result: { cookie, token, user } };
+        return { cookie, token };
     }
 
-    public async refresh(cookieAsString?: string): Promise<Validation<Ticket>> {
+    public async refresh(cookieAsString?: string): Promise<Ticket> {
         if (!cookieAsString) {
-            return this.anonymousMessage; // login as guest
+            throw new AnonymousException();
         }
         if (!this.isBearer(cookieAsString)) {
-            return { isValid: false, message: 'Wrong token' };
+            throw new AuthenticationException('Wrong token');
         }
-        const result = this.verifyCookie(cookieAsString.slice(7));
-        if (!result.result) {
-            return { ...result } as Validation<Ticket>;
+        const cookie = this.verifyCookie(cookieAsString);
+        if (!(await this._sessionHandler.hasSession(cookie.sessionId))) {
+            throw new AuthenticationException('Not signed in');
         }
-        const cookie = result.result;
-        if (!this.sessionHandler.hasSession(cookie.sessionId)) {
-            return { isValid: false, message: 'You are not signed in!' };
+        const userId = await this._sessionHandler.getUserIdBySessionId(cookie.sessionId);
+        const user = await this._userHandler.getUserByUserId(userId);
+        if (!user) {
+            await this._sessionHandler.clearSessionById(cookie.sessionId);
+            throw new AuthenticationException('Wrong user');
         }
-        const userId = await this.sessionHandler.getUserIdBySessionId(cookie.sessionId);
-        const userResult = await this.userHandler.getUserByUserId(userId);
-        if (!userResult.result) {
-            this.sessionHandler.clearSessionById(cookie.sessionId);
-            return { isValid: false, message: 'Wrong user!' };
-        }
-        const token = this.generateToken(cookie.sessionId, userResult.result);
-        return {
-            isValid: true,
-            message: 'Successful',
-            result: { cookie: cookieAsString, token, user: userResult.result }
-        };
+        const token = this.generateToken(cookie.sessionId, user);
+        return { cookie, token };
     }
 
-    public async validateTicket(tokenString?: string, cookieString?: string): Promise<Validation<Token>> {
+    public async validateTicket(tokenString?: string, cookieString?: string): Promise<Ticket> {
         if (!tokenString || !cookieString) {
-            return { ...this.anonymousMessage, result: anonymous };
+            throw new AnonymousException();
         }
-        try {
-            this.checkBearerTicket(tokenString, cookieString);
-            await this.checkSessionOfTicket(tokenString, cookieString);
-            return this.checkAndRefreshToken(tokenString, cookieString);
-        } catch (e) {
-            if (e instanceof BaseException || e instanceof Error) {
-                return { isValid: false, message: e.message };
-            }
-            return { isValid: false, message: 'Unknown error occurred.', reason: e };
-        }
+        this.checkBearerTicket(tokenString, cookieString);
+        const token = this.verifyToken(tokenString);
+        const cookie = this.verifyCookie(cookieString);
+        await this.checkSessionOfTicket(token, cookie);
+        return { token, cookie };
     }
 
     private checkBearerTicket(tokenString: string, cookieString: string): void {
@@ -139,32 +107,13 @@ export class TicketService extends TicketHandler {
         }
     }
 
-    private async checkSessionOfTicket(tokenString: string, cookieString: string): Promise<void> {
-        const cookie = this.decode<Cookie>(cookieString);
-        const token = this.decode<Token>(tokenString);
+    private async checkSessionOfTicket(token: Token, cookie: Cookie): Promise<void> {
         if (cookie.sessionId !== token.sessionId) {
             throw new ValidationException('Mismatched sessions!');
         }
-        if (!(await this.sessionHandler.hasSession(cookie.sessionId))) {
+        if (!(await this._sessionHandler.hasSession(cookie.sessionId))) {
             throw new ValidationException('Not signed in!');
         }
-    }
-
-    private async checkAndRefreshToken(tokenString: string, cookieString: string): Promise<Validation<Token>> {
-        const answer: Validation<Token> = { isValid: true, message: 'Successful' };
-        const tokenResult = this.verifyToken(tokenString.slice(7));
-        if (!tokenResult.isValid) {
-            if (tokenResult.reason instanceof TokenExpiredError) {
-                const newToken = (await this.refresh(cookieString)).result?.token as string;
-                answer.result = this.decode(newToken);
-                answer.header = { token: newToken };
-            } else {
-                return tokenResult;
-            }
-        } else {
-            answer.result = tokenResult.result;
-        }
-        return answer;
     }
 
     private isBearer(jwtEncoded: string): boolean {
@@ -172,19 +121,11 @@ export class TicketService extends TicketHandler {
         return jwtEncoded.toLowerCase().startsWith(bearerBegin);
     }
 
-    private generateToken(sessionId: string, user: User): string {
-        const token = jwt.sign({ expiresIn: '10m', sessionId, userId: user.id }, this.tokenKey, {
-            expiresIn: '10m',
-            algorithm: 'HS256'
-        });
-        return `bearer ${token}`;
+    private generateToken(sessionId: string, user: User): Token {
+        return new Token({ sessionId, userId: user.id }, this.tokenKey, { expiresIn: '10m' });
     }
 
-    private generateCookie(sessionId: string, user: User): string {
-        const cookie = jwt.sign({ sessionId, userId: user.id }, this.cookieKey, {
-            expiresIn: '1d',
-            algorithm: 'HS256'
-        });
-        return `bearer ${cookie}`;
+    private generateCookie(sessionId: string, user: User): Cookie {
+        return new Cookie({ sessionId, userId: user.id }, this.cookieKey, { expiresIn: '1d' });
     }
 }

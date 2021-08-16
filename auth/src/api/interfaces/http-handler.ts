@@ -5,12 +5,28 @@ export enum HttpProtocol {
 
 export enum HttpMethod {
     GET = 'GET',
-    POST = 'POST',
-    DELETE = 'DELETE'
+    POST = 'POST'
 }
 
 export interface HttpHeaders {
-    [key: string]: string;
+    [key: string]: string | string[];
+}
+
+export interface HttpData {
+    [key: string]: any;
+}
+
+export interface HttpResponse<T = any> {
+    [key: string]: any;
+    status: number;
+    headers: HttpHeaders;
+    message?: string;
+    cookies: { [cookieName: string]: string };
+    data?: T;
+}
+
+export interface HttpRequestOptions {
+    observe?: 'response' | 'data' | 'all';
 }
 
 export abstract class HttpHandler {
@@ -19,7 +35,23 @@ export abstract class HttpHandler {
         'Content-Type': 'application/json'
     };
 
-    public abstract get<T = any>(url: string, data?: any, headers?: HttpHeaders, responseType?: string): Promise<T>;
-    public abstract post<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
-    public abstract delete<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
+    public abstract get<T>(
+        url: string,
+        data?: HttpData,
+        headers?: HttpHeaders,
+        options?: HttpRequestOptions
+    ): Promise<HttpResponse<T> | T>;
+    public abstract post<T>(
+        url: string,
+        data?: HttpData,
+        headers?: HttpHeaders,
+        options?: HttpRequestOptions
+    ): Promise<HttpResponse<T> | T>;
+    public abstract send<T>(
+        url: string,
+        method: HttpMethod,
+        data?: HttpData,
+        headers?: HttpHeaders,
+        options?: HttpRequestOptions
+    ): Promise<HttpResponse<T> | T>;
 }

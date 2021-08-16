@@ -1,8 +1,6 @@
-import { Token } from '../ticket';
+import { JwtPayload } from '../ticket/base-jwt';
 
-export const anonymous: Token = {
-    iat: 0,
-    exp: 0,
+export const anonymous: JwtPayload = {
     userId: 0,
     sessionId: '0'
 };

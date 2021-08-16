@@ -4,6 +4,7 @@ import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
 import { Validation } from './validation';
+import { FakeHttpService } from './fake-http-service';
 
 const fakeUserService = FakeUserService.getInstance();
 const fakeUser = fakeUserService.getFakeUser();
@@ -17,7 +18,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
     await FakeDatastoreAdapter.updateAdmin({ is_active: true });
 });
@@ -46,32 +47,36 @@ test('POST login while inactive', async () => {
 
 test('GET login', async () => {
     try {
-        await Utils.requestGet('login');
+        await FakeHttpService.get('login');
     } catch (e) {
         expect(e.status).toBe(404); // Not found
     }
 });
 
 test('POST login without password', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login', { username: 'admin' }));
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(
+        FakeHttpService.post('login', { data: { username: 'admin' } })
+    );
 });
 
 test('POST login without username', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login', { password: 'admin' }));
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(
+        FakeHttpService.post('login', { data: { password: 'admin' } })
+    );
 });
 
 test('POST login without credentials', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('login'));
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeHttpService.post('login'));
 });
 
 test('POST login with wrong password', async () => {
     await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        Utils.requestPost('login', { username: 'admin', password: 'xyz' })
+        FakeHttpService.post('login', { data: { username: 'admin', password: 'xyz' } })
     );
 });
 
 test('POST login with wrong username', async () => {
     await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        Utils.requestPost('login', { username: 'xyz', password: 'admin' })
+        FakeHttpService.post('login', { data: { username: 'xyz', password: 'admin' } })
     );
 });

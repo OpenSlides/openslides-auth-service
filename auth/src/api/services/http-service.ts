@@ -1,56 +1,84 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
-import { HttpHandler, HttpHeaders, HttpMethod } from '../interfaces/http-handler';
+import { HttpHandler, HttpHeaders, HttpMethod, HttpResponse, HttpRequestOptions } from '../interfaces/http-handler';
 import { Logger } from './logger';
 
 export interface HttpData {
     [key: string]: any;
 }
 
-type AxiosResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
-
 export class HttpService extends HttpHandler {
-    public async get<T = any>(
-        url: string,
-        data?: any,
-        headers?: HttpHeaders,
-        responseType?: AxiosResponseType
-    ): Promise<T> {
-        return this.send<T>(url, HttpMethod.GET, headers, data, responseType);
+    public async get<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
+        return this.send<T>(url, HttpMethod.GET, headers, data);
     }
-    public async post<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T> {
+    public async post<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.POST, data, headers);
     }
-    public async delete<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T> {
-        return this.send<T>(url, HttpMethod.DELETE, data, headers);
-    }
-
-    private async send<T>(
+    public async send<T>(
         url: string,
         method: HttpMethod,
         data?: HttpData,
         headers: HttpHeaders = {},
-        responseType: AxiosResponseType = 'json'
-    ): Promise<T> {
+        { observe }: HttpRequestOptions = {}
+    ): Promise<HttpResponse<T> | T> {
         Logger.debug(`Sending a request: ${method} ${url} ${JSON.stringify(data)} ${JSON.stringify(headers)}`);
-        return (await axios({ url, method, data, headers, responseType })
-            .then(response => response.data)
-            .catch(reason => this.handleError(reason, url, method, data, headers, responseType))) as any;
+        try {
+            const response = await axios({ url, method, data, headers, responseType: 'json' });
+            return this.createHttpResponse<T>(response, observe);
+        } catch (e) {
+            const message = (e as AxiosError).message;
+            this.handleError(message, url, method, data, headers);
+            return this.createHttpResponse<T>((e as AxiosError).response as AxiosResponse, observe);
+        }
     }
 
-    private handleError(
-        error: AxiosError,
-        url: string,
-        method: HttpMethod,
-        data?: HttpData,
-        headers?: HttpHeaders,
-        responseType?: AxiosResponseType
-    ): void {
-        Logger.error('HTTP-error occurred: ', error.message);
-        Logger.error(`Error is occurred while sending the following information: ${method} ${url} ${responseType}`);
+    private handleError(error: string, url: string, method: HttpMethod, data?: HttpData, headers?: HttpHeaders): void {
+        Logger.error('HTTP-error occurred: ', error);
+        Logger.error(`Error is occurred while sending the following information: ${method} ${url}`);
         Logger.error(
             `Request contains the following data ${JSON.stringify(data)} and headers ${JSON.stringify(headers)}`
         );
-        throw new Error(error.message);
+    }
+
+    private createHttpResponse<T>(
+        response: AxiosResponse<T>,
+        observe: 'response' | 'data' | 'all' = 'all'
+    ): HttpResponse<T> | T {
+        const result = {
+            status: response.status,
+            headers: response.headers as HttpHeaders,
+            cookies: this.getCookiesByHeaders(response.headers)
+        };
+        if (observe === 'response') {
+            return {
+                ...result,
+                data: response.data
+            };
+        }
+        if (observe === 'data') {
+            return response.data;
+        }
+        return {
+            ...result,
+            ...response.data
+        };
+    }
+
+    private getCookiesByHeaders(headers: HttpHeaders): { [cookieName: string]: string } {
+        const parseCookie = (rawCookie: string): [string, string] => {
+            const indexOfEqual = rawCookie.indexOf('=');
+            const parts = [rawCookie.slice(0, indexOfEqual), rawCookie.slice(indexOfEqual + 1)];
+            const pathIndex = parts[1].search(/Path=/i);
+            return [parts[0], parts[1].slice(0, pathIndex - 2)];
+        };
+        const rawCookies = headers['set-cookie'] as string[];
+        const cookies: { [cookieName: string]: string } = {};
+        if (rawCookies && rawCookies.length) {
+            for (const rawCookie of rawCookies) {
+                const [cookieKey, cookieValue]: [string, string] = parseCookie(rawCookie);
+                cookies[cookieKey] = cookieValue;
+            }
+        }
+        return cookies;
     }
 }

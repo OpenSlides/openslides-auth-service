@@ -2,6 +2,7 @@ import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
+import { FakeHttpService } from './fake-http-service';
 
 const fakeUserService = FakeUserService.getInstance();
 const fakeUser = fakeUserService.getFakeUser();
@@ -14,7 +15,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 
@@ -26,7 +27,9 @@ afterAll(() => {
 test('POST clear-all-sessions-except-themselves', async () => {
     const user = (await FakeRequest.loginForNTimes(3))[2];
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await Utils.requestPost('secure/clear-all-sessions-except-themselves', { sessionId: sessionInformation.sessionId });
-    const sessions = await Utils.requestGet('secure/list-sessions');
+    await FakeHttpService.post('secure/clear-all-sessions-except-themselves', {
+        data: { sessionId: sessionInformation.sessionId }
+    });
+    const sessions = await FakeHttpService.get('secure/list-sessions');
     expect(sessions.sessions.length).toBe(1);
 });

@@ -24,8 +24,8 @@ export abstract class Middleware {
                 httpOnly: true
             });
         }
-        Logger.debug(`Successful: ${code} ${success} --- Message: ${message}`);
-        Logger.debug(`Send data:`, data);
+        Logger.debug(`Successful: ${code} ${success.toString()} --- Message: ${message}`);
+        Logger.debug('Send data:', data);
         response.status(code).send({
             success,
             message: message.toString(),
