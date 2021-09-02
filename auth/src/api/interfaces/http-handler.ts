@@ -19,12 +19,7 @@ export abstract class HttpHandler {
         'Content-Type': 'application/json'
     };
 
-    public abstract async get<T = any>(
-        url: string,
-        data?: any,
-        headers?: HttpHeaders,
-        responseType?: string
-    ): Promise<T>;
-    public abstract async post<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
-    public abstract async delete<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
+    public abstract get<T = any>(url: string, data?: any, headers?: HttpHeaders, responseType?: string): Promise<T>;
+    public abstract post<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
+    public abstract delete<T = any>(url: string, data?: any, headers?: HttpHeaders): Promise<T>;
 }
