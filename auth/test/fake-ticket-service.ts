@@ -23,7 +23,7 @@ export class FakeTicketService {
         const expiredToken = jwt.sign({ exp: new Date(0).getTime(), sessionId: token.sessionId, userId: 1 }, signKey, {
             algorithm: 'HS256'
         });
-        return expiredToken;
+        return `bearer ${expiredToken}`;
     }
 
     private static decode<T>(token: string): T {
