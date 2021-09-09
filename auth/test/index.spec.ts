@@ -1,6 +1,6 @@
 import { FakeRequest } from './fake-request';
-import { Utils } from './utils';
 import { Validation } from './validation';
+import { FakeHttpService } from './fake-http-service';
 
 // Adds custom jest-functions.
 declare global {
@@ -10,12 +10,12 @@ declare global {
 }
 
 test('Server is available', async () => {
-    const result = await Utils.requestGet('');
+    const result = await FakeHttpService.get('');
     Validation.validateSuccessfulRequest(result, 'Authentication service is available');
 });
 
 test('Secured routes are available', async () => {
     await FakeRequest.login();
-    const result = await Utils.requestGet('secure/hello');
-    Validation.validateSuccessfulRequest(result, 'Yeah! An api resource!');
+    const result = await FakeHttpService.get('secure');
+    Validation.validateSuccessfulRequest(result, 'Yeah! A secure route!');
 });

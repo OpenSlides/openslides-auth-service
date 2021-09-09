@@ -1,8 +1,10 @@
-export abstract class BaseException extends Error {
+import { BaseError } from 'rest-app';
+
+export abstract class BaseException extends BaseError {
     public readonly title: string;
 
-    public constructor(message: string) {
-        super(message);
+    public constructor(message: string, statusCode: number = 403) {
+        super(message, { statusCode });
 
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, BaseException);

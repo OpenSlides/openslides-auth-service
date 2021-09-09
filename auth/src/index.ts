@@ -1,9 +1,32 @@
-import 'reflect-metadata';
+import { Request, Response } from 'express';
+import { RestApplication } from 'rest-app';
 
-import AuthenticationServer from './express/server/authentication-server';
-import { BaseServer } from './api/interfaces/base-server';
-import { Inject } from './util/di';
 import { Logger } from './api/services/logger';
+import { PrivateController, PublicController, SecureController } from './express/controllers';
+
+const logRequestInformation = (req: Request): void => {
+    Logger.log(`${req.protocol}://${req.headers.host || ''}: ${req.method} -- ${req.originalUrl}`);
+    Logger.debug('Expected content-size:', req.headers['content-length']);
+    Logger.debug('Incoming request with the following headers:\n', req.headers);
+};
+
+const corsFunction = (req: Request, res?: Response): void => {
+    if (!res) {
+        return;
+    }
+    Logger.debug('Set CORS-function');
+    const origin = req.headers.origin;
+    const requestingOrigin = Array.isArray(origin) ? origin.join(' ') : origin || '';
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', requestingOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE, PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, X-Content-Type,' +
+            ' Authentication, Authorization, X-Access-Token, Accept'
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+};
 
 class Server {
     public static readonly PORT: number = parseInt(process.env.AUTH_PORT || '', 10) || 9004;
@@ -13,13 +36,14 @@ class Server {
         return Server.PORT;
     }
 
-    @Inject(AuthenticationServer)
-    private httpServer: BaseServer;
+    private _application = new RestApplication({
+        controllers: [SecureController, PrivateController, PublicController],
+        port: this.port,
+        requestHandlers: [logRequestInformation, corsFunction]
+    });
 
     public start(): void {
-        this.httpServer.getServer().listen(Server.PORT, () => {
-            Logger.log(`Server is running on ${Server.DOMAIN}:${Server.PORT}`);
-        });
+        this._application.start();
     }
 }
 

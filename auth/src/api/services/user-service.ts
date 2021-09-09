@@ -1,71 +1,53 @@
-import { AuthenticationException } from '../../core/exceptions/authentication-exception';
-import { Datastore, GetManyAnswer } from '../interfaces/datastore';
+import { Factory } from 'final-di';
+
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
-import { Inject } from '../../util/di';
+import { AuthenticationException } from '../../core/exceptions/authentication-exception';
+import { User } from '../../core/models/user';
+import { Datastore, GetManyAnswer } from '../interfaces/datastore';
 import { HashingHandler } from '../interfaces/hashing-handler';
+import { UserHandler } from '../interfaces/user-handler';
 import { HashingService } from './hashing-service';
 import { Logger } from './logger';
-import { User } from '../../core/models/user';
-import { UserHandler } from '../interfaces/user-handler';
-import { Validation } from '../interfaces/validation';
 
 export class UserService implements UserHandler {
-    public name = 'UserService';
+    @Factory(DatastoreAdapter)
+    private readonly _datastore: Datastore;
 
-    @Inject(DatastoreAdapter)
-    private readonly datastore: Datastore;
+    @Factory(HashingService)
+    private readonly _hashingHandler: HashingHandler;
 
-    @Inject(HashingService)
-    private readonly hashingHandler: HashingHandler;
+    private readonly _userCollection: Map<string, User> = new Map();
 
-    private readonly userCollection: Map<string, User> = new Map();
-
-    public async getUserByCredentials(username: string, password: string): Promise<Validation<any>> {
-        Logger.debug(`Gets user by credentials: ${username} and ${password}`);
-        try {
-            return await this.readUserFromDatastoreByCredentials(username, password);
-        } catch (e) {
-            Logger.debug(`Fails with the following error:`, e);
-            return {
-                isValid: false,
-                message: e
-            };
-        }
+    public async getUserByCredentials(username: string, password: string): Promise<User> {
+        Logger.debug(`Get user by credentials: ${username} and ${password}`);
+        return await this.readUserFromDatastoreByCredentials(username, password);
     }
 
-    public async getUserByUserId(userId: string): Promise<Validation<User>> {
-        try {
-            Logger.debug(`Gets user by its id: ${userId}`);
-            const userCollection = await this.getUserCollectionFromDatastore('id', userId);
-            return { isValid: true, message: 'Successful', result: userCollection[userId] };
-        } catch (e) {
-            Logger.debug(`Fails with the following error:`, e);
-            return {
-                isValid: false,
-                message: e
-            };
-        }
+    public async getUserByUserId(userId: string): Promise<User> {
+        Logger.debug(`Get user by user id: ${userId}`);
+        const userCollection = await this.getUserCollectionFromDatastore('id', userId);
+        return userCollection[userId];
     }
 
     public async hasUser(username: string): Promise<boolean> {
-        const answer = await this.datastore.exists<User>('user', 'username', username);
+        const answer = await this._datastore.exists<User>('user', 'username', username);
         return answer.exists;
     }
 
     public getAllUsers(): User[] {
-        return Array.from(this.userCollection.values());
+        return Array.from(this._userCollection.values());
     }
 
     private isPasswordCorrect(input: string, toCompare: string): boolean {
-        return this.hashingHandler.isEquals(input, toCompare);
+        return this._hashingHandler.isEquals(input, toCompare);
     }
 
-    private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<Validation<any>> {
+    private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<User> {
         const userObj = await this.getUserCollectionFromDatastore('username', username);
         Logger.debug('User object from datastore: ', userObj);
         if (Object.keys(userObj).length > 1) {
             Logger.error('Multiple users found for same username!');
-            throw new Error('Multiple users with same credentials!');
+            throw new AuthenticationException('Multiple users with same credentials!');
         }
         const user: User = new User(userObj[Object.keys(userObj)[0]]);
         if (!user.isExisting() || !this.isPasswordCorrect(password, user.password)) {
@@ -74,7 +56,7 @@ export class UserService implements UserHandler {
         if (!user.is_active) {
             throw new AuthenticationException('The account is deactivated.');
         }
-        return { isValid: true, message: 'successful', result: user };
+        return user;
     }
 
     private async getUserCollectionFromDatastore(property: keyof User, value: string): Promise<GetManyAnswer<User>> {
@@ -82,6 +64,6 @@ export class UserService implements UserHandler {
             Logger.error(`Property ${property} is ${value}`);
             throw new Error(`Property ${property} is ${value}`);
         }
-        return await this.datastore.filter<User>('user', property, value, ['username', 'password', 'id', 'is_active']);
+        return await this._datastore.filter<User>('user', property, value, ['username', 'password', 'id', 'is_active']);
     }
 }

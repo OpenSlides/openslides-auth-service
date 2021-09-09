@@ -1,5 +1,3 @@
-export interface Cookie {
-    sessionId: string;
-    iat: number;
-    exp: number;
-}
+import { BaseJwt } from './base-jwt';
+
+export class Cookie extends BaseJwt {}

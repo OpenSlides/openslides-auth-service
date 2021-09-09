@@ -1,48 +1,69 @@
-import express from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { Factory } from 'final-di';
+import { TokenExpiredError } from 'jsonwebtoken';
+import { RestMiddleware } from 'rest-app/dist/esm/interfaces/rest-middleware';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
-import { Inject } from '../../util/di';
-import { Logger } from '../../api/services/logger';
-import { Token } from '../../core/ticket';
 import { TicketHandler } from '../../api/interfaces/ticket-handler';
+import { Logger } from '../../api/services/logger';
 import { TicketService } from '../../api/services/ticket-service';
-import { Validation } from '../../api/interfaces/validation';
-import { Validator } from '../interfaces/validator';
+import { AnonymousException } from '../../core/exceptions/anonymous-exception';
+import { AuthenticationException } from '../../core/exceptions/authentication-exception';
+import { anonymous } from '../../core/models/anonymous';
+import { Token } from '../../core/ticket';
+import { createResponse } from '../../util/helper/functions';
+import { ExpressError } from '../interfaces/error-handler';
 
-export default class TicketValidator extends Validator {
-    @Inject(TicketService)
-    private readonly ticketHandler: TicketHandler;
+const TOKEN_KEY = 'token';
 
-    public async validate(
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ): Promise<express.Response | void> {
-        Logger.debug(`TicketValidator.validate: Incoming request to validate from: ${request.headers.origin}`);
+interface Cookie {
+    [key: string]: string;
+}
+
+export class TicketMiddleware implements RestMiddleware {
+    @Factory(TicketService)
+    private _ticketHandler: TicketHandler;
+
+    public async use(request: Request, response: Response, next: NextFunction): Promise<void> {
+        Logger.debug(`TicketValidator.validate: Incoming request to validate from: ${request.headers.origin || ''}`);
+
         if (!request.headers || !request.cookies) {
-            return this.sendResponse(false, response, 'Undefined headers or cookies', 400);
+            throw new AuthenticationException('Undefined headers or cookies');
         }
+
         const tokenEncoded = (request.headers['authentication'] || request.headers['authorization']) as string;
-        const cookieEncoded = request.cookies[AuthHandler.COOKIE_NAME];
-        const answer = await this.ticketHandler.validateTicket(tokenEncoded, cookieEncoded);
+        const cookieEncoded = (request.cookies as Cookie)[AuthHandler.COOKIE_NAME];
         Logger.debug(`tokenEncoded: ${tokenEncoded}`);
         Logger.debug(`cookieEncoded: ${cookieEncoded}`);
-        Logger.debug(`answer: ${JSON.stringify(answer)}`);
-        if (this.isAnonymous(answer)) {
-            return this.sendResponse(answer.isValid, response, answer.reason, 200, answer.result);
-        }
-        if (answer.isValid) {
-            response.locals['token'] = answer.result;
-            if (answer.header && answer.header.token) {
-                response.locals['newToken'] = answer.header.token;
+        try {
+            const token = (await this._ticketHandler.validateTicket(tokenEncoded, cookieEncoded)).token;
+            Logger.debug(`token: ${JSON.stringify(token)}`);
+            this.next(response, next, { token });
+        } catch (e) {
+            if (e instanceof TokenExpiredError) {
+                const newTicket = this._ticketHandler.refresh(cookieEncoded);
+                const oldToken = this._ticketHandler.decode<Token>(tokenEncoded);
+                this.next(response, next, { token: oldToken, newToken: (await newTicket).token.toString() });
+            } else if (e instanceof AnonymousException) {
+                response.json(createResponse(anonymous, 'anonymous'));
+            } else {
+                const { status, message }: ExpressError = e as ExpressError;
+                const statusCode = status ?? 403;
+                response.status(statusCode).json(createResponse({}, message, false));
             }
-            next();
-        } else {
-            return this.sendResponse(false, response, answer.message, 403);
         }
     }
 
-    private isAnonymous(token: Validation<Token>): boolean {
-        return !!token.result && token.result.userId === 0;
+    private next(res: Response, next: NextFunction, { token, newToken }: { token: Token; newToken?: string }): void {
+        if (newToken) {
+            this.setNewToken(res, newToken);
+        }
+        res.locals[TOKEN_KEY] = token;
+        next();
+    }
+
+    private setNewToken(res: Response, newToken: string): void {
+        res.setHeader(AuthHandler.AUTHENTICATION_HEADER, newToken);
+        res.setHeader('Access-Control-Expose-Header', 'Authentication');
     }
 }

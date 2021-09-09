@@ -13,7 +13,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 

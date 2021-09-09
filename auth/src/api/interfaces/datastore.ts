@@ -1,4 +1,5 @@
 import { Config } from '../../config';
+import { Id } from '../../core/key-transforms';
 
 export type Position = number;
 
@@ -12,20 +13,18 @@ export interface ExistsAnswer {
 }
 
 export abstract class Datastore {
-    public name = 'Datastore';
-
     protected datastoreReader = `${Config.DATASTORE_READER}/internal/datastore/reader`;
 
     public abstract filter<T>(
         collection: string,
         filterField: keyof T,
-        filterValue: any,
+        filterValue: string | number,
         mappedFields: (keyof T)[]
     ): Promise<GetManyAnswer<T>>;
-    public abstract get<T>(collection: string, id: any, mappedFields: (keyof T)[]): Promise<any>;
+    public abstract get<T>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<any>;
     public abstract exists<T>(
         collection: string,
         filterField: keyof T,
-        filterValue: any
+        filterValue: string | number
     ): Promise<{ exists: boolean; position: number }>;
 }

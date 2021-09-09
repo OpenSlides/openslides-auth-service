@@ -1,8 +1,8 @@
 import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
-import { Utils } from './utils';
 import { Validation } from './validation';
+import { FakeHttpService } from './fake-http-service';
 
 const fakeUserService = FakeUserService.getInstance();
 const fakeUser = fakeUserService.getFakeUser();
@@ -15,7 +15,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 
@@ -26,19 +26,19 @@ afterAll(() => {
 
 test('POST logout', async () => {
     await FakeRequest.login();
-    const response = await Utils.requestPost('secure/logout');
+    const response = await FakeHttpService.post('secure/logout');
     Validation.validateSuccessfulRequest(response);
 });
 
 test('POST logout without access-token', async () => {
     await FakeRequest.login();
     FakeUserService.getInstance().unsetAccessTokenInFakeUser();
-    const response = await Utils.requestPost('secure/logout');
+    const response = await FakeHttpService.post('secure/logout');
     Validation.validateSuccessfulRequest(response, 'anonymous');
 });
 
 test('POST logout without cookie', async () => {
     await FakeRequest.login();
-    const response = await Utils.requestPostWithoutCredentials('secure/logout');
+    const response = await FakeHttpService.post('secure/logout', { usingCookies: false });
     Validation.validateSuccessfulRequest(response, 'anonymous');
 });

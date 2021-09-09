@@ -2,6 +2,7 @@ import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
+import { FakeHttpService } from './fake-http-service';
 
 const fakeUserService = FakeUserService.getInstance();
 const fakeUser = fakeUserService.getFakeUser();
@@ -14,7 +15,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 
@@ -26,6 +27,8 @@ afterAll(() => {
 test('POST clear-session-by-id', async () => {
     const user = await FakeRequest.login();
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await Utils.requestPost('secure/clear-session-by-id', { sessionId: sessionInformation.sessionId });
+    await FakeHttpService.post('secure/clear-session-by-id', {
+        data: { sessionId: sessionInformation.sessionId }
+    });
     await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
 });

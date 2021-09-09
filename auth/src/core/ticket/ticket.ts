@@ -1,7 +1,7 @@
-import { User } from '../models/user';
+import { Cookie } from './cookie';
+import { Token } from './token';
 
 export interface Ticket {
-    cookie: string;
-    token: string;
-    user: User;
+    token: Token;
+    cookie: Cookie;
 }

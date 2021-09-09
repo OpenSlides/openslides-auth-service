@@ -1,9 +1,8 @@
-import fs from 'fs';
-
 import { Config } from '../../config';
 import { KeyException } from '../../core/exceptions/key-exception';
 import { KeyHandler } from '../interfaces/key-handler';
 import { Logger } from './logger';
+import fs from 'fs';
 
 const AUTH_DEV_TOKEN_KEY = 'auth-dev-token-key';
 const AUTH_DEV_COOKIE_KEY = 'auth-dev-cookie-key';

@@ -1,3 +1,3 @@
-import { Random } from './random';
-
-export { Random };
+export * from './definitions';
+export * from './functions';
+export * from './random';

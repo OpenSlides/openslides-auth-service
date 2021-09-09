@@ -8,10 +8,9 @@ export namespace Random {
      *
      * @returns The generated key.
      */
-    export function cryptoKey(length: number = 32): string {
-        return crypto
+    export const cryptoKey = (length: number = 32): string =>
+        crypto
             .randomBytes(Math.ceil(length / 2))
             .toString('hex')
             .slice(0, length);
-    }
 }

@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 /**
  * Interface, that describes an error occurred from express-parser (like `json()`).
  */
-export interface Error {
+export interface ExpressError {
     stack: string;
     received: number;
     expected: number;
@@ -15,5 +15,5 @@ export interface Error {
 }
 
 export interface ErrorHandler {
-    handleError(error: Error, req: Request, res: Response, next: NextFunction): void;
+    handleError(error: ExpressError, req: Request, res: Response, next: NextFunction): void;
 }

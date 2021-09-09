@@ -1,8 +1,9 @@
 import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
-import { Utils } from './utils';
 import { Validation } from './validation';
+import { FakeHttpService } from './fake-http-service';
+import { FakeTicketService } from './fake-ticket-service';
 
 const fakeUserService = FakeUserService.getInstance();
 const fakeUser = fakeUserService.getFakeUser();
@@ -15,7 +16,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 
@@ -26,18 +27,34 @@ afterAll(() => {
 
 test('POST who-am-i', async () => {
     await FakeRequest.login();
-    const whoAmI = await Utils.requestPost('who-am-i');
+    const whoAmI = await FakeHttpService.post('who-am-i');
     Validation.validateAccessToken(whoAmI);
 });
 
 test('POST who-am-i without cookie', async () => {
     await FakeRequest.login();
-    const whoAmI = await Utils.requestPostWithoutCredentials('who-am-i');
+    const whoAmI = await FakeHttpService.post('who-am-i', { usingCookies: false });
     Validation.validateSuccessfulRequest(whoAmI, 'anonymous'); // anonymous
     expect(whoAmI.headers['authentication']).not.toBeTruthy();
 });
 
-test('GET who-am-i', async () => {
+test('POST who-am-i with expired cookie', async () => {
     await FakeRequest.login();
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(Utils.requestPost('who-am-i'));
+    fakeUser.accessToken = '';
+    fakeUser.refreshId = FakeTicketService.getExpiredJwt(fakeUser.refreshId, 'cookie');
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeHttpService.post('who-am-i'));
+});
+
+test('POST who-am-i with undefined token', async () => {
+    await FakeRequest.login();
+    FakeUserService.getInstance().unsetAccessTokenInFakeUser();
+    const whoAmI = await FakeHttpService.post('who-am-i');
+    Validation.validateAccessToken(whoAmI);
+});
+
+test('POST who-am-i with null cookie', async () => {
+    await FakeRequest.login();
+    await FakeRequest.sendRequestAndValidateForbiddenRequest(
+        FakeHttpService.post('who-am-i', { headers: { cookie: 'refreshId=null' }, usingCookies: false })
+    );
 });

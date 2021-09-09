@@ -1,7 +1,6 @@
 import { FakeRequest } from './fake-request';
 import { FakeUserService } from './fake-user-service';
 import { TestDatabaseAdapter } from './test-database-adapter';
-import { Utils } from './utils';
 import { Validation } from './validation';
 
 const fakeUserService = FakeUserService.getInstance();
@@ -15,7 +14,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-    fakeUser.accessToken = '';
+    fakeUser.reset();
     await database.flushdb();
 });
 
@@ -26,13 +25,13 @@ afterAll(() => {
 
 test('POST auth', async () => {
     await FakeRequest.login();
-    const answer = await Utils.requestInternalPost('authenticate');
+    const answer = await FakeRequest.authenticate();
     Validation.validateAuthentication(answer, 1);
 });
 
 test('POST auth without cookie', async () => {
     await FakeRequest.login();
-    const answer = await Utils.requestInternalPostWithoutCookies('authenticate');
+    const answer = await FakeRequest.authenticate({ usingCookies: false });
     Validation.validateAuthentication(answer, 0, 'anonymous'); // anonymous
 });
 
