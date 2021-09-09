@@ -15,6 +15,13 @@ export namespace Validation {
         expect(response.message).toBe(messageToValidate);
     }
 
+    export function validateAnonymous(response: HttpResponse): void {
+        validateSuccessfulRequest(response, 'anonymous');
+        expect(response.headers['authentication']).toBeFalsy();
+        expect(response.userId).toBe(0);
+        expect(response.sessionId).toBe('0');
+    }
+
     export function validateAccessToken(response: HttpResponse): void {
         validateSuccessfulRequest(response);
         const token = response.headers['authentication'] as string;

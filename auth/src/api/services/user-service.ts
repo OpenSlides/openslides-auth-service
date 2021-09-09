@@ -16,8 +16,6 @@ export class UserService implements UserHandler {
     @Factory(HashingService)
     private readonly _hashingHandler: HashingHandler;
 
-    private readonly _userCollection: Map<string, User> = new Map();
-
     public async getUserByCredentials(username: string, password: string): Promise<User> {
         Logger.debug(`Get user by credentials: ${username} and ${password}`);
         return await this.readUserFromDatastoreByCredentials(username, password);
@@ -27,15 +25,6 @@ export class UserService implements UserHandler {
         Logger.debug(`Get user by user id: ${userId}`);
         const userCollection = await this.getUserCollectionFromDatastore('id', userId);
         return userCollection[userId];
-    }
-
-    public async hasUser(username: string): Promise<boolean> {
-        const answer = await this._datastore.exists<User>('user', 'username', username);
-        return answer.exists;
-    }
-
-    public getAllUsers(): User[] {
-        return Array.from(this._userCollection.values());
     }
 
     private isPasswordCorrect(input: string, toCompare: string): boolean {

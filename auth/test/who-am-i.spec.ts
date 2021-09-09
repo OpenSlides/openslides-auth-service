@@ -34,15 +34,14 @@ test('POST who-am-i', async () => {
 test('POST who-am-i without cookie', async () => {
     await FakeRequest.login();
     const whoAmI = await FakeHttpService.post('who-am-i', { usingCookies: false });
-    Validation.validateSuccessfulRequest(whoAmI, 'anonymous'); // anonymous
-    expect(whoAmI.headers['authentication']).not.toBeTruthy();
+    Validation.validateAnonymous(whoAmI);
 });
 
 test('POST who-am-i with expired cookie', async () => {
     await FakeRequest.login();
     fakeUser.accessToken = '';
     fakeUser.refreshId = FakeTicketService.getExpiredJwt(fakeUser.refreshId, 'cookie');
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeHttpService.post('who-am-i'));
+    Validation.validateAnonymous(await FakeHttpService.post('who-am-i'));
 });
 
 test('POST who-am-i with undefined token', async () => {
@@ -57,4 +56,11 @@ test('POST who-am-i with null cookie', async () => {
     await FakeRequest.sendRequestAndValidateForbiddenRequest(
         FakeHttpService.post('who-am-i', { headers: { cookie: 'refreshId=null' }, usingCookies: false })
     );
+});
+
+test('POST who-am-i with expired token and expired cookie', async () => {
+    await FakeRequest.login();
+    fakeUser.accessToken = FakeTicketService.getExpiredJwt(fakeUser.accessToken, 'token');
+    fakeUser.refreshId = FakeTicketService.getExpiredJwt(fakeUser.refreshId, 'cookie');
+    Validation.validateAnonymous(await FakeHttpService.post('who-am-i'));
 });

@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { Factory } from 'final-di';
+import { TokenExpiredError } from 'jsonwebtoken';
 import { Body, Cookie, OnGet, OnPost, Res, RestController } from 'rest-app';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
@@ -45,8 +46,13 @@ export class PublicController {
             res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
             return createResponse();
         } catch (e) {
+            Logger.debug('Error while who-am-i');
+            Logger.debug(e);
             res.clearCookie(AuthHandler.COOKIE_NAME);
             if (e instanceof AnonymousException) {
+                return createResponse(anonymous, 'anonymous');
+            }
+            if (e instanceof TokenExpiredError) {
                 return createResponse(anonymous, 'anonymous');
             }
             throw e;

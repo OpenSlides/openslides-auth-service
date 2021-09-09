@@ -41,9 +41,7 @@ export class TicketMiddleware implements RestMiddleware {
             this.next(response, next, { token });
         } catch (e) {
             if (e instanceof TokenExpiredError) {
-                const newTicket = this._ticketHandler.refresh(cookieEncoded);
-                const oldToken = this._ticketHandler.decode<Token>(tokenEncoded);
-                this.next(response, next, { token: oldToken, newToken: (await newTicket).token.toString() });
+                await this.refreshToken({ cookieEncoded, tokenEncoded }, response, next);
             } else if (e instanceof AnonymousException) {
                 response.json(createResponse(anonymous, 'anonymous'));
             } else {
@@ -65,5 +63,28 @@ export class TicketMiddleware implements RestMiddleware {
     private setNewToken(res: Response, newToken: string): void {
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, newToken);
         res.setHeader('Access-Control-Expose-Header', 'Authentication');
+    }
+
+    private async refreshToken(
+        { cookieEncoded, tokenEncoded }: { cookieEncoded: string; tokenEncoded: string },
+        response: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const newTicket = this._ticketHandler.refresh(cookieEncoded);
+            const oldToken = this._ticketHandler.decode<Token>(tokenEncoded);
+            this.next(response, next, { token: oldToken, newToken: (await newTicket).token.toString() });
+        } catch (e) {
+            Logger.debug('Error while refreshing an access-token');
+            Logger.debug(e);
+            if (e instanceof TokenExpiredError) {
+                Logger.debug('Cookie jwt is expired. Treat it like an anonymous.');
+                response.json(createResponse(anonymous, 'anonymous'));
+            } else {
+                const { status, message }: ExpressError = e as ExpressError;
+                const statusCode = status ?? 403;
+                response.status(statusCode).json(createResponse({}, message, false));
+            }
+        }
     }
 }
