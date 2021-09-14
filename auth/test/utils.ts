@@ -42,6 +42,6 @@ export namespace Utils {
 
     export async function getAllActiveSessions(): Promise<string[]> {
         const activeSessions = await FakeHttpService.get('secure/list-sessions');
-        return activeSessions.sessions;
+        return activeSessions.sessions as string[];
     }
 }

@@ -51,6 +51,13 @@ test('POST who-am-i with undefined token', async () => {
     Validation.validateAccessToken(whoAmI);
 });
 
+test('POST who-am-i with empty cookie', async () => {
+    await FakeRequest.login();
+    Validation.validateAnonymous(
+        await FakeHttpService.post('who-am-i', { headers: { cookie: 'refreshId=""' }, usingCookies: false })
+    );
+});
+
 test('POST who-am-i with null cookie', async () => {
     await FakeRequest.login();
     await FakeRequest.sendRequestAndValidateForbiddenRequest(

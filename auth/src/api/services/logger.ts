@@ -62,7 +62,7 @@ export class Logger {
         return `0${toFormat}`.slice(-2);
     }
 
-    private static info(color: string, ...message: any[]): void {
+    private static info(color: string, ...message: unknown[]): void {
         console.log(`${color}${this.getTimeString()}:`, ...message, '\x1b[0m');
     }
 }

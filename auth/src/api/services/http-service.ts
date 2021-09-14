@@ -4,12 +4,12 @@ import { HttpHandler, HttpHeaders, HttpMethod, HttpResponse, HttpRequestOptions 
 import { Logger } from './logger';
 
 export interface HttpData {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export class HttpService extends HttpHandler {
     public async get<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
-        return this.send<T>(url, HttpMethod.GET, headers, data);
+        return this.send<T>(url, HttpMethod.GET, data, headers);
     }
     public async post<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.POST, data, headers);
@@ -53,7 +53,7 @@ export class HttpService extends HttpHandler {
             return {
                 ...result,
                 data: response.data
-            };
+            } as HttpResponse<T>;
         }
         if (observe === 'data') {
             return response.data;

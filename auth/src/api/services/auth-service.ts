@@ -1,7 +1,10 @@
 import { Factory, Inject } from 'final-di';
 
+import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { Ticket, Token } from '../../core/ticket';
+import { JwtPayload } from '../../core/ticket/base-jwt';
+import { Cookie } from '../../core/ticket/cookie';
 import { AuthHandler } from '../interfaces/auth-handler';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { SessionHandler } from '../interfaces/session-handler';
@@ -31,12 +34,36 @@ export class AuthService implements AuthHandler {
             throw new AuthenticationException('Authentication failed! Username or password is not provided!');
         }
         const user = await this._userHandler.getUserByCredentials(username, password);
-        return await this._ticketHandler.create(user);
+        if (!Object.keys(user).length) {
+            throw new AuthenticationException('Wrong user');
+        }
+        const session = await this._sessionHandler.addSession(user);
+        return this._ticketHandler.create(user.id, session);
     }
 
-    public async whoAmI(cookieAsString: string): Promise<Ticket> {
+    public async whoAmI(cookieAsString: string = ''): Promise<Ticket> {
         Logger.debug(`whoAmI -- cookie: ${cookieAsString}`);
-        return await this._ticketHandler.refresh(cookieAsString);
+        if (!cookieAsString) {
+            throw new AnonymousException();
+        }
+        const cookie = this._ticketHandler.verifyJwt(cookieAsString, 'cookie') as Cookie;
+        if (!(await this._sessionHandler.hasSession(cookie.sessionId))) {
+            throw new AuthenticationException('Not signed in');
+        }
+        const user = await this._userHandler.getUserByUserId(cookie.userId as string);
+        if (!user) {
+            await this._sessionHandler.clearSessionById(cookie.sessionId);
+            throw new AuthenticationException('Wrong user');
+        }
+        return this._ticketHandler.refresh(cookie);
+    }
+
+    public createAuthorizationToken(payload: JwtPayload): string {
+        return this._ticketHandler.createJwt(payload).toString();
+    }
+
+    public verifyAuthorizationToken(token: string): Token {
+        return this._ticketHandler.verifyJwt(token);
     }
 
     public async logout(token: Token): Promise<void> {

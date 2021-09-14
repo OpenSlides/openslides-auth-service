@@ -4,6 +4,7 @@ export class User {
     public readonly username: string;
     public readonly password: string;
     public readonly id: string;
+    public readonly email: string;
     public readonly is_active: boolean;
 
     public constructor(input?: Partial<User>) {

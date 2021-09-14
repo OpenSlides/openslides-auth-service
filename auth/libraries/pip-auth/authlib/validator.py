@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 from urllib import parse
 
 import jwt
@@ -8,7 +8,7 @@ from .config import Environment
 from .constants import (
     ANONYMOUS_USER,
     COOKIE_NAME,
-    HEADER_NAME,
+    AUTHENTICATION_HEADER,
     USER_ID_PROPERTY,
 )
 from .exceptions import (
@@ -39,32 +39,11 @@ class Validator:
         Afterwards, this returns a user_id read from the decoded jwt contained in the token.
         """
         self.debug_fn("Validator.verify")
-        try:
-            self.__assert_instance_of_encoded_jwt(token_encoded, "Token")
-            self.__assert_instance_of_encoded_jwt(cookie_encoded, "Cookie")
-            return self.__verify_ticket(token_encoded, cookie_encoded), None
-        except jwt.exceptions.ExpiredSignatureError:
-            return self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
-        except jwt.exceptions.InvalidSignatureError:
-            raise InvalidCredentialsException("The signature of the jwt is invalid")
-        except jwt.exceptions.InvalidTokenError:
-            raise InvalidCredentialsException("The jwt is invalid")
-        except jwt.exceptions.DecodeError:
-            raise InvalidCredentialsException("The jwt is invalid")
-        except jwt.exceptions.InvalidAudienceError:
-            raise InvalidCredentialsException("The audience of the jwt is invalid")
-        except jwt.exceptions.InvalidAlgorithmError:
-            raise InvalidCredentialsException("Unsupported algorithm detected")
-        except jwt.exceptions.InvalidIssuerError: 
-            raise InvalidCredentialsException("Wrong issuer detected")
-        except jwt.exceptions.InvalidIssuedAtError:
-            raise InvalidCredentialsException("The 'iat'-timestamp is in the future")
-        except jwt.exceptions.ImmatureSignatureError:
-            raise InvalidCredentialsException("The 'nbf'-timestamp is in the future")
-        except jwt.exceptions.MissingRequiredClaimError:
-            raise InvalidCredentialsException("The jwt does not contain the required fields")
-        except jwt.exceptions.InvalidKeyError:
-            raise InvalidCredentialsException("The specified key for the jwt has a wrong format")
+        self.__assert_instance_of_encoded_jwt(token_encoded, "Token")
+        self.__assert_instance_of_encoded_jwt(cookie_encoded, "Cookie")
+        to_execute = lambda : [self.__verify_ticket(token_encoded, cookie_encoded), None]
+        to_fallback = lambda : self.__verify_ticket_from_auth_service(token_encoded, cookie_encoded)
+        return self.__exception_handler(to_execute, {jwt.exceptions.ExpiredSignatureError: to_fallback})
 
     def verify_only_cookie(self, cookie_encoded: str) -> int:
         """
@@ -78,11 +57,26 @@ class Validator:
         """
         self.debug_fn("Validator.verify_only_cookie")
         cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
-        cookie = self.__decode(cookie_encoded, self.environment.get_cookie_key())
+        get_cookie = lambda: self.__decode(cookie_encoded, self.environment.get_cookie_secret())
+        cookie = self.__exception_handler(get_cookie)
         user_id = cookie.get(USER_ID_PROPERTY)
         if not isinstance(user_id, int):
             raise AuthenticateException("user_id is not an int")
         return user_id
+
+    def verify_authorization_token(self, authorization_token: str) -> Tuple[int, str]:
+        self.debug_fn("Validator.verify_authorization_token")
+        self.__assert_instance_of_encoded_jwt(authorization_token)
+        authorization_token = self.__get_jwt_from_bearer_jwt(authorization_token)
+        get_token = lambda: self.__decode(authorization_token, self.environment.get_token_secret())
+        token = self.__exception_handler(get_token)
+        user_id = token.get(USER_ID_PROPERTY)
+        email = token.get("email")
+        if not isinstance(user_id, str):
+            raise AuthenticateException(f"user_id is not a str: {type(user_id)}")
+        if not isinstance(email, str):
+            raise AuthenticateException(f"email is not a str: {type(email)}")
+        return int(user_id), email
 
     def __verify_ticket(self, token_encoded: str, cookie_encoded: str) -> int:
         self.debug_fn("Validator.__verify_ticket")
@@ -90,8 +84,8 @@ class Validator:
         cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
         # this may raise an ExpiredSignatureError. We check,
         # if the cookies signature is valid
-        self.__decode(cookie_encoded, self.environment.get_cookie_key())
-        token = self.__decode(token_encoded, self.environment.get_token_key())
+        self.__decode(cookie_encoded, self.environment.get_cookie_secret())
+        token = self.__decode(token_encoded, self.environment.get_token_secret())
         user_id = token.get(USER_ID_PROPERTY)
         if not isinstance(user_id, int):
             raise AuthenticateException("user_id is not an int")
@@ -125,7 +119,7 @@ class Validator:
         Sends a request to the auth-service configured in the constructor.
         """
         self.debug_fn("Validator.__verify_ticket_from_auth_service")
-        headers = {HEADER_NAME: token_encoded}
+        headers = {AUTHENTICATION_HEADER: token_encoded}
         cookies = {COOKIE_NAME: cookie_encoded}
         response = self.http_handler.send_internal_request(
             "/authenticate", headers=headers, cookies=cookies
@@ -139,7 +133,7 @@ class Validator:
             )
 
         user_id = self.__get_user_id_from_response_body(response.json())
-        access_token = response.headers.get(HEADER_NAME, None)
+        access_token = response.headers.get(AUTHENTICATION_HEADER, None)
         return user_id, access_token
 
     def __get_user_id_from_response_body(self, response_body) -> int:
@@ -150,3 +144,45 @@ class Validator:
             raise AuthenticateException(
                 f"Empty or bad response from authentication service: {e}"
             )
+
+    def __exception_handler(self, expression: Callable, except_handlers: Dict[Any, Callable] = {}) -> Any: 
+        self.debug_fn("Validator.__exception_handler")
+        try:
+            return expression()
+        except Exception as e:
+            return self.__handle_exception(e, except_handlers)
+        
+    def __handle_exception(self, exception: Exception, except_handlers: Dict[Any, Callable]) -> Any:
+        self.debug_fn("Validator.__handle_exception")
+        was_handled = False
+        for key in except_handlers:
+            if isinstance(exception, key):
+                was_handled = True
+                return except_handlers[key]()
+        if was_handled == False:
+            self.__handle_unhandled_exception(exception)
+
+    def __handle_unhandled_exception(self, exception: Any) -> None:
+        self.debug_fn("Validator.__handle_unhandled_exception")
+        if isinstance(exception, jwt.exceptions.ExpiredSignatureError):
+            raise InvalidCredentialsException("The jwt is expired")
+        if isinstance(exception, jwt.exceptions.InvalidSignatureError):
+            raise InvalidCredentialsException("The signature of the jwt is invalid")
+        if isinstance(exception, jwt.exceptions.InvalidTokenError):
+            raise InvalidCredentialsException("The jwt is invalid")
+        if isinstance(exception, jwt.exceptions.DecodeError):
+            raise InvalidCredentialsException("The jwt is invalid")
+        if isinstance(exception, jwt.exceptions.InvalidAudienceError):
+            raise InvalidCredentialsException("The audience of the jwt is invalid")
+        if isinstance(exception, jwt.exceptions.InvalidAlgorithmError):
+            raise InvalidCredentialsException("Unsupported algorithm detected")
+        if isinstance(exception, jwt.exceptions.InvalidIssuerError): 
+            raise InvalidCredentialsException("Wrong issuer detected")
+        if isinstance(exception, jwt.exceptions.InvalidIssuedAtError):
+            raise InvalidCredentialsException("The 'iat'-timestamp is in the future")
+        if isinstance(exception, jwt.exceptions.ImmatureSignatureError):
+            raise InvalidCredentialsException("The 'nbf'-timestamp is in the future")
+        if isinstance(exception, jwt.exceptions.MissingRequiredClaimError):
+            raise InvalidCredentialsException("The jwt does not contain the required fields")
+        if isinstance(exception, jwt.exceptions.InvalidKeyError):
+            raise InvalidCredentialsException("The specified key for the jwt has a wrong format")

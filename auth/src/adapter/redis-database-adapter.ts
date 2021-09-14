@@ -13,7 +13,7 @@ export class RedisDatabaseAdapter extends Database {
      */
     public constructor(
         private readonly prefix: string,
-        private readonly modelConstructor?: new <T>(...args: any) => T
+        private readonly modelConstructor?: new <T>(...args: unknown[]) => T
     ) {
         super();
         this.init();

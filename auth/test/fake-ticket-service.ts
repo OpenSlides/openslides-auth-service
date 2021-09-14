@@ -1,17 +1,17 @@
 import * as jwt from 'jsonwebtoken';
 
-import { KeyService } from '../src/api/services/key-service';
+import { SecretService } from '../src/api/services/secret-service';
 import { Utils } from './utils';
 
 export class FakeTicketService {
-    private static readonly _keyService = new KeyService();
+    private static readonly _secretService = new SecretService();
 
-    public static get cookiekey(): string {
-        return this._keyService.getCookieKey();
+    public static get cookieSecret(): string {
+        return this._secretService.getCookieSecret();
     }
 
-    public static get tokenKey(): string {
-        return this._keyService.getTokenKey();
+    public static get tokenSecret(): string {
+        return this._secretService.getTokenSecret();
     }
 
     public static getExpiredJwt(oldJwt: string, type: 'cookie' | 'token' = 'token'): string {
@@ -19,7 +19,7 @@ export class FakeTicketService {
             oldJwt = oldJwt.slice(7);
         }
         const token = this.decode(oldJwt) as Utils.TokenPayload;
-        const signKey = type === 'token' ? this.tokenKey : this.cookiekey;
+        const signKey = type === 'token' ? this.tokenSecret : this.cookieSecret;
         const expiredToken = jwt.sign({ exp: new Date(0).getTime(), sessionId: token.sessionId, userId: 1 }, signKey, {
             algorithm: 'HS256'
         });

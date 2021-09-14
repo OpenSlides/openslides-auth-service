@@ -3,7 +3,7 @@ import jwt
 from .base import BaseTestEnvironment
 from ..config import Environment
 from urllib import parse
-from ..constants import COOKIE_NAME, HEADER_NAME, USER_ID_PROPERTY
+from ..constants import COOKIE_NAME, AUTHENTICATION_HEADER, USER_ID_PROPERTY
 from datetime import datetime
 from ..exceptions import InvalidCredentialsException
 
@@ -41,7 +41,7 @@ class TestAuthenticate(BaseTestEnvironment):
         cookie = cookie_encoded[7:]
 
         session_id = jwt.decode(
-            cookie, self.environment.get_cookie_key(), algorithms=["HS256"]
+            cookie, self.environment.get_cookie_secret(), algorithms=["HS256"]
         )["sessionId"]
         expired_token_payload = {
             "sessionId": session_id,
@@ -49,7 +49,7 @@ class TestAuthenticate(BaseTestEnvironment):
             "exp": datetime.utcfromtimestamp(0),
         }
         raw_token = jwt.encode(
-            expired_token_payload, self.environment.get_token_key(), algorithm="HS256"
+            expired_token_payload, self.environment.get_token_secret(), algorithm="HS256"
         )
         expired_token = "bearer " + raw_token.decode("utf-8")
 

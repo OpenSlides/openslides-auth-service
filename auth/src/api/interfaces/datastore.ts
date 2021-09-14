@@ -21,7 +21,7 @@ export abstract class Datastore {
         filterValue: string | number,
         mappedFields: (keyof T)[]
     ): Promise<GetManyAnswer<T>>;
-    public abstract get<T>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<any>;
+    public abstract get<T>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<T>;
     public abstract exists<T>(
         collection: string,
         filterField: keyof T,

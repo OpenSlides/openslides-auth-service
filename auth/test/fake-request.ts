@@ -24,7 +24,9 @@ export namespace FakeRequest {
         return response;
     }
 
-    export async function authenticate(options: { usingCookies?: boolean } = {}): Promise<HttpResponse> {
+    export async function authenticate(
+        options: { usingCookies?: boolean } = {}
+    ): Promise<HttpResponse<Utils.SessionInformation>> {
         return await FakeHttpService.post('authenticate', { usingCookies: options.usingCookies, internal: true });
     }
 
