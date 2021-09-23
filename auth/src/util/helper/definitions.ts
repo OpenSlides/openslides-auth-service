@@ -1,5 +1,5 @@
 export interface AuthServiceResponse {
-    [key: string]: any;
+    [key: string]: unknown;
     message: string;
     success: boolean;
 }

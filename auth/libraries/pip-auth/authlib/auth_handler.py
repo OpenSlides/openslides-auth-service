@@ -1,6 +1,8 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
+from requests import Response
 
 from .constants import ANONYMOUS_USER
+from .token_factory import TokenFactory
 from .hashing_handler import HashingHandler
 from .http_handler import HttpHandler
 from .validator import Validator
@@ -18,6 +20,7 @@ class AuthHandler:
         self.debug_fn = debug_fn
         self.http_handler = HttpHandler(debug_fn)
         self.validator = Validator(self.http_handler, debug_fn)
+        self.token_factory = TokenFactory(self.http_handler, debug_fn)
         self.hashing_handler = HashingHandler()
 
     def authenticate(
@@ -56,3 +59,9 @@ class AuthHandler:
         return (
             self.hashing_handler.hash(to_hash, hash_reference=to_compare) == to_compare
         )
+
+    def create_authorization_token(self, user_id: int, email: str) -> Response:
+        return self.token_factory.create(user_id, email)
+
+    def verify_authorization_token(self, authorization_token: str) -> Tuple[int, str]:
+        return self.validator.verify_authorization_token(authorization_token)

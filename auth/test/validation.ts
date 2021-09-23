@@ -15,7 +15,7 @@ export namespace Validation {
         expect(response.message).toBe(messageToValidate);
     }
 
-    export function validateAnonymous(response: HttpResponse): void {
+    export function validateAnonymous(response: HttpResponse<Utils.SessionInformation>): void {
         validateSuccessfulRequest(response, 'anonymous');
         expect(response.headers['authentication']).toBeFalsy();
         expect(response.userId).toBe(0);
@@ -32,7 +32,7 @@ export namespace Validation {
     }
 
     export function validateAuthentication(
-        response: HttpResponse,
+        response: HttpResponse<{ userId: number }>,
         userIdToValidate: number,
         messageToValidate?: string
     ): void {

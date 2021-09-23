@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from urllib import parse
 
 from ..http_handler import HttpHandler
-from ..constants import COOKIE_NAME, HEADER_NAME
+from ..constants import COOKIE_NAME, AUTHENTICATION_HEADER
 
 
 class FakeRequest:
@@ -21,6 +21,6 @@ class FakeRequest:
         response = self.raw_login()
         cookie = response.cookies.get(COOKIE_NAME, "")
         return (
-            response.headers.get(HEADER_NAME, None),
+            response.headers.get(AUTHENTICATION_HEADER, None),
             parse.unquote(cookie),
         )

@@ -1,4 +1,5 @@
-HEADER_NAME = "Authentication"
+AUTHENTICATION_HEADER = "authentication"
+AUTHORIZATION_HEADER = "authorization"
 COOKIE_NAME = "refreshId"
 USER_ID_PROPERTY = "userId"
 ANONYMOUS_USER = 0

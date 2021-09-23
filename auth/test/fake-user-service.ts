@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import { FakeUser } from './fake-user';
-import { KeyService } from '../src/api/services/key-service';
+import { SecretService } from '../src/api/services/secret-service';
 import { Utils } from './utils';
 
 export class FakeUserService {
@@ -9,10 +9,10 @@ export class FakeUserService {
 
     private fakeUser: FakeUser = new FakeUser();
 
-    private readonly keyService = new KeyService();
+    private readonly keyService = new SecretService();
 
     private get tokenKey(): string {
-        return this.keyService.getTokenKey();
+        return this.keyService.getTokenSecret();
     }
 
     private constructor() {}

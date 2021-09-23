@@ -30,6 +30,6 @@ test('POST clear-all-sessions-except-themselves', async () => {
     await FakeHttpService.post('secure/clear-all-sessions-except-themselves', {
         data: { sessionId: sessionInformation.sessionId }
     });
-    const sessions = await FakeHttpService.get('secure/list-sessions');
+    const sessions = await FakeHttpService.get<{ sessions: string[] }>('secure/list-sessions');
     expect(sessions.sessions.length).toBe(1);
 });

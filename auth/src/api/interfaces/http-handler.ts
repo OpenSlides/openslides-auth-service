@@ -13,17 +13,17 @@ export interface HttpHeaders {
 }
 
 export interface HttpData {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
-export interface HttpResponse<T = any> {
-    [key: string]: any;
+export type HttpResponse<T = unknown> = T & {
     status: number;
     headers: HttpHeaders;
-    message?: string;
     cookies: { [cookieName: string]: string };
+    message?: string;
     data?: T;
-}
+    success?: boolean;
+};
 
 export interface HttpRequestOptions {
     observe?: 'response' | 'data' | 'all';
