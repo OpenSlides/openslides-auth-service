@@ -34,11 +34,12 @@ export class UserService implements UserHandler {
     private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<User> {
         const userObj = await this.getUserCollectionFromDatastore('username', username);
         Logger.debug('User object from datastore: ', userObj);
-        if (Object.keys(userObj).length > 1) {
+        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        if (users.length > 1) {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');
         }
-        const user: User = new User(userObj[Object.keys(userObj)[0]]);
+        const user: User = new User(users[0]);
         if (!user.isExisting() || !this.isPasswordCorrect(password, user.password)) {
             throw new AuthenticationException('Username or password is incorrect.');
         }
@@ -53,6 +54,12 @@ export class UserService implements UserHandler {
             Logger.error(`Property ${property} is ${value}`);
             throw new Error(`Property ${property} is ${value}`);
         }
-        return await this._datastore.filter<User>('user', property, value, ['username', 'password', 'id', 'is_active']);
+        return await this._datastore.filter<User>('user', property, value, [
+            'username',
+            'password',
+            'id',
+            'is_active',
+            'meta_deleted'
+        ]);
     }
 }

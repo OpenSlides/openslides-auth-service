@@ -6,6 +6,7 @@ export class User {
     public readonly id: string;
     public readonly email: string;
     public readonly is_active: boolean;
+    public readonly meta_deleted: boolean;
 
     public constructor(input?: Partial<User>) {
         Object.assign(this, input);
