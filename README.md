@@ -268,11 +268,11 @@ def is_equals(to_hash: str, to_compare: str) -> bool:
     compares the result with the given to_compare.
     ```
 
-def create_authorization_token(user_id: int, email: str) -> None:
+def create_authorization_token(user_id: int, email: str) -> requests.Response:
     ```
     This method creates a token, that authorizes a user to perform actions within ten minutes. This will be used
     for example to change their password, if they forgot it. To create such an authorization_token, the user_id and
-    the email of a user have to be passed.
+    the email of a user have to be passed. The token is set as header "authorization" in the returning response-object.
     ```
 
 def verify_authorization_token(authorization_token: str) -> Tuple[int, str]:
