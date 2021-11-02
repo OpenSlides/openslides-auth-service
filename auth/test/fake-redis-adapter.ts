@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 
-export class TestDatabaseAdapter {
+export class FakeRedisAdapter {
     private readonly redisPort = parseInt(process.env.CACHE_PORT || '', 10) || 6379;
     private readonly redisHost = process.env.CACHE_HOST || '';
     private database: Redis.Redis;

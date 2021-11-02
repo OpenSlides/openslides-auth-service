@@ -1,34 +1,27 @@
-import { FakeRequest } from './fake-request';
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
+    container.user.reset();
+    await container.redis.flushdb();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('POST clear-session-by-id', async () => {
-    const user = await FakeRequest.login();
+    const user = await container.request.login();
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await FakeHttpService.post('secure/clear-session-by-id', {
+    await container.request.post('secure/clear-session-by-id', {
         data: { sessionId: sessionInformation.sessionId }
     });
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.authenticate());
 });

@@ -4,8 +4,8 @@ export enum HttpProtocol {
 }
 
 export enum HttpMethod {
-    GET = 'GET',
-    POST = 'POST'
+    GET = 'get',
+    POST = 'post'
 }
 
 export interface HttpHeaders {

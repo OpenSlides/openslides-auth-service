@@ -1,6 +1,5 @@
-import { FakeRequest } from './fake-request';
 import { Validation } from './validation';
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
 
 // Adds custom jest-functions.
 declare global {
@@ -9,13 +8,24 @@ declare global {
     }
 }
 
+let container: TestContainer;
+
+beforeAll(async () => {
+    container = new TestContainer();
+    await container.ready();
+});
+
+afterAll(async () => {
+    await container.end();
+});
+
 test('Server is available', async () => {
-    const result = await FakeHttpService.get('');
+    const result = await container.http.get('');
     Validation.validateSuccessfulRequest(result, 'Authentication service is available');
 });
 
 test('Secured routes are available', async () => {
-    await FakeRequest.login();
-    const result = await FakeHttpService.get('secure');
+    await container.request.login();
+    const result = await container.request.get('secure');
     Validation.validateSuccessfulRequest(result, 'Yeah! A secure route!');
 });

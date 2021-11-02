@@ -1,44 +1,37 @@
-import { FakeRequest } from './fake-request';
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
 import { Validation } from './validation';
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
+    container.user.reset();
+    await container.redis.flushdb();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('POST logout', async () => {
-    await FakeRequest.login();
-    const response = await FakeHttpService.post('secure/logout');
+    await container.request.login();
+    const response = await container.request.post('secure/logout');
     Validation.validateSuccessfulRequest(response);
 });
 
 test('POST logout without access-token', async () => {
-    await FakeRequest.login();
-    FakeUserService.getInstance().unsetAccessTokenInFakeUser();
-    const response = await FakeHttpService.post('secure/logout');
+    await container.request.login();
+    container.userService.unsetAccessTokenInFakeUser();
+    const response = await container.request.post('secure/logout');
     Validation.validateSuccessfulRequest(response, 'anonymous');
 });
 
 test('POST logout without cookie', async () => {
-    await FakeRequest.login();
-    const response = await FakeHttpService.post('secure/logout', { usingCookies: false });
+    await container.request.login();
+    const response = await container.request.post('secure/logout', { usingCookies: false });
     Validation.validateSuccessfulRequest(response, 'anonymous');
 });

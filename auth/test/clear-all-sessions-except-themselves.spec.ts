@@ -1,35 +1,28 @@
-import { FakeRequest } from './fake-request';
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
+    container.user.reset();
+    await container.redis.flushdb();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('POST clear-all-sessions-except-themselves', async () => {
-    const user = (await FakeRequest.loginForNTimes(3))[2];
+    const user = (await container.request.loginForNTimes(3))[2];
     const sessionInformation = Utils.getSessionInformationFromUser(user);
-    await FakeHttpService.post('secure/clear-all-sessions-except-themselves', {
+    await container.request.post('secure/clear-all-sessions-except-themselves', {
         data: { sessionId: sessionInformation.sessionId }
     });
-    const sessions = await FakeHttpService.get<{ sessions: string[] }>('secure/list-sessions');
+    const sessions = await container.request.get<{ sessions: string[] }>('secure/list-sessions');
     expect(sessions.sessions.length).toBe(1);
 });

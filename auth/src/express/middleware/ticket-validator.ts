@@ -41,7 +41,8 @@ export class TicketMiddleware implements RestMiddleware {
             throw new AuthenticationException('Undefined headers or cookies');
         }
 
-        const tokenEncoded = (request.headers['authentication'] || request.headers['authorization']) as string;
+        const tokenEncoded = (request.headers[AuthHandler.AUTHENTICATION_HEADER] ||
+            request.headers[AuthHandler.AUTHORIZATION_HEADER]) as string;
         const cookieEncoded = (request.cookies as CookieHeader)[AuthHandler.COOKIE_NAME];
         Logger.debug(`tokenEncoded: ${tokenEncoded}`);
         Logger.debug(`cookieEncoded: ${cookieEncoded}`);
