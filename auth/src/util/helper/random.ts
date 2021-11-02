@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export namespace Random {
+export class Random {
     /**
      * Generates a cryptographically key with a specified key length.
      *
@@ -8,9 +8,10 @@ export namespace Random {
      *
      * @returns The generated key.
      */
-    export const cryptoKey = (length: number = 32): string =>
-        crypto
+    public static cryptoKey(length: number = 32): string {
+        return crypto
             .randomBytes(Math.ceil(length / 2))
             .toString('hex')
             .slice(0, length);
+    }
 }

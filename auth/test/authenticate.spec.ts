@@ -1,70 +1,63 @@
-import { FakeRequest } from './fake-request';
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
 import { Validation } from './validation';
-import { FakeTicketService } from './fake-ticket-service';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
+    container.user.reset();
+    await container.redis.flushdb();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('POST auth', async () => {
-    await FakeRequest.login();
-    const answer = await FakeRequest.authenticate();
-    Validation.validateAuthentication(answer, 1);
+    await container.request.login();
+    const answer = await container.request.authenticate();
+    Validation.validateAuthentication(answer, container.userService.currentAdminId);
 });
 
 test('POST auth without cookie', async () => {
-    await FakeRequest.login();
-    const answer = await FakeRequest.authenticate({ usingCookies: false });
+    await container.request.login();
+    const answer = await container.request.authenticate({ usingCookies: false });
     Validation.validateAuthentication(answer, 0, 'anonymous'); // anonymous
 });
 
 test('POST auth without access-token', async () => {
-    await FakeRequest.login();
-    FakeUserService.getInstance().unsetAccessTokenInFakeUser();
-    const answer = await FakeRequest.authenticate();
+    await container.request.login();
+    container.userService.unsetAccessTokenInFakeUser();
+    const answer = await container.request.authenticate();
     Validation.validateAnonymous(answer);
 });
 
 test('POST auth with malified access-token', async () => {
-    await FakeRequest.login();
-    FakeUserService.getInstance().manipulateAccessTokenInFakeUser();
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
+    await container.request.login();
+    container.userService.manipulateAccessTokenInFakeUser();
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.authenticate());
 });
 
 test('POST auth with wrong access-token', async () => {
-    await FakeRequest.login();
-    FakeUserService.getInstance().removeACharacterFromAccessTokenInFakeUser();
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.authenticate());
+    await container.request.login();
+    container.userService.removeACharacterFromAccessTokenInFakeUser();
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.authenticate());
 });
 
 test('POST auth renew access-token', async () => {
-    await FakeRequest.login();
-    FakeUserService.getInstance().setAccessTokenToExpired();
-    const answer = await FakeRequest.authenticate();
+    await container.request.login();
+    container.userService.setAccessTokenToExpired();
+    const answer = await container.request.authenticate();
     Validation.validateAccessToken(answer);
 });
 
 test('POST auth with expired cookie', async () => {
-    await FakeRequest.login();
-    fakeUser.accessToken = FakeTicketService.getExpiredJwt(fakeUser.accessToken, 'token');
-    fakeUser.refreshId = FakeTicketService.getExpiredJwt(fakeUser.refreshId, 'cookie');
-    Validation.validateAnonymous(await FakeRequest.authenticate());
+    await container.request.login();
+    container.user.accessToken = container.ticketService.getExpiredJwt(container.user.accessToken, 'token');
+    container.user.refreshId = container.ticketService.getExpiredJwt(container.user.refreshId, 'cookie');
+    Validation.validateAnonymous(await container.request.authenticate());
 });

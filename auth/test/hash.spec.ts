@@ -1,7 +1,18 @@
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
+
+let container: TestContainer;
+
+beforeAll(async () => {
+    container = new TestContainer();
+    await container.ready();
+});
+
+afterAll(async () => {
+    await container.end();
+});
 
 test('POST hash', async () => {
-    const hashValue = await FakeHttpService.post('hash', {
+    const hashValue = await container.http.post('hash', {
         data: { toHash: 'helloworld' },
         internal: true
     });
@@ -10,15 +21,15 @@ test('POST hash', async () => {
 
 test('POST hash random salt', async () => {
     const toHash = { toHash: 'a password' };
-    const hashValue = await FakeHttpService.post('hash', { data: toHash, internal: true });
-    const toCompare = await FakeHttpService.post('hash', { data: toHash, internal: true });
+    const hashValue = await container.http.post('hash', { data: toHash, internal: true });
+    const toCompare = await container.http.post('hash', { data: toHash, internal: true });
     expect(hashValue.hash).not.toBe(toCompare.hash);
 });
 
 test('POST is-equals', async () => {
     const toHashValue = { toHash: 'helloworld' };
-    const toCompareValue = await FakeHttpService.post('hash', { data: toHashValue, internal: true });
-    const hashValue = await FakeHttpService.post('is-equals', {
+    const toCompareValue = await container.http.post('hash', { data: toHashValue, internal: true });
+    const hashValue = await container.http.post('is-equals', {
         internal: true,
         data: {
             toHash: toHashValue.toHash,

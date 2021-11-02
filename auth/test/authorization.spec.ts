@@ -1,5 +1,5 @@
-import { FakeHttpService } from './fake-http-service';
 import { AuthHandler } from '../src/api/interfaces/auth-handler';
+import { TestContainer } from './test-container';
 
 interface AuthorizationToken {
     email: string;
@@ -8,8 +8,19 @@ interface AuthorizationToken {
 
 const exampleEmail = 'maxmustermann@example.com';
 
+let container: TestContainer;
+
+beforeAll(async () => {
+    container = new TestContainer();
+    await container.ready();
+});
+
+afterAll(async () => {
+    await container.end();
+});
+
 test('Create authorization token', async () => {
-    const response = await FakeHttpService.post('create-authorization-token', {
+    const response = await container.http.post('create-authorization-token', {
         data: { userId: 1, email: exampleEmail },
         internal: true
     });
@@ -21,12 +32,12 @@ test('Create authorization token', async () => {
 });
 
 test('Verify authorization token', async () => {
-    const response = await FakeHttpService.post('create-authorization-token', {
+    const response = await container.http.post('create-authorization-token', {
         data: { userId: 1, email: exampleEmail },
         internal: true
     });
     const token = response.headers[AuthHandler.AUTHORIZATION_HEADER] as string;
-    const next = await FakeHttpService.post<AuthorizationToken>('verify-authorization-token', {
+    const next = await container.http.post<AuthorizationToken>('verify-authorization-token', {
         headers: { [AuthHandler.AUTHORIZATION_HEADER]: token },
         internal: true
     });

@@ -1,39 +1,31 @@
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
-import { Utils } from './utils';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
+    container.user.reset();
+    await container.redis.flushdb();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('GET list-sessions', async () => {
-    const user = (await Utils.getNSessions(1))[0];
-    const sessions = await Utils.getAllActiveSessions();
+    const user = (await container.request.getNSessions(1))[0];
+    const sessions = await container.request.getAllActiveSessions();
     expect(sessions.length).toBe(1);
     expect(sessions.includes(user.sessionId)).toBeTruthy();
 });
 
 test('GET list-sessions #2', async () => {
-    const users = await Utils.getNSessions(3);
-    const sessions = await Utils.getAllActiveSessions();
+    const users = await container.request.getNSessions(3);
+    const sessions = await container.request.getAllActiveSessions();
     expect(sessions.length).toBe(3);
-    for (const user of users) {
-        expect(sessions.includes(user.sessionId)).toBeTruthy();
-    }
+    expect(users.every(user => sessions.includes(user.sessionId))).toBeTruthy();
 });

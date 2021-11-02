@@ -1,82 +1,80 @@
-import { FakeDatastoreAdapter } from './fake-datastore-adapter';
-import { FakeRequest } from './fake-request';
-import { FakeUserService } from './fake-user-service';
-import { TestDatabaseAdapter } from './test-database-adapter';
 import { Utils } from './utils';
 import { Validation } from './validation';
-import { FakeHttpService } from './fake-http-service';
+import { TestContainer } from './test-container';
 
-const fakeUserService = FakeUserService.getInstance();
-const fakeUser = fakeUserService.getFakeUser();
-
-let database: TestDatabaseAdapter;
+let container: TestContainer;
 
 beforeAll(async () => {
-    database = new TestDatabaseAdapter();
-    await database.init();
-    await FakeDatastoreAdapter.updateAdmin({ is_active: true });
+    container = new TestContainer();
+    await container.ready();
 });
 
 afterEach(async () => {
-    fakeUser.reset();
-    await database.flushdb();
-    await FakeDatastoreAdapter.updateAdmin({ is_active: true });
+    container.user.reset();
+    await container.redis.flushdb();
+    await container.userService.init();
 });
 
-afterAll(() => {
-    database.end();
-    return;
+afterAll(async () => {
+    await container.end();
 });
 
 test('POST login with credentials', async () => {
-    const result = await FakeRequest.login();
+    const result = await container.request.login();
     Validation.validateSuccessfulRequest(result);
     Validation.validateAccessToken(result);
 });
 
 test('POST login twice - different session-ids', async () => {
-    const sessionOne = Utils.getSessionInformationFromUser(await FakeRequest.login());
-    const sessionTwo = Utils.getSessionInformationFromUser(await FakeRequest.login());
+    const sessionOne = Utils.getSessionInformationFromUser(await container.request.login());
+    const sessionTwo = Utils.getSessionInformationFromUser(await container.request.login());
     expect(sessionOne.sessionId).not.toBe(sessionTwo.sessionId);
 });
 
 test('POST login while inactive', async () => {
-    await FakeDatastoreAdapter.updateAdmin({ is_active: false });
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeRequest.login());
+    await container.userService.updateAdmin({ is_active: false });
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login());
 });
 
 test('GET login', async () => {
     try {
-        await FakeHttpService.get('login');
+        await container.http.get('login');
     } catch (e) {
         expect(e.status).toBe(404); // Not found
     }
 });
 
 test('POST login without password', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        FakeHttpService.post('login', { data: { username: 'admin' } })
-    );
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('admin'));
 });
 
 test('POST login without username', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        FakeHttpService.post('login', { data: { password: 'admin' } })
-    );
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login(undefined, 'admin'));
 });
 
 test('POST login without credentials', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(FakeHttpService.post('login'));
+    await container.request.sendRequestAndValidateForbiddenRequest(container.http.post('login'));
 });
 
 test('POST login with wrong password', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        FakeHttpService.post('login', { data: { username: 'admin', password: 'xyz' } })
-    );
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('admin', 'xyz'));
 });
 
 test('POST login with wrong username', async () => {
-    await FakeRequest.sendRequestAndValidateForbiddenRequest(
-        FakeHttpService.post('login', { data: { username: 'xyz', password: 'admin' } })
-    );
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('xyz', 'admin'));
+});
+
+test('POST login multiple users, only one alive', async () => {
+    const toDelete = await container.userService.createUser('ash');
+    await container.userService.deleteUser(toDelete);
+    await container.userService.createUser('ash');
+    const response = await container.request.login('ash', 'ash');
+    Validation.validateSuccessfulRequest(response);
+    Validation.validateAccessToken(response);
+});
+
+test('POST login multiple users, forbidden', async () => {
+    await container.userService.createUser('ash');
+    await container.userService.createUser('ash');
+    await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('ash', 'ash'));
 });

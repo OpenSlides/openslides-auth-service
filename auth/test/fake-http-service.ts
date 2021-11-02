@@ -1,10 +1,9 @@
-import { FakeUserService } from './fake-user-service';
-import { HttpService } from '../src/api/services/http-service';
 import { HttpHandler, HttpHeaders, HttpMethod, HttpResponse } from '../src/api/interfaces/http-handler';
+import { HttpService } from '../src/api/services/http-service';
 
-interface RequestOptions {
+export interface RequestOptions<D = any> {
     headers?: HttpHeaders;
-    data?: any;
+    data?: D;
     usingCookies?: boolean;
     internal?: boolean;
 }
@@ -16,13 +15,13 @@ const INTERNAL_URL = '/internal/auth';
 const DEFAULT_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json' };
 
 export class FakeHttpService {
-    private static http: HttpHandler = new HttpService();
+    private http: HttpHandler = new HttpService();
 
-    public static async get<T = any>(url: string, options?: RequestOptions): Promise<HttpResponse<T>> {
+    public async get<T = any, D = any>(url: string, options?: RequestOptions<D>): Promise<HttpResponse<T>> {
         return this.send(this.getExternalUrlToServer(url), HttpMethod.GET, options);
     }
 
-    public static async post<T = any>(url: string, options: RequestOptions = {}): Promise<HttpResponse<T>> {
+    public async post<T = any, D = any>(url: string, options: RequestOptions<D> = {}): Promise<HttpResponse<T>> {
         if (options.internal) {
             return this.send(this.getInternalUrlToServer(url), HttpMethod.POST, options);
         } else {
@@ -30,32 +29,28 @@ export class FakeHttpService {
         }
     }
 
-    public static async send<T = any>(
+    public async send<T = any, D = any>(
         url: string,
         method: HttpMethod,
-        { data, headers = {}, usingCookies = true }: RequestOptions = {}
+        { data, headers = {} }: RequestOptions<D> = {}
     ): Promise<HttpResponse<T>> {
-        const fakeUser = FakeUserService.getInstance().getFakeUser();
-        headers = { authentication: fakeUser.accessToken, ...DEFAULT_HEADERS, ...headers };
-        if (usingCookies) {
-            headers['cookie'] = `refreshId=${fakeUser.refreshId}`;
-        }
-        return (await this.http.send(url, method, data, headers)) as HttpResponse<T>;
+        headers = { ...DEFAULT_HEADERS, ...headers };
+        return (await this.http.send(url, method, data as any, headers)) as HttpResponse<T>;
     }
 
-    private static formatUrl(path: string): string {
+    private formatUrl(path: string): string {
         if (!path.startsWith('/')) {
             path = `/${path}`;
         }
         return path;
     }
 
-    private static getExternalUrlToServer(path: string): string {
+    private getExternalUrlToServer(path: string): string {
         const url = this.formatUrl(path);
         return `${SERVER_URL}${EXTERNAL_URL}${url}`;
     }
 
-    private static getInternalUrlToServer(path: string): string {
+    private getInternalUrlToServer(path: string): string {
         const url = this.formatUrl(path);
         return `${SERVER_URL}${INTERNAL_URL}${url}`;
     }

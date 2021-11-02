@@ -1,4 +1,6 @@
-module.exports = {
+import type { Config } from '@jest/types';
+
+const config: Config.InitialOptions = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     roots: ['<rootDir>/test', '<rootDir>/src'],
@@ -10,5 +12,9 @@ module.exports = {
     testURL: 'http://localhost:4200',
     verbose: true,
     collectCoverage: true,
-    collectCoverageFrom: ['src/**/*.{ts,tsx}']
+    collectCoverageFrom: ['src/**/*.{ts,tsx}'],
+    globalSetup: './test/setup.ts',
+    globalTeardown: './test/teardown.ts'
 };
+
+export default config;

@@ -1,3 +1,5 @@
+export const FAKE_ADMIN_ID = 1;
+
 export class FakeUser {
     public accessToken = '';
     public refreshId = '';

@@ -1,8 +1,8 @@
-import { Utils } from './utils';
+import { Utils, SessionInformation, TokenPayload } from './utils';
 import { HttpResponse } from '../src/api/interfaces/http-handler';
 
 export namespace Validation {
-    function isTokenPayload(arg: any): arg is Utils.TokenPayload {
+    function isTokenPayload(arg: any): arg is TokenPayload {
         return !!arg['userId'] && !!arg['sessionId'];
     }
 
@@ -15,7 +15,7 @@ export namespace Validation {
         expect(response.message).toBe(messageToValidate);
     }
 
-    export function validateAnonymous(response: HttpResponse<Utils.SessionInformation>): void {
+    export function validateAnonymous(response: HttpResponse<SessionInformation>): void {
         validateSuccessfulRequest(response, 'anonymous');
         expect(response.headers['authentication']).toBeFalsy();
         expect(response.userId).toBe(0);
