@@ -18,6 +18,11 @@ RUN npm prune --production
 
 FROM node:16-alpine
 
+LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
+LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
+
 WORKDIR /app
 
 COPY --from=build /app/build .
