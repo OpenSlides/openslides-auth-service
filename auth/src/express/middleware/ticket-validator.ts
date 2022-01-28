@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Factory, Inject } from 'final-di';
 import { TokenExpiredError } from 'jsonwebtoken';
-import { RestMiddleware } from 'rest-app/dist/esm/interfaces/rest-middleware';
+import { RestMiddleware } from 'rest-app';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { SessionHandler } from '../../api/interfaces/session-handler';

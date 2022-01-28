@@ -28,6 +28,13 @@ const corsFunction = (req: Request, res?: Response): void => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
 
+const logErrors = (error: { toString: () => string }) => {
+    if (!error) {
+        return;
+    }
+    Logger.log(error.toString?.());
+};
+
 class Server {
     public static readonly PORT: number = parseInt(process.env.AUTH_PORT || '', 10) || 9004;
     public static readonly DOMAIN: string = process.env.INSTANCE_DOMAIN || 'http://localhost';
@@ -39,7 +46,9 @@ class Server {
     private _application = new RestApplication({
         controllers: [SecureController, PrivateController, PublicController],
         port: this.port,
-        requestHandlers: [logRequestInformation, corsFunction]
+        requestHandlers: [logRequestInformation, corsFunction],
+        logger: { logFn: (...args) => Logger.log(...args) },
+        errorHandlers: [logErrors]
     });
 
     public start(): void {

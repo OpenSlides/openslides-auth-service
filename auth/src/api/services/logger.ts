@@ -47,22 +47,11 @@ export class Logger {
     }
 
     private static getTimeString(): string {
-        const date = new Date();
-        return (
-            `[${this.formatDateTimeString(date.getDate())}.` + //
-            `${this.formatDateTimeString(date.getMonth() + 1)}.` + //
-            `${date.getFullYear()} -- ` + //
-            `${this.formatDateTimeString(date.getHours())}:` + //
-            `${this.formatDateTimeString(date.getMinutes())}:` + //
-            `${this.formatDateTimeString(date.getSeconds())}]`
-        );
-    }
-
-    private static formatDateTimeString(toFormat: string | number): string {
-        return `0${toFormat}`.slice(-2);
+        return new Date().toISOString();
     }
 
     private static info(color: string, ...message: unknown[]): void {
-        console.log(`${color}${this.getTimeString()}:`, ...message, '\x1b[0m');
+        const timeString = Config.isDevMode() ? `\x1b[0m${color}${this.getTimeString()}:` : this.getTimeString();
+        console.log(timeString, ...message);
     }
 }

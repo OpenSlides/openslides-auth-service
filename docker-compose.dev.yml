@@ -29,7 +29,7 @@ services:
 
   datastore-reader:
     build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git"
+      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
       dockerfile: Dockerfile
       args:
         MODULE: "reader"
@@ -37,11 +37,15 @@ services:
     image: openslides-datastore-reader
     ports:
       - "9010:9010"
+    environment:
+      - DATASTORE_ENABLE_DEV_ENVIRONMENT=1
+      - NUM_WORKERS=8
+      - OPENSLIDES_DEVELOPMENT=1
     depends_on:
       - postgresql
   datastore-writer:
     build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git"
+      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
       dockerfile: Dockerfile
       args:
         MODULE: "writer"
@@ -52,7 +56,7 @@ services:
     environment:
       - DATASTORE_ENABLE_DEV_ENVIRONMENT=1
       - COMMAND=create_initial_data
-      - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/OpenSlides/master/docs/example-data.json
+      - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/openslides-backend/main/global/data/example-data.json
       - OPENSLIDES_DEVELOPMENT=1
     depends_on:
       - postgresql

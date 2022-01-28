@@ -29,7 +29,7 @@ export class PublicController {
         @Body('password') password: string,
         @Res() res: Response
     ): Promise<AuthServiceResponse> {
-        Logger.log(`user: ${username} -- signs in`);
+        Logger.debug(`user: ${username} -- signs in`);
         const ticket = await this._authHandler.login(username, password);
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
         res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: false, httpOnly: true });
