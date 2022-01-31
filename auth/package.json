@@ -67,7 +67,7 @@
         "ioredis": "^4.27.7",
         "jsonwebtoken": "^8.5.1",
         "response-time": "^2.3.2",
-        "rest-app": "^1.0.0-alpha.8",
+        "rest-app": "^1.0.0-alpha.9",
         "tslib": "^2.3.1"
     }
 }
