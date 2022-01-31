@@ -62,7 +62,7 @@
         "typescript": "^4.3.5"
     },
     "dependencies": {
-        "axios": "^0.21.1",
+        "axios": "^0.21.2",
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^4.27.7",
         "jsonwebtoken": "^8.5.1",
