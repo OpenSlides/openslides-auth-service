@@ -34,7 +34,7 @@ export class FakePostgreAdapter {
             for (const sequence of ALL_SEQUENCES) {
                 await client.query(`ALTER SEQUENCE ${sequence}_seq RESTART WITH 1;`, []);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.log('Error prune', e.stack);
         }
     }

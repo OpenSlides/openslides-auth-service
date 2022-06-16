@@ -1,14 +1,19 @@
 module.exports = {
+    root: true,
     env: {
         browser: true,
         es6: true,
-        node: true
+        node: true,
+        jest: true
     },
     extends: ['plugin:@typescript-eslint/recommended', 'plugin:@typescript-eslint/recommended-requiring-type-checking'],
+    files: ['*.ts'],
     parser: '@typescript-eslint/parser',
     parserOptions: {
-        project: './tsconfig.json',
-        sourceType: 'module'
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+        sourceType: 'module',
+        createDefaultProgram: true
     },
     plugins: [
         'eslint-plugin-import',

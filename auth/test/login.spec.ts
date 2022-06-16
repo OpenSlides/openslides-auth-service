@@ -39,7 +39,7 @@ test('POST login while inactive', async () => {
 test('GET login', async () => {
     try {
         await container.http.get('login');
-    } catch (e) {
+    } catch (e: any) {
         expect(e.status).toBe(404); // Not found
     }
 });

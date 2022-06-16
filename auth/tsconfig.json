@@ -1,22 +1,7 @@
 {
+    "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "module": "commonjs",
-        "strict": true,
-        "baseUrl": "./",
-        "rootDir": "./src",
-        "outDir": "build",
-        "sourceMap": false,
-        "removeComments": true,
-        "experimentalDecorators": true,
-        "target": "ES6",
-        "esModuleInterop": true,
-        "emitDecoratorMetadata": true,
-        "moduleResolution": "node",
-        "importHelpers": true,
-        "strictPropertyInitialization": false,
-        "types": ["node", "reflect-metadata", "jest"],
-        "typeRoots": ["node_modules/@types"]
+        "types": ["node", "reflect-metadata", "jest"]
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "src/**/*.spec.ts", "test"]
+    "include": ["src/**/*.ts", "test/**/*.ts"]
 }
