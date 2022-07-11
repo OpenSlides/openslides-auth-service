@@ -104,6 +104,6 @@ export class TicketService extends TicketHandler {
     private generateCookie(sessionId: string | JwtPayload, userId?: string): Cookie {
         const payload: JwtPayload =
             typeof sessionId === 'string' && userId ? { sessionId, userId } : (sessionId as JwtPayload);
-        return new Cookie(payload, this.cookieSecret, { expiresIn: '1d' });
+        return new Cookie(payload, this.cookieSecret, { expiresIn: '30d' });
     }
 }

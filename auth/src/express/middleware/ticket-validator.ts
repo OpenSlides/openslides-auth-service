@@ -90,6 +90,7 @@ export class TicketMiddleware implements RestMiddleware {
             Logger.debug(e);
             if (e instanceof TokenExpiredError) {
                 Logger.debug('Cookie jwt is expired. Treat it like an anonymous.');
+                response.clearCookie(AuthHandler.COOKIE_NAME);
                 response.json(createResponse(anonymous, 'anonymous'));
             } else {
                 const { status, message }: ExpressError = e as ExpressError;
