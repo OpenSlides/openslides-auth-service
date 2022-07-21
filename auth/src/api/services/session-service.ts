@@ -7,6 +7,7 @@ import { Random } from '../../util/helper';
 import { Database } from '../interfaces/database';
 import { MessageBus } from '../interfaces/message-bus';
 import { SessionHandler } from '../interfaces/session-handler';
+import { Logger } from '../services/logger';
 
 export class SessionService extends SessionHandler {
     @Factory(RedisDatabaseAdapter, SessionHandler.SESSION_KEY)
@@ -17,6 +18,20 @@ export class SessionService extends SessionHandler {
 
     @Factory(RedisMessageBusAdapter)
     private readonly _messageBus: MessageBus;
+
+    private _logMetric = setInterval(
+        (sessionService: SessionService) => {
+            Promise.all([sessionService.getAllActiveSessions(), sessionService.getAllActiveUsers()])
+                .then(values => {
+                    const allActiveSessions = values[0].length;
+                    const allActiveUsers = values[1].length;
+                    Logger.log(`Metric: {"sessions":${allActiveSessions},"users":${allActiveUsers}}`);
+                })
+                .catch(() => Logger.error('Could not log the number of active sessions and users.'));
+        },
+        60000,
+        this
+    );
 
     public async getAllActiveSessions(): Promise<string[]> {
         return await this._sessionDatabase.keys();
