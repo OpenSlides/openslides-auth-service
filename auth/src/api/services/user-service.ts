@@ -39,14 +39,14 @@ export class UserService implements UserHandler {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');
         }
-        const user: User = new User(users[0]);
-        if (!user.isExisting() || !this.isPasswordCorrect(password, user.password)) {
+        const thisUser: User = new User(users[0]);
+        if (!thisUser.isExisting() || !this.isPasswordCorrect(password, thisUser.password)) {
             throw new AuthenticationException('Username or password is incorrect.');
         }
-        if (!user.is_active) {
+        if (!thisUser.is_active) {
             throw new AuthenticationException('The account is deactivated.');
         }
-        return user;
+        return thisUser;
     }
 
     private async getUserCollectionFromDatastore(property: keyof User, value: string): Promise<GetManyAnswer<User>> {
