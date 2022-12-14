@@ -52,7 +52,7 @@ export class FakePostgreAdapter {
 
     private async initClient(): Promise<Client> {
         const client = new Client({
-            host: 'postgresql',
+            host: 'postgres',
             database: 'openslides',
             user: 'openslides',
             password: 'openslides'
@@ -67,7 +67,7 @@ export class FakePostgreAdapter {
         let client: Client;
         if (!this._client) {
             client = new Client({
-                host: 'postgresql',
+                host: 'postgres',
                 database: 'openslides',
                 user: 'openslides',
                 password: 'openslides'
