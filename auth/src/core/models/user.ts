@@ -1,9 +1,11 @@
+import { Id } from '../key-transforms';
+
 export class User {
     public static readonly COLLECTION = 'user';
 
+    public readonly id: Id;
     public readonly username: string;
     public readonly password: string;
-    public readonly id: string;
     public readonly email: string;
     public readonly is_active: boolean;
     public readonly meta_deleted: boolean;

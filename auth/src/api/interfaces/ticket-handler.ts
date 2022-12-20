@@ -1,3 +1,5 @@
+import { Id } from 'src/core/key-transforms';
+
 import { Cookie, Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 
@@ -19,7 +21,7 @@ export abstract class TicketHandler {
      *
      * @returns the new ticket
      */
-    public abstract create(userId: string, session: string): Ticket;
+    public abstract create(userId: Id, session: string): Ticket;
     /**
      * Creates a new instance of a `BaseJwt`. It is either a `Token` or a `Cookie`.
      *

@@ -50,7 +50,7 @@ export class AuthService implements AuthHandler {
         if (!(await this._sessionHandler.hasSession(cookie.sessionId))) {
             throw new AuthenticationException('Not signed in');
         }
-        const user = await this._userHandler.getUserByUserId(cookie.userId as string);
+        const user = await this._userHandler.getUserByUserId(cookie.userId);
         if (!user) {
             await this._sessionHandler.clearSessionById(cookie.sessionId);
             throw new AuthenticationException('Wrong user');

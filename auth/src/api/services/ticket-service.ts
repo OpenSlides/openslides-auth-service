@@ -1,5 +1,6 @@
 import { Factory } from 'final-di';
 import jwt from 'jsonwebtoken';
+import { Id } from 'src/core/key-transforms';
 
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { ValidationException } from '../../core/exceptions/validation-exception';
@@ -39,14 +40,14 @@ export class TicketService extends TicketHandler {
         }
     }
 
-    public create(userId: string, session: string): Ticket {
+    public create(userId: Id, session: string): Ticket {
         const cookie = this.generateCookie(session, userId);
         const token = this.generateToken(session, userId);
         return { cookie, token };
     }
 
     public refresh(cookie: Cookie): Ticket {
-        const token = this.generateToken(cookie.sessionId, cookie.userId as string);
+        const token = this.generateToken(cookie.sessionId, cookie.userId);
         return { cookie, token };
     }
 
@@ -92,16 +93,16 @@ export class TicketService extends TicketHandler {
     }
 
     private generateToken(payload: JwtPayload): Token;
-    private generateToken(sessionId: string, userId: string): Token;
-    private generateToken(sessionId: string | JwtPayload, userId?: string): Token {
+    private generateToken(sessionId: string, userId: Id): Token;
+    private generateToken(sessionId: string | JwtPayload, userId?: Id): Token {
         const payload: JwtPayload =
             typeof sessionId === 'string' && userId ? { sessionId, userId } : (sessionId as JwtPayload);
         return new Token(payload, this.tokenSecret, { expiresIn: '10m' });
     }
 
     private generateCookie(payload: JwtPayload): Cookie;
-    private generateCookie(sessionId: string, userId: string): Cookie;
-    private generateCookie(sessionId: string | JwtPayload, userId?: string): Cookie {
+    private generateCookie(sessionId: string, userId: Id): Cookie;
+    private generateCookie(sessionId: string | JwtPayload, userId?: Id): Cookie {
         const payload: JwtPayload =
             typeof sessionId === 'string' && userId ? { sessionId, userId } : (sessionId as JwtPayload);
         return new Cookie(payload, this.cookieSecret, { expiresIn: '30d' });

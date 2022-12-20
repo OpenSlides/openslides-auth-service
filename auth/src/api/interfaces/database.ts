@@ -1,3 +1,7 @@
+import { Id } from 'src/core/key-transforms';
+
+export type KeyType = Id | string;
+
 export abstract class Database {
     public static readonly PREFIX = 'auth';
 
@@ -16,7 +20,7 @@ export abstract class Database {
      *
      * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
      */
-    public abstract set<T>(key: string, obj: T): Promise<void>;
+    public abstract set<T>(key: KeyType, obj: T): Promise<void>;
 
     /**
      * This returns an object stored by the given key.
@@ -25,7 +29,7 @@ export abstract class Database {
      *
      * @returns The object - if there is no object stored by this key, it will return an empty object.
      */
-    public abstract get<T>(key: string): Promise<T>;
+    public abstract get<T>(key: KeyType): Promise<T>;
 
     /**
      * This will delete an entry from the database.
@@ -34,5 +38,5 @@ export abstract class Database {
      *
      * @returns A boolean if the object was successfully deleted.
      */
-    public abstract remove(key: string): Promise<boolean>;
+    public abstract remove(key: KeyType): Promise<boolean>;
 }
