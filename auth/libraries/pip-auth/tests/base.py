@@ -1,11 +1,8 @@
 import unittest
 
-import jwt
+from authlib.auth_handler import AuthHandler
 
-from ..auth_handler import AuthHandler
 from .fake_request import FakeRequest
-from ..constants import USER_ID_PROPERTY
-from datetime import datetime
 
 
 class BaseTestEnvironment(unittest.TestCase):

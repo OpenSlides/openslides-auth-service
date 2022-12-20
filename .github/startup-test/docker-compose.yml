@@ -3,15 +3,11 @@ version: "3"
 services:
   auth:
     image: openslides-auth
-    restart: always
     depends_on:
       - datastore-reader
       - datastore-writer
       - redis
     env_file: ../../services.env
-    volumes:
-      - ../../auth/src:/app/src
-      - ./run:/run
     ports:
       - "9004:9004"
 
@@ -38,10 +34,6 @@ services:
     image: openslides-datastore-writer
     ports:
       - "9011:9011"
-    environment:
-      - DATASTORE_ENABLE_DEV_ENVIRONMENT=1
-      - COMMAND=create_initial_data
-      - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/openslides-backend/main/docs/example-data.json
     depends_on:
       - postgres
       - redis
@@ -57,3 +49,9 @@ services:
     image: redis:alpine
     expose:
       - 6379
+
+secrets:
+  auth_token_key:
+    file: ./secrets/auth_token_key
+  auth_token_cookie:
+    file: ./secrets/auth_cookie_key

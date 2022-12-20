@@ -8,26 +8,32 @@ jobs:
   build-and-test-prod-image:
     name: Build and test production image
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: .github/startup-test
+
     steps:
       - uses: actions/checkout@v2
 
+      - name: Create secrets
+        run: |
+            mkdir secrets
+            echo -n "auth-dev-cookie-key" > secrets/auth_cookie_key
+            echo -n "auth-dev-token-key" > secrets/auth_token_key
+
       - name: Build docker prod image
-        run: make build-prod
+        run: make -C ../.. build-prod
 
       - name: Run prod image
-        working-directory: .github/startup-test
         run: docker-compose up -d
 
       - name: Wait for auth-service
-        working-directory: .github/startup-test
         run: docker-compose exec -T auth ./wait-for.sh auth:9004
 
       - name: Test connection
-        working-directory: .github/startup-test
         run: curl -I localhost:9004/system/auth
 
       - name: Stop prod containers
-        working-directory: .github/startup-test
         run: docker-compose down --volumes
 
   build-and-test-dev-image:
@@ -44,6 +50,18 @@ jobs:
 
       - name: Check lint
         run: make run-check-lint
+
+      - name: Check black
+        run: make run-check-black
+
+      - name: Check isort
+        run: make run-check-isort
+
+      - name: Check flake8
+        run: make run-check-flake8
+
+      - name: Check mypy
+        run: make run-check-mypy
 
       - name: Stop dev containers
         run: make stop-dev

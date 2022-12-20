@@ -1,8 +1,9 @@
-import requests
+import os
 from typing import Any
 
+import requests
+
 from .exceptions import AuthenticateException
-import os
 
 
 class HttpHandler:

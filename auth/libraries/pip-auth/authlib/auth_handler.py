@@ -1,19 +1,20 @@
 from typing import Any, Optional, Tuple
+
 from requests import Response
 
 from .constants import ANONYMOUS_USER
-from .token_factory import TokenFactory
 from .hashing_handler import HashingHandler
 from .http_handler import HttpHandler
+from .token_factory import TokenFactory
 from .validator import Validator
 
 
 class AuthHandler:
     """
-    A handler to verify tickets from auth-service and authenticates users.
-    It refreshes also access-tokens, if they are expired.
-    It is necessary to pass a url to the auth-service for requests to that service.
-    A function to print debug-messages can optionally be passed.
+    A handler to verify tickets from auth-service and authenticates users. It refreshes
+    also access-tokens, if they are expired. It is necessary to pass a url to the
+    auth-service for requests to that service. A function to print debug-messages can
+    optionally be passed.
     """
 
     def __init__(self, debug_fn: Any = print) -> None:
@@ -29,7 +30,7 @@ class AuthHandler:
         """
         Tries to check and read a user_id from a given access_token and refresh_id.
         """
-        self.debug_fn(f"Try to authenticate with")
+        self.debug_fn("Try to authenticate with")
         self.debug_fn(f"AccessToken: {access_token}")
         self.debug_fn(f"RefreshId: {refresh_id}")
         if not access_token or not refresh_id:
@@ -39,10 +40,11 @@ class AuthHandler:
 
     def authenticate_only_refresh_id(self, refresh_id: Optional[str]) -> int:
         """
-        This tries to check and read a user_id from a given refresh_id. It only returns an int or raises an error.
+        This tries to check and read a user_id from a given refresh_id. It only returns
+        an int or raises an error.
 
-        Use this with caution, because using only a refresh_id to verify a valid authentication is vulnerable
-        for CSRF-attacks.
+        Use this with caution, because using only a refresh_id to verify a valid
+        authentication is vulnerable for CSRF-attacks.
         """
         self.debug_fn("Try to authenticate only with")
         self.debug_fn(f"RefreshId: {refresh_id}")

@@ -1,9 +1,10 @@
-import requests
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 from urllib import parse
 
-from ..http_handler import HttpHandler
-from ..constants import COOKIE_NAME, AUTHENTICATION_HEADER
+import requests
+
+from authlib.constants import AUTHENTICATION_HEADER, COOKIE_NAME
+from authlib.http_handler import HttpHandler
 
 
 class FakeRequest:
@@ -12,7 +13,7 @@ class FakeRequest:
     def test_connection(self):
         return requests.get(f"{self.http_handler.auth_endpoint}/system/auth/")
 
-    def raw_login(self) -> any:
+    def raw_login(self) -> Any:
         return self.http_handler.send_request(
             "login", payload={"username": "admin", "password": "admin"}
         )
