@@ -23,7 +23,7 @@ export class TestContainer {
         this.redis = new FakeRedisAdapter();
         this.http = new FakeHttpService();
         this.ticketService = new FakeTicketService();
-        this.datastore = new FakeDatastoreAdapter(this._postgre, this.http);
+        this.datastore = new FakeDatastoreAdapter(this._postgre);
         this.userService = new FakeUserService(this.datastore);
         this.user = this.userService.getFakeUser();
         this.request = new FakeRequest(this.userService, this.http);

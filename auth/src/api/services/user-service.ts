@@ -4,7 +4,7 @@ import { Id } from 'src/core/key-transforms';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { User } from '../../core/models/user';
-import { Datastore, GetManyAnswer } from '../interfaces/datastore';
+import { Datastore, EventType, GetManyAnswer } from '../interfaces/datastore';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 import { HashingService } from './hashing-service';
@@ -27,6 +27,22 @@ export class UserService implements UserHandler {
     public async getUserByUserId(userId: Id): Promise<User> {
         Logger.debug(`Get user by user id: ${userId}`);
         return await this._datastore.get<User>('user', userId, userFields);
+    }
+
+    public async updateLastLogin(userId: Id): Promise<void> {
+        Logger.debug(`Update last login for user ${userId}`);
+        await this._datastore.write({
+            user_id: userId,
+            information: {},
+            locked_fields: {},
+            events: [
+                {
+                    type: EventType.UPDATE,
+                    fqid: `user/${userId}`,
+                    fields: { last_login: Math.floor(Date.now() / 1000) }
+                }
+            ]
+        });
     }
 
     private isPasswordCorrect(input: string, toCompare: string): boolean {

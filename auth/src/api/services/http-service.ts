@@ -26,14 +26,19 @@ export class HttpService extends HttpHandler {
             const response = await axios({ url, method, data, headers, responseType: 'json' });
             return this.createHttpResponse<T>(response, observe);
         } catch (e) {
-            const message = (e as AxiosError).message;
-            this.handleError(message, url, method, data, headers);
+            this.handleError(e as AxiosError, url, method, data, headers);
             return this.createHttpResponse<T>((e as AxiosError).response as AxiosResponse, observe);
         }
     }
 
-    private handleError(error: string, url: string, method: HttpMethod, data?: HttpData, headers?: HttpHeaders): void {
-        Logger.error('HTTP-error occurred: ', error);
+    private handleError(
+        error: AxiosError,
+        url: string,
+        method: HttpMethod,
+        data?: HttpData,
+        headers?: HttpHeaders
+    ): void {
+        Logger.error('HTTP-error occurred: ', error.message, '; response data: ', JSON.stringify(error.response?.data));
         Logger.error(`Error is occurred while sending the following information: ${method} ${url}`);
         Logger.error(
             `Request contains the following data ${JSON.stringify(data)} and headers ${JSON.stringify(headers)}`

@@ -7,6 +7,7 @@ export class User {
     public readonly username: string;
     public readonly password: string;
     public readonly email: string;
+    public readonly last_login: number;
     public readonly is_active: boolean;
     public readonly meta_deleted: boolean;
 

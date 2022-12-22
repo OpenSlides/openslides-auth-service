@@ -20,9 +20,12 @@ afterAll(async () => {
 });
 
 test('POST login with credentials', async () => {
+    const start = Math.floor(Date.now() / 1000);
     const result = await container.request.login();
     Validation.validateSuccessfulRequest(result);
     Validation.validateAccessToken(result);
+    const user = await container.userService.getUser(container.userService.currentAdminId);
+    expect(user.last_login).toBeGreaterThanOrEqual(start);
 });
 
 test('POST login twice - different session-ids', async () => {

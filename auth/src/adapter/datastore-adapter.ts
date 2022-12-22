@@ -1,6 +1,6 @@
 import { Factory } from 'final-di';
 
-import { Datastore, GetManyAnswer } from '../api/interfaces/datastore';
+import { Datastore, GetManyAnswer, WriteRequest } from '../api/interfaces/datastore';
 import { HttpHandler } from '../api/interfaces/http-handler';
 import { HttpService } from '../api/services/http-service';
 import { Id } from '../core/key-transforms';
@@ -18,6 +18,18 @@ interface ExistsResponse {
 export class DatastoreAdapter extends Datastore {
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
+
+    public async get<T>(collection: string, id: Id, mappedFields?: (keyof T)[]): Promise<T> {
+        return (await this._httpHandler.post(
+            `${this.datastoreReader}/get`,
+            {
+                fqid: `${collection}/${id}`,
+                mapped_fields: mappedFields
+            },
+            {},
+            { observe: 'data' }
+        )) as T;
+    }
 
     public async filter<T>(
         collection: string,
@@ -42,18 +54,6 @@ export class DatastoreAdapter extends Datastore {
         return (response as FilterResponse<T>).data;
     }
 
-    public async get<T>(collection: string, id: Id, mappedFields?: (keyof T)[]): Promise<T> {
-        return (await this._httpHandler.get(
-            `${this.datastoreReader}/get`,
-            {
-                fqid: `${collection}/${id}`,
-                mapped_fields: mappedFields
-            },
-            {},
-            { observe: 'data' }
-        )) as T;
-    }
-
     public async exists<T>(
         collection: string,
         filterField: keyof T,
@@ -68,5 +68,9 @@ export class DatastoreAdapter extends Datastore {
             {},
             { observe: 'data' }
         )) as ExistsResponse;
+    }
+
+    public async write(writeRequest: WriteRequest): Promise<void> {
+        await this._httpHandler.post(`${this.datastoreWriter}/write`, { ...writeRequest });
     }
 }

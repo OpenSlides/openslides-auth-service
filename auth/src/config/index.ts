@@ -1,15 +1,16 @@
-const getReaderUrl = (): string => {
-    const readerHost = process.env.DATASTORE_READER_HOST;
-    const readerPort = process.env.DATASTORE_READER_PORT;
-    if (!readerHost || !readerPort) {
-        throw new Error('No datastore reader is defined.');
+const getUrl = (hostVar: string, portVar: string): string => {
+    const host = process.env[hostVar];
+    const port = process.env[portVar];
+    if (!host || !port) {
+        throw new Error(`${hostVar} or ${portVar} is not defined.`);
     }
-    return `http://${readerHost}:${parseInt(readerPort, 10)}`;
+    return `http://${host}:${parseInt(port, 10)}`;
 };
 
 export class Config {
     public static readonly DATABASE_PATH = 'database/';
-    public static readonly DATASTORE_READER = getReaderUrl();
+    public static readonly DATASTORE_READER = getUrl('DATASTORE_READER_HOST', 'DATASTORE_READER_PORT');
+    public static readonly DATASTORE_WRITER = getUrl('DATASTORE_WRITER_HOST', 'DATASTORE_WRITER_PORT');
 
     private static readonly VERBOSE_TRUE_FIELDS = ['1', 'true', 'on'];
 
