@@ -7,24 +7,13 @@ services:
     depends_on:
       - datastore-reader
       - datastore-writer
-      - message_bus
-      - cache
+      - redis
     env_file: ../../services.env
     volumes:
       - ../../auth/src:/app/src
       - ./run:/run
     ports:
       - "9004:9004"
-
-  message_bus:
-    image: redis:alpine
-    expose:
-      - 6379
-
-  cache:
-    image: redis:alpine
-    expose:
-      - 6379
 
   datastore-reader:
     build:
@@ -37,7 +26,8 @@ services:
     ports:
       - "9010:9010"
     depends_on:
-      - postgresql
+      - postgres
+
   datastore-writer:
     build:
       context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
@@ -53,14 +43,17 @@ services:
       - COMMAND=create_initial_data
       - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/openslides-backend/main/docs/example-data.json
     depends_on:
-      - postgresql
+      - postgres
       - redis
 
-  postgresql:
+  postgres:
     image: postgres:11
     environment:
       - POSTGRES_USER=openslides
       - POSTGRES_PASSWORD=openslides
       - POSTGRES_DB=openslides
+
   redis:
     image: redis:alpine
+    expose:
+      - 6379

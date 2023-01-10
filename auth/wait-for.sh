@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TIMEOUT=1
+TIMEOUT=10
 HOST=""
 PORT=""
 
