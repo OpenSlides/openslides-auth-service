@@ -1,7 +1,8 @@
+from authlib.config import Environment
+from authlib.constants import AUTHORIZATION_HEADER
+
 from .base import BaseTestEnvironment
 
-from ..config import Environment
-from ..constants import AUTHORIZATION_HEADER
 
 class TestAuthorize(BaseTestEnvironment):
     environment = Environment()
@@ -15,6 +16,8 @@ class TestAuthorize(BaseTestEnvironment):
 
     def test_verify_authorize(self):
         response = self.auth_handler.create_authorization_token(1, self.example_email)
-        user_id, email = self.auth_handler.verify_authorization_token(response.headers.get(AUTHORIZATION_HEADER, ""))
+        user_id, email = self.auth_handler.verify_authorization_token(
+            response.headers.get(AUTHORIZATION_HEADER, "")
+        )
         self.assertEqual(user_id, 1)
         self.assertEqual(email, self.example_email)

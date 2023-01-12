@@ -3,6 +3,7 @@ import hashlib
 import secrets
 from typing import Optional
 
+
 HASH_WITH_SALT_LENGTH = 152
 
 
@@ -15,7 +16,10 @@ class HashingHandler:
         return salt + hashValue
 
     def __getSalt(self, hash_reference: Optional[str] = None) -> str:
-        if isinstance(hash_reference, str) and len(hash_reference) == HASH_WITH_SALT_LENGTH:
+        if (
+            isinstance(hash_reference, str)
+            and len(hash_reference) == HASH_WITH_SALT_LENGTH
+        ):
             return hash_reference[0:64]
-        else: 
+        else:
             return secrets.token_hex(32)

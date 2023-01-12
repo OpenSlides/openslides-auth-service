@@ -16,8 +16,12 @@ COPY auth/libraries/pip-auth/requirements*.txt ./libraries/pip-auth/
 RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 # Application lays in /app/src
-COPY ./auth ./
+COPY auth/.eslintrc.js ./
+COPY auth/.prettierrc ./
 COPY auth/entrypoint.sh ./
+COPY auth/jest.config.ts ./
+COPY auth/nodemon.json ./
+COPY auth/tsconfig*.json ./
 COPY auth/wait-for.sh ./
 
 EXPOSE 9004

@@ -25,6 +25,18 @@ run-check-lint:
 run-check-prettify:
 	docker-compose -f docker-compose.dev.yml exec -T auth npm run prettify-check
 
+run-check-black:
+	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
+
+run-check-isort:
+	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
+
+run-check-flake8:
+	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
+
+run-check-mypy:
+	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+
 run-test: | run-pre-test
 	@echo "########################################################################"
 	@echo "###################### Start full system tests #########################"

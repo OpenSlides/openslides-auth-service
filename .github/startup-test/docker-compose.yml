@@ -3,22 +3,20 @@ version: "3"
 services:
   auth:
     image: openslides-auth
-    restart: always
     depends_on:
       - datastore-reader
       - datastore-writer
       - redis
     env_file: ../../services.env
-    volumes:
-      - ../../auth/src:/app/src
-      - ./run:/run
     ports:
       - "9004:9004"
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
 
   datastore-reader:
     build:
       context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
-      dockerfile: Dockerfile
       args:
         MODULE: "reader"
         PORT: "9010"
@@ -27,24 +25,23 @@ services:
       - "9010:9010"
     depends_on:
       - postgres
+    secrets:
+      - postgres_password
 
   datastore-writer:
     build:
       context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
-      dockerfile: Dockerfile
       args:
         MODULE: "writer"
         PORT: "9011"
     image: openslides-datastore-writer
     ports:
       - "9011:9011"
-    environment:
-      - DATASTORE_ENABLE_DEV_ENVIRONMENT=1
-      - COMMAND=create_initial_data
-      - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/openslides-backend/main/docs/example-data.json
     depends_on:
       - postgres
       - redis
+    secrets:
+      - postgres_password
 
   postgres:
     image: postgres:11
@@ -57,3 +54,11 @@ services:
     image: redis:alpine
     expose:
       - 6379
+
+secrets:
+  auth_token_key:
+    file: ./secrets/auth_token_key
+  auth_cookie_key:
+    file: ./secrets/auth_cookie_key
+  postgres_password:
+    file: ./secrets/postgres_password

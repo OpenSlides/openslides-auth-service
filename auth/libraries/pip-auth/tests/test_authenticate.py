@@ -1,11 +1,12 @@
+from datetime import datetime
+
 import jwt
 
+from authlib.config import Environment
+from authlib.constants import USER_ID_PROPERTY
+from authlib.exceptions import InvalidCredentialsException
+
 from .base import BaseTestEnvironment
-from ..config import Environment
-from urllib import parse
-from ..constants import COOKIE_NAME, AUTHENTICATION_HEADER, USER_ID_PROPERTY
-from datetime import datetime
-from ..exceptions import InvalidCredentialsException
 
 
 class TestAuthenticate(BaseTestEnvironment):
@@ -38,6 +39,7 @@ class TestAuthenticate(BaseTestEnvironment):
 
     def test_authenticate_with_expired_access_token(self):
         cookie_encoded = self.fake_request.login()[1]
+        assert cookie_encoded
         cookie = cookie_encoded[7:]
 
         session_id = jwt.decode(
@@ -49,9 +51,11 @@ class TestAuthenticate(BaseTestEnvironment):
             "exp": datetime.utcfromtimestamp(0),
         }
         raw_token = jwt.encode(
-            expired_token_payload, self.environment.get_token_secret(), algorithm="HS256"
+            expired_token_payload,
+            self.environment.get_token_secret(),
+            algorithm="HS256",
         )
-        expired_token = "bearer " + raw_token.decode("utf-8")
+        expired_token = f"bearer {raw_token}"
 
         user_id, access_token = self.auth_handler.authenticate(
             expired_token, cookie_encoded
