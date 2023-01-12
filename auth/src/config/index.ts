@@ -11,9 +11,9 @@ export class Config {
     public static readonly DATABASE_PATH = 'database/';
     public static readonly DATASTORE_READER = getReaderUrl();
 
-    private static readonly VERBOSE_TRUE_FIELDS = ['1', 'y', 'yes', 'true', 'on'];
+    private static readonly VERBOSE_TRUE_FIELDS = ['1', 'true', 'on'];
 
     public static isDevMode(): boolean {
-        return this.VERBOSE_TRUE_FIELDS.includes(process.env.OPENSLIDES_DEVELOPMENT || '');
+        return this.VERBOSE_TRUE_FIELDS.includes((process.env.OPENSLIDES_DEVELOPMENT || '').toLowerCase());
     }
 }

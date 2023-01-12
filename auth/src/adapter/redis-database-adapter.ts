@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 
-import { Database } from '../api/interfaces/database';
+import { Database, KeyType } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
 
 export class RedisDatabaseAdapter extends Database {
@@ -30,7 +30,7 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async set<T>(key: string, obj: T): Promise<void> {
+    public async set<T>(key: KeyType, obj: T): Promise<void> {
         await new Promise((resolve, reject) => {
             this._database.hset(this.getHashKey(), this.getPrefixedKey(key), JSON.stringify(obj), (error, result) => {
                 if (error) {
@@ -49,7 +49,7 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async get<T>(key: string): Promise<T> {
+    public async get<T>(key: KeyType): Promise<T> {
         return new Promise((resolve, reject) => {
             this._database.hget(this.getHashKey(), this.getPrefixedKey(key), (error, result) => {
                 if (error) {
@@ -66,7 +66,7 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async remove(key: string): Promise<boolean> {
+    public async remove(key: KeyType): Promise<boolean> {
         const isDeleted = new Promise<boolean>((resolve, reject) => {
             this._database.hdel(this.getHashKey(), [this.getPrefixedKey(key)], (error, result) => {
                 if (error) {
@@ -108,7 +108,7 @@ export class RedisDatabaseAdapter extends Database {
         return `${Database.PREFIX}:${this.prefix}`;
     }
 
-    private getPrefixedKey(key: string): string {
+    private getPrefixedKey(key: KeyType): string {
         return `${this.getPrefix()}:${key}`;
     }
 }

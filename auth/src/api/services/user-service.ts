@@ -1,4 +1,5 @@
 import { Factory } from 'final-di';
+import { Id } from 'src/core/key-transforms';
 
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
@@ -8,6 +9,8 @@ import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 import { HashingService } from './hashing-service';
 import { Logger } from './logger';
+
+const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
 
 export class UserService implements UserHandler {
     @Factory(DatastoreAdapter)
@@ -21,10 +24,9 @@ export class UserService implements UserHandler {
         return await this.readUserFromDatastoreByCredentials(username, password);
     }
 
-    public async getUserByUserId(userId: string): Promise<User> {
+    public async getUserByUserId(userId: Id): Promise<User> {
         Logger.debug(`Get user by user id: ${userId}`);
-        const userCollection = await this.getUserCollectionFromDatastore('id', userId);
-        return userCollection[userId];
+        return await this._datastore.get<User>('user', userId, userFields);
     }
 
     private isPasswordCorrect(input: string, toCompare: string): boolean {
@@ -54,12 +56,6 @@ export class UserService implements UserHandler {
             Logger.error(`Property ${property} is ${value}`);
             throw new Error(`Property ${property} is ${value}`);
         }
-        return await this._datastore.filter<User>('user', property, value, [
-            'username',
-            'password',
-            'id',
-            'is_active',
-            'meta_deleted'
-        ]);
+        return await this._datastore.filter<User>('user', property, value, userFields);
     }
 }
