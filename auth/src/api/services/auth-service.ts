@@ -38,6 +38,7 @@ export class AuthService implements AuthHandler {
             throw new AuthenticationException('Wrong user');
         }
         const session = await this._sessionHandler.addSession(user);
+        await this._userHandler.updateLastLogin(user.id);
         return this._ticketHandler.create(user.id, session);
     }
 

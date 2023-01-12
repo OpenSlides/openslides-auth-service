@@ -12,8 +12,6 @@ const SERVER_URL = process.env.AUTH_URL || 'http://localhost:9004';
 const EXTERNAL_URL = '/system/auth';
 const INTERNAL_URL = '/internal/auth';
 
-const DEFAULT_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json' };
-
 export class FakeHttpService {
     private http: HttpHandler = new HttpService();
 
@@ -34,7 +32,6 @@ export class FakeHttpService {
         method: HttpMethod,
         { data, headers = {} }: RequestOptions<D> = {}
     ): Promise<HttpResponse<T>> {
-        headers = { ...DEFAULT_HEADERS, ...headers };
         return (await this.http.send(url, method, data as any, headers)) as HttpResponse<T>;
     }
 

@@ -6,7 +6,8 @@ import { Fqid, getIdFromFqid, Id } from '../src/core/key-transforms';
 import { User } from '../src/core/models/user';
 import { FakeUser } from './fake-user';
 import { TokenPayload, Utils } from './utils';
-import { EventType, FakeDatastoreAdapter } from './fake-datastore-adapter';
+import { FakeDatastoreAdapter } from './fake-datastore-adapter';
+import { EventType } from '../src/api/interfaces/datastore';
 
 let nextUserId = 0;
 
@@ -63,7 +64,7 @@ export class FakeUserService {
         } else {
             update.password = this._hashService.hash(username);
         }
-        await this._datastore.write<User>([
+        await this._datastore.write([
             {
                 type: EventType.CREATE,
                 fqid,
@@ -78,7 +79,7 @@ export class FakeUserService {
         if (options.password && typeof options.password === 'string') {
             update.password = this._hashService.hash(options.password);
         }
-        await this._datastore.write<User>([
+        await this._datastore.write([
             {
                 type: EventType.UPDATE,
                 fqid,
@@ -88,7 +89,11 @@ export class FakeUserService {
     }
 
     public async deleteUser(fqid: Fqid): Promise<void> {
-        await this._datastore.write<User>([{ type: EventType.DELETE, fqid }]);
+        await this._datastore.write([{ type: EventType.DELETE, fqid }]);
+    }
+
+    public async getUser(id: Id): Promise<User> {
+        return await this._datastore.get<User>('user', id);
     }
 
     public setAccessTokenToExpired(): void {
