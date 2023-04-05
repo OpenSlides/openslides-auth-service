@@ -102,15 +102,8 @@ export class SamlController {
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
         res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
 
-        // Todo: Redirect to frontend
-        return createResponse();
-    }
-
-    @OnGet()
-    public async list() {
-        const l = await this._datastore.filter<User>('user', 'username', '*', []);
-        console.log(l)
-        return createResponse(l, 'ok');
+        // Todo: Better way for redirect to frontend?
+        res.redirect('/');
     }
 
     /**
