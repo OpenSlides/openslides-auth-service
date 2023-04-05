@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { RestApplication } from 'rest-app';
 
 import { Logger } from './api/services/logger';
-import { PrivateController, PublicController, SecureController } from './express/controllers';
+import { PrivateController, PublicController, SamlController, SecureController } from './express/controllers';
 
 const logRequestInformation = (req: Request): void => {
     Logger.log(`${req.protocol}://${req.headers.host || ''}: ${req.method} -- ${req.originalUrl}`);
@@ -23,7 +23,7 @@ const corsFunction = (req: Request, res?: Response): void => {
     res.setHeader(
         'Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, X-Content-Type,' +
-            ' Authentication, Authorization, X-Access-Token, Accept'
+        ' Authentication, Authorization, X-Access-Token, Accept'
     );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
@@ -44,14 +44,33 @@ class Server {
     }
 
     private _application = new RestApplication({
-        controllers: [SecureController, PrivateController, PublicController],
+        controllers: [SecureController, PrivateController, PublicController, SamlController],
         port: this.port,
         requestHandlers: [logRequestInformation, corsFunction],
         logger: { logFn: (...args) => Logger.log(...args) },
         errorHandlers: [logErrors]
     });
 
+    private _init(): void {
+        // Todo: add Signal listeners for docker shutdown
+        Logger.log('Registering SIG handler');
+
+        this._application.getApp().on('SIGHUP', () => {
+            Logger.log('SIGTERM received, shutting down');
+            process.exit(0);
+        });
+        this._application.getApp().on('SIGINT', () => {
+            Logger.log('SIGINT received, shutting down');
+            process.exit(0);
+        });
+        this._application.getApp().on('SIGTERM', () => {
+            Logger.log('SIGUSR2 received, shutting down');
+            process.exit(0);
+        });
+    }
+
     public start(): void {
+        this._init();
         this._application.start();
     }
 }
