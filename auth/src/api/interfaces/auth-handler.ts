@@ -1,4 +1,3 @@
-import { User } from '../../core/models/user';
 import { Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 
@@ -8,6 +7,7 @@ export abstract class AuthHandler {
     public static readonly AUTHORIZATION_HEADER = 'authorization';
 
     public abstract login(username: string, password: string): Promise<Ticket>;
+    public abstract doSamlLogin(username: string): Promise<Ticket>
     public abstract whoAmI(cookieAsString: string): Promise<Ticket>;
     public abstract createAuthorizationToken(payload: JwtPayload): string;
     public abstract verifyAuthorizationToken(token: string): Token;
@@ -17,5 +17,4 @@ export abstract class AuthHandler {
     public abstract clearAllSessionsExceptThemselves(sessionId: string): Promise<void>;
     public abstract toHash(toHash: string): string;
     public abstract isEquals(toHash: string, toCompare: string): boolean;
-    public abstract getUserByUsername(username: string): Promise<User>;
 }

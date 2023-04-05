@@ -84,18 +84,13 @@ export class SamlController {
             // Todo: New user. Create new User in DB and set generall attributes send by SAML IDP (e.g. email, group, permissions, etc.)
             this.provisionUser(extract.attributes);
         }
+        // Todo: when a known user logs in agin, some attributes should be updated in the DB.
 
-        const existingUser = await this._authHandler.getUserByUsername(username);
+        const ticket =  await this._authHandler.doSamlLogin(username);
 
-        // Todo: Find a way to handel the Login without the password in UserService
-        const ticket = await this._authHandler.login(username, 'i have no password');
-
-        // Todo: create Session
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
         res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
         return createResponse();
-
-        // Todo: when a known user logs in agin, some attributes should be updated in the DB.
     }
 
     @OnGet()
