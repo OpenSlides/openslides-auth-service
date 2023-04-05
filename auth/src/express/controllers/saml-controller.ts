@@ -20,7 +20,7 @@ import { UserService } from '../../api/services/user-service';
 const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
 
 @RestController({
-    prefix: 'saml'
+    prefix: 'system/saml'
 })
 export class SamlController {
     @Factory(AuthService)
@@ -52,7 +52,6 @@ export class SamlController {
 
     /**
      * SAML SP: Initiates the login process and redirects to the SAML IDP.
-     * Has to be called with a GET request via the frontend.
      * @param res Response
      * @returns Redirect to SAML IDP
      */
@@ -60,6 +59,17 @@ export class SamlController {
     public send(@Res() res: Response): void {
         const { id, context } = saml.sp.createLoginRequest(saml.idp, 'redirect');
         return res.redirect(context);
+    }
+
+    /**
+     * Generates the SAML login url for client redirection.
+     * @param res Response
+     * @returns SAML Login Url
+     */
+    @OnGet()
+    public getUrl(@Res() res: Response): AuthServiceResponse {
+        const { id, context } = saml.sp.createLoginRequest(saml.idp, 'redirect');
+        return createResponse({}, context);
     }
 
     /**
@@ -77,7 +87,6 @@ export class SamlController {
         // Attributes from SAML IDP
         const { username } = extract.attributes;
 
-        // Todo: Check if the User is already exists in DB
         const checkUser = await this._datastore.exists<User>('user', 'username', username);
 
         if (!checkUser.exists) {
@@ -86,10 +95,14 @@ export class SamlController {
         }
         // Todo: when a known user logs in agin, some attributes should be updated in the DB.
 
-        const ticket =  await this._authHandler.doSamlLogin(username);
+        const ticket = await this._authHandler.doSamlLogin(username);
+
+        Logger.debug(`user: ${username} -- signs in via SAML`);
 
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
         res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
+
+        // Todo: Redirect to frontend
         return createResponse();
     }
 
@@ -107,33 +120,5 @@ export class SamlController {
      */
     private provisionUser(attributes: any): void {
         const { username, firstname, lastname, email } = attributes;
-
-        // https://github.com/OpenSlides/openslides-backend/blob/main/global/meta/models.yml
-        // https://github.com/OpenSlides/OpenSlides/wiki/user.create
-
-        // Todo: now clue how to create a new user in the datastore
-        this._datastore.write({
-            user_id: 0, // ??
-            information: {},
-            locked_fields: {},
-            events: [
-                {
-                    type: EventType.CREATE,
-                    fqid: 'user/99', // ??
-                    fields: {
-                        username: username,
-                        gender: 'gender',
-                        is_active: true,
-                        meta_deleted: false,
-                        is_physical_person: true,
-                        first_name: firstname,
-                        last_name: lastname,
-                        email: email,
-
-
-                    }
-                }
-            ]
-        });
     }
 }
