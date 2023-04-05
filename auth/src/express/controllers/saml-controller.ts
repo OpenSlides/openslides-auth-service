@@ -14,6 +14,8 @@ import saml from '../../saml';
 import { Datastore, EventType } from '../../api/interfaces/datastore';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { User } from '../../core/models/user';
+import { UserHandler } from '../../api/interfaces/user-handler';
+import { UserService } from '../../api/services/user-service';
 
 const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
 
@@ -23,6 +25,9 @@ const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', '
 export class SamlController {
     @Factory(AuthService)
     private _authHandler: AuthHandler;
+
+    @Factory(UserService)
+    private _userHandler: UserHandler;
 
     @Factory(DatastoreAdapter)
     private readonly _datastore: Datastore;
@@ -80,19 +85,17 @@ export class SamlController {
             this.provisionUser(extract.attributes);
         }
 
-        // Todo: Load existing user form DB and create Session
-        const filteredUser = await this._datastore.filter<User>('user', 'username', username, []);
-        console.debug('filter', filteredUser)
+        const existingUser = await this._authHandler.getUserByUsername(username);
 
         // Todo: Find a way to handel the Login without the password in UserService
         const ticket = await this._authHandler.login(username, 'i have no password');
 
+        // Todo: create Session
         res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
         res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
         return createResponse();
 
         // Todo: when a known user logs in agin, some attributes should be updated in the DB.
-
     }
 
     @OnGet()

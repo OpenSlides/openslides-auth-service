@@ -1,3 +1,4 @@
+import { User } from '../../core/models/user';
 import { Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 
@@ -16,4 +17,5 @@ export abstract class AuthHandler {
     public abstract clearAllSessionsExceptThemselves(sessionId: string): Promise<void>;
     public abstract toHash(toHash: string): string;
     public abstract isEquals(toHash: string, toCompare: string): boolean;
+    public abstract getUserByUsername(username: string): Promise<User>;
 }

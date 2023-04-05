@@ -29,6 +29,25 @@ export class UserService implements UserHandler {
         return await this._datastore.get<User>('user', userId, userFields);
     }
 
+    public async getUserByUsername(username: string): Promise<User> {
+        const userObj = await this.getUserCollectionFromDatastore('username', username);
+        Logger.debug('User object by username from datastore: ', userObj);
+
+        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        if (users.length > 1) {
+            Logger.error('Multiple users found for same username!');
+            throw new AuthenticationException('Multiple users with same credentials!');
+        }
+        const thisUser: User = new User(users[0]);
+        if (!thisUser.isExisting()) {
+            throw new AuthenticationException('Username is incorrect.');
+        }
+        if (!thisUser.is_active) {
+            throw new AuthenticationException('The account is deactivated.');
+        }
+        return thisUser;
+    }
+
     public async updateLastLogin(userId: Id): Promise<void> {
         Logger.debug(`Update last login for user ${userId}`);
         await this._datastore.write({
