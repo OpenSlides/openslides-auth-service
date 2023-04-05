@@ -75,14 +75,14 @@ export class SamlController {
         const { extract } = await saml.sp.parseLoginResponse(saml.idp, 'post', req);
 
         // Attributes from SAML IDP
-        const { username, os_email } = extract.attributes;
+        const { username } = extract.attributes;
 
         // Todo: Check if the User is already exists in DB
         const checkUser = await this._datastore.exists<User>('user', 'username', username);
 
         if (!checkUser.exists) {
             // Todo: New user. Create new User in DB and set generall attributes send by SAML IDP (e.g. email, group, permissions, etc.)
-            this.provisionUser(extract.attributes);
+            // this.provisionUser(extract.attributes);
         }
         // Todo: when a known user logs in agin, some attributes should be updated in the DB.
 
