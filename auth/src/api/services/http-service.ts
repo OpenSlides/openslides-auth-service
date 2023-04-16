@@ -11,13 +11,13 @@ export class HttpService extends HttpHandler {
     public async get<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.GET, data, headers);
     }
-    public async post<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
+    public async post<T>(url: string, data?: HttpData|any, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.POST, data, headers);
     }
     public async send<T>(
         url: string,
         method: HttpMethod,
-        data?: HttpData,
+        data?: HttpData|any,
         headers: HttpHeaders = {},
         { observe }: HttpRequestOptions = {}
     ): Promise<HttpResponse<T> | T> {
