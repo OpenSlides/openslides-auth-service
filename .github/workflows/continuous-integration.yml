@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-test-prod-image:
     name: Build and test production image
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: .github/startup-test
@@ -39,7 +39,7 @@ jobs:
 
   build-and-test-dev-image:
     name: Build and test development image
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
 
