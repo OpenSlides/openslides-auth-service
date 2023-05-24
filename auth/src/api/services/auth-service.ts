@@ -42,11 +42,14 @@ export class AuthService implements AuthHandler {
         return this._ticketHandler.create(user.id, session);
     }
 
-    public async doSamlLogin(username: string): Promise<Ticket> {
-        if (!username) {
+    public async doSamlLogin(userId: number): Promise<Ticket> {
+        if (!userId) {
             throw new AuthenticationException('Authentication failed! Username is not provided!');
         }
-        const user = await this._userHandler.getUserByUsername(username);
+        if (userId == -1) {
+            throw new AuthenticationException('Authentication failed! Server could not save user.');
+        }
+        const user = await this._userHandler.getUserByUserId(userId);
         if (!Object.keys(user).length) {
             throw new AuthenticationException('Wrong user');
         }

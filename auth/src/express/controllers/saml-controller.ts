@@ -81,7 +81,7 @@ export class SamlController {
      * SAML SP: Receives the SAML response from the SAML IDP, handels authentication and redirects to the frontend.
      * @param req Request
      * @param res Response
-     * @returns 
+     * @returns
      */
     @OnPost()
     public async acs(@Req() req: Request, @Res() res: Response) {
@@ -92,17 +92,9 @@ export class SamlController {
         // username attribute from SAML IDP
         const { username } = extract.attributes;
 
-        const checkUser = await this._datastore.exists<User>('user', 'username', username);
+        const userId = await this.provisionUser(extract.attributes);
 
-        if (checkUser.exists) {
-            // update known user
-            await this.updateUser(extract.attributes);
-        } else {
-            // create new user
-            await this.provisionUser(extract.attributes);
-        }
-
-        const ticket = await this._authHandler.doSamlLogin(username);
+        const ticket = await this._authHandler.doSamlLogin(userId);
 
         Logger.debug(`user: ${username} -- signs in via SAML`);
 
@@ -115,71 +107,28 @@ export class SamlController {
 
     /**
      * Creates a new OpenSlides user in the DB via backend action 'user.create_saml_account'.
-     * 
+     *
      * @param attributes raw attributes send by SAML IDP
      */
-    private async provisionUser(attributes: any): Promise<boolean> {
-        const newUser = this.extractUserAttributes(attributes);
-        Logger.debug('SAML: Creating new user: ' + newUser.saml_id);
+    private async provisionUser(attributes: any): Promise<number> {
+        //const user = this.extractUserAttributes(attributes);
+        Logger.debug('SAML: Creating new user: ' + attributes.username);
 
         return this.makeBackendCall({
-            action: 'user.create_saml_account',
-            data: [newUser]
+            action: 'user.save_saml_account',
+            data: [attributes]
         });
     }
 
-    /**
-     * Updates an existing OpenSlides user in the DB via backend action 'user.update_saml_account'.
-     * @param attributes raw attributes send by SAML IDP
-     */
-    private async updateUser(attributes: any): Promise<boolean> {
-        const userAttributes = this.extractUserAttributes(attributes);
-        Logger.debug('SAML: Updating user: ' + userAttributes.saml_id);
-
-        return this.makeBackendCall({
-            action: 'user.update_saml_account',
-            data: [userAttributes]
-        })
-    }
-
-    private async makeBackendCall(requestData: SamlBackendCall): Promise<boolean> {
+    private async makeBackendCall(requestData: SamlBackendCall): Promise<number> {
         const url = Config.ACTION_URL + '/system/action/handle_request';
-        const response: AxiosResponse = await this._httpHandler.post(url, [requestData]);
+        const response: any = await this._httpHandler.post(url, [requestData]);
 
         if (response.status !== 200) {
             Logger.error('SAML: Failed calling backend action ' + requestData.action);
-            return Promise.resolve(false);
+            return Promise.resolve(-1);
         }
-
-        return Promise.resolve(true);
+        Logger.debug(response);
+        return Promise.resolve(response.results[0][0]["user_id"]);
     }
-
-    private extractUserAttributes(attributes: any): SamlUser {
-        const user: SamlUser = {
-            saml_id: attributes.username,
-            first_name: attributes.first_name,
-            last_name: attributes.last_name,
-        };
-
-        if (this.stringPropertyExists(attributes, 'title')) user.title = attributes.title;
-        if (this.stringPropertyExists(attributes, 'email')) user.email = attributes.email;
-
-        if (this.stringPropertyExists(attributes, 'gender')) user.gender = attributes.gender;
-        if (this.stringPropertyExists(attributes, 'pronoun')) user.pronoun = attributes.pronoun;
-        if (attributes.is_active) user.is_active = (attributes.is_active === 'true' || attributes.is_active === 1) ? true : false;
-        if (attributes.is_physical_person) user.is_physical_person = (attributes.is_physical_person === 'true' || attributes.is_physical_person === 1) ? true : false;
-
-        return user;
-    }
-
-    /**
-     * If an attribute is not set by the SAML IDP bit declared in the IDP mapper, we receive an object as value of the property.
-     * @param obj raw attributes send by SAML IDP
-     * @param property property to check
-     * @returns 
-     */
-    private stringPropertyExists(obj: any, property: string): boolean {
-        return obj.hasOwnProperty(property) && typeof obj[property] === 'string';
-    }
-
 }
