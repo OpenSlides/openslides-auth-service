@@ -1,5 +1,6 @@
 import { Factory, Inject } from 'final-di';
 
+import { Id } from '../../core/key-transforms';
 import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { Ticket, Token } from '../../core/ticket';
@@ -42,11 +43,13 @@ export class AuthService implements AuthHandler {
         return this._ticketHandler.create(user.id, session);
     }
 
-    public async doSamlLogin(username: string): Promise<Ticket> {
-        if (!username) {
-            throw new AuthenticationException('Authentication failed! Username is not provided!');
+    public async doSamlLogin(userId: Id): Promise<Ticket> {
+        if (!userId) {
+            throw new AuthenticationException('Authentication failed! user_id is not provided!');
         }
-        const user = await this._userHandler.getUserByUsername(username);
+
+        const user = await this._userHandler.getUserByUserId(userId);
+
         if (!Object.keys(user).length) {
             throw new AuthenticationException('Wrong user');
         }

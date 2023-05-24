@@ -12,6 +12,7 @@ import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { Config } from '../../config';
+import { Id } from '../../core/key-transforms';
 import saml from '../../saml';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
@@ -92,17 +93,12 @@ export class SamlController {
 
         Logger.debug('SAML: creating or updating user: ' + username);
 
-        const backendStatus = await this.makeBackendCall({
+        const userId = await this.makeBackendCall({
             action: 'user.save_saml_account',
             data: [extract.attributes]
         });
 
-        if (!backendStatus) {
-            throw new AuthenticationException('SAML: Failed creating or updating user: ' + username);
-        }
-
-        // ToDo: doSamlLogin with user_id
-        const ticket = await this._authHandler.doSamlLogin(username);
+        const ticket = await this._authHandler.doSamlLogin(userId);
 
         Logger.debug(`user: ${username} -- signs in via SAML`);
 
@@ -119,16 +115,16 @@ export class SamlController {
      * 
      * @param attributes raw (user) attributes send by the SAML IDP
      */
-    private async makeBackendCall(requestData: SamlBackendCall): Promise<boolean> {
+    private async makeBackendCall(requestData: SamlBackendCall): Promise<Id> {
         const url = Config.ACTION_URL + '/system/action/handle_request';
         const response: AxiosResponse = await this._httpHandler.post(url, [requestData]);
 
         if (response.status !== 200) {
-            Logger.error('SAML: Failed calling backend action ' + requestData.action);
-            return false;
+            throw new AuthenticationException('SAML: Failed calling backend action ' + requestData.action);
         }
         // ToDo: extract the user_id from the response
+        const userId = response.data.user_id;
 
-        return true;
+        return userId;
     }
 }
