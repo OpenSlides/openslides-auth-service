@@ -2,17 +2,12 @@ import { Request, Response } from 'express';
 import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 
-import { AxiosResponse } from 'axios';
-import { AuthenticationException } from 'src/core/exceptions/authentication-exception';
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
-import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler } from '../../api/interfaces/http-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { Config } from '../../config';
-import { Id } from '../../core/key-transforms';
 import saml from '../../saml';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
@@ -31,9 +26,6 @@ interface SamlBackendCall {
 export class SamlController {
     @Factory(AuthService)
     private _authHandler: AuthHandler;
-
-    @Factory(DatastoreAdapter)
-    private readonly _datastore: Datastore;
 
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
@@ -110,7 +102,6 @@ export class SamlController {
      * @param attributes raw attributes send by SAML IDP
      */
     private async provisionUser(attributes: any): Promise<number> {
-        //const user = this.extractUserAttributes(attributes);
         Logger.debug('SAML: Creating new user: ' + attributes.username);
 
         return this.makeBackendCall({
