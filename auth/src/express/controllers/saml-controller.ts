@@ -82,7 +82,7 @@ export class SamlController {
      * SAML SP: Receives the SAML response from the SAML IDP, handels authentication and redirects to the frontend.
      * @param req Request
      * @param res Response
-     * @returns 
+     * @returns
      */
     @OnPost()
     public async acs(@Req() req: Request, @Res() res: Response) {
@@ -91,12 +91,7 @@ export class SamlController {
         const { extract } = await saml.sp.parseLoginResponse(saml.idp, 'post', req);
         const { username } = extract.attributes;
 
-        Logger.debug('SAML: creating or updating user: ' + username);
-
-        const userId = await this.makeBackendCall({
-            action: 'user.save_saml_account',
-            data: [extract.attributes]
-        });
+        const userId = await this.provisionUser(extract.attributes);
 
         const ticket = await this._authHandler.doSamlLogin(userId);
 
@@ -110,21 +105,29 @@ export class SamlController {
     }
 
     /**
-     * Creates or updates an OpenSlides user in the DB via backend action 'user.save_saml_account'.
-     * The user_id is returned.
-     * 
-     * @param attributes raw (user) attributes send by the SAML IDP
+     * Creates a new OpenSlides user in the DB via backend action 'user.create_saml_account'.
+     *
+     * @param attributes raw attributes send by SAML IDP
      */
-    private async makeBackendCall(requestData: SamlBackendCall): Promise<Id> {
+    private async provisionUser(attributes: any): Promise<number> {
+        //const user = this.extractUserAttributes(attributes);
+        Logger.debug('SAML: Creating new user: ' + attributes.username);
+
+        return this.makeBackendCall({
+            action: 'user.save_saml_account',
+            data: [attributes]
+        });
+    }
+
+    private async makeBackendCall(requestData: SamlBackendCall): Promise<number> {
         const url = Config.ACTION_URL + '/system/action/handle_request';
-        const response: AxiosResponse = await this._httpHandler.post(url, [requestData]);
+        const response: any = await this._httpHandler.post(url, [requestData]);
 
         if (response.status !== 200) {
-            throw new AuthenticationException('SAML: Failed calling backend action ' + requestData.action);
+            Logger.error('SAML: Failed calling backend action ' + requestData.action);
+            return Promise.resolve(-1);
         }
-        // ToDo: extract the user_id from the response
-        const userId = response.data.user_id;
-
-        return userId;
+        Logger.debug(response);
+        return Promise.resolve(response.results[0][0]["user_id"]);
     }
 }
