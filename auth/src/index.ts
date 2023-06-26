@@ -51,26 +51,11 @@ class Server {
         errorHandlers: [logErrors]
     });
 
-    private _init(): void {
-        // Todo: add Signal listeners for docker shutdown
-        Logger.log('Registering SIG handler');
-
-        this._application.getApp().on('SIGHUP', () => {
+    public start(): void {
+        process.on('SIGTERM', () => {
             Logger.log('SIGTERM received, shutting down');
             process.exit(0);
         });
-        this._application.getApp().on('SIGINT', () => {
-            Logger.log('SIGINT received, shutting down');
-            process.exit(0);
-        });
-        this._application.getApp().on('SIGTERM', () => {
-            Logger.log('SIGUSR2 received, shutting down');
-            process.exit(0);
-        });
-    }
-
-    public start(): void {
-        this._init();
         this._application.start();
     }
 }
