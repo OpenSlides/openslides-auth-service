@@ -1,4 +1,3 @@
-import { Id } from '../../core/key-transforms';
 import { Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 

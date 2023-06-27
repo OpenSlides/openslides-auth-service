@@ -1,6 +1,5 @@
 import { Factory, Inject } from 'final-di';
 
-import { Id } from '../../core/key-transforms';
 import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { Ticket, Token } from '../../core/ticket';
@@ -47,7 +46,7 @@ export class AuthService implements AuthHandler {
         if (!userId) {
             throw new AuthenticationException('Authentication failed! Username is not provided!');
         }
-        if (userId == -1) {
+        if (userId === -1) {
             throw new AuthenticationException('Authentication failed! Server could not save user.');
         }
         const user = await this._userHandler.getUserByUserId(userId);
