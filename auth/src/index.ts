@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { RestApplication } from 'rest-app';
 
 import { Logger } from './api/services/logger';
-import { PrivateController, PublicController, SecureController } from './express/controllers';
+import { PrivateController, PublicController, SamlController, SecureController } from './express/controllers';
 
 const logRequestInformation = (req: Request): void => {
     Logger.log(`${req.protocol}://${req.headers.host || ''}: ${req.method} -- ${req.originalUrl}`);
@@ -44,7 +44,7 @@ class Server {
     }
 
     private _application = new RestApplication({
-        controllers: [SecureController, PrivateController, PublicController],
+        controllers: [SecureController, PrivateController, PublicController, SamlController],
         port: this.port,
         requestHandlers: [logRequestInformation, corsFunction],
         logger: { logFn: (...args) => Logger.log(...args) },

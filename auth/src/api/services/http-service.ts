@@ -11,13 +11,13 @@ export class HttpService extends HttpHandler {
     public async get<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.GET, data, headers);
     }
-    public async post<T>(url: string, data?: HttpData, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
+    public async post<T>(url: string, data?: HttpData | unknown, headers?: HttpHeaders): Promise<HttpResponse<T> | T> {
         return this.send<T>(url, HttpMethod.POST, data, headers);
     }
     public async send<T>(
         url: string,
         method: HttpMethod,
-        data?: HttpData,
+        data?: HttpData | unknown,
         headers: HttpHeaders = {},
         { observe }: HttpRequestOptions = {}
     ): Promise<HttpResponse<T> | T> {
@@ -35,7 +35,7 @@ export class HttpService extends HttpHandler {
         error: AxiosError,
         url: string,
         method: HttpMethod,
-        data?: HttpData,
+        data?: HttpData | unknown,
         headers?: HttpHeaders
     ): void {
         Logger.error('HTTP-error occurred: ', error.message, '; response data: ', JSON.stringify(error.response?.data));

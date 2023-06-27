@@ -4,6 +4,7 @@ export class User {
     public static readonly COLLECTION = 'user';
 
     public readonly id: Id;
+    public readonly saml_id: string;
     public readonly username: string;
     public readonly password: string;
     public readonly email: string;

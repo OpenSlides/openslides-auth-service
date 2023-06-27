@@ -42,6 +42,22 @@ export class AuthService implements AuthHandler {
         return this._ticketHandler.create(user.id, session);
     }
 
+    public async doSamlLogin(userId: number): Promise<Ticket> {
+        if (!userId) {
+            throw new AuthenticationException('Authentication failed! Username is not provided!');
+        }
+        if (userId === -1) {
+            throw new AuthenticationException('Authentication failed! Server could not save user.');
+        }
+        const user = await this._userHandler.getUserByUserId(userId);
+        if (!Object.keys(user).length) {
+            throw new AuthenticationException('Wrong user');
+        }
+        const session = await this._sessionHandler.addSession(user);
+        await this._userHandler.updateLastLogin(user.id);
+        return this._ticketHandler.create(user.id, session);
+    }
+
     public async whoAmI(cookieAsString: string = ''): Promise<Ticket> {
         Logger.debug(`whoAmI -- cookie: ${cookieAsString}`);
         if (!cookieAsString) {

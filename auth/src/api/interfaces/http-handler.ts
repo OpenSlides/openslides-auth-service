@@ -43,7 +43,7 @@ export abstract class HttpHandler {
     ): Promise<HttpResponse<T> | T>;
     public abstract post<T>(
         url: string,
-        data?: HttpData,
+        data?: HttpData | unknown,
         headers?: HttpHeaders,
         options?: HttpRequestOptions
     ): Promise<HttpResponse<T> | T>;

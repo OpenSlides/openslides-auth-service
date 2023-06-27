@@ -7,6 +7,7 @@ export abstract class AuthHandler {
     public static readonly AUTHORIZATION_HEADER = 'authorization';
 
     public abstract login(username: string, password: string): Promise<Ticket>;
+    public abstract doSamlLogin(userId: number): Promise<Ticket>;
     public abstract whoAmI(cookieAsString: string): Promise<Ticket>;
     public abstract createAuthorizationToken(payload: JwtPayload): string;
     public abstract verifyAuthorizationToken(token: string): Token;
