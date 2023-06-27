@@ -43,7 +43,9 @@ interface SamlAttributes extends SamlUser {
     username: string;
 }
 
-type SamlHttpResponse = { user_id: number }[][];
+interface SamlHttpResponse {
+    results: { user_id: number }[][];
+}
 /* eslint-enable */
 
 @RestController({
@@ -165,7 +167,7 @@ export class SamlController {
         }
         Logger.debug(response);
 
-        return response.data[0][0]['user_id'];
+        return response.results[0][0]['user_id'];
     }
 
     private async getSamlSettings(): Promise<SamlSettings> {
