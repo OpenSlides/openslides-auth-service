@@ -14,15 +14,27 @@ import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 
 export interface SamlUser {
-    saml_id: string, title?: string, first_name: string, last_name: string, email?: string, gender?: string, pronoun?: string, is_active?: boolean, is_physical_person?: boolean | string
+    saml_id: string;
+    title?: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    gender?: string;
+    pronoun?: string;
+    is_active?: boolean;
+    is_physical_person?: boolean | string;
 }
 
 export interface SamlSettings {
-    saml_enabled: string, saml_metadata_idp: string, saml_metadata_sp: string, saml_private_key: string
+    saml_enabled: string;
+    saml_metadata_idp: string;
+    saml_metadata_sp: string;
+    saml_private_key: string;
 }
 
 interface SamlBackendCall {
-    action: string, data: [SamlUser]
+    action: string;
+    data: [SamlUser];
 }
 
 @RestController({
@@ -65,7 +77,7 @@ export class SamlController {
      */
     @OnGet()
     public async send(@Res() res: Response): Promise<void> {
-        const { id, context } = (await this.getSp()).createLoginRequest((await this.getIdp()), 'redirect');
+        const { id, context } = (await this.getSp()).createLoginRequest(await this.getIdp(), 'redirect');
         return res.redirect(context);
     }
 
@@ -78,7 +90,7 @@ export class SamlController {
     public async getUrl(@Res() res: Response): Promise<AuthServiceResponse> {
         const sp = await this.getSp();
         const idp = await this.getIdp();
-        const { id, context } = (sp).createLoginRequest(idp, 'redirect');
+        const { id, context } = sp.createLoginRequest(idp, 'redirect');
         return createResponse({}, context);
     }
 
@@ -90,7 +102,7 @@ export class SamlController {
      */
     @OnPost()
     public async acs(@Req() req: Request, @Res() res: Response): Promise<void> {
-        console.debug('SAML: ACS')
+        console.debug('SAML: ACS');
         const sp = await this.getSp();
         const idp = await this.getIdp();
 
@@ -133,12 +145,17 @@ export class SamlController {
             return Promise.resolve(-1);
         }
         Logger.debug(response);
-        return Promise.resolve(response.results[0][0]["user_id"]);
+        return Promise.resolve(response.results[0][0]['user_id']);
     }
 
     private async getSamlSettings(): Promise<SamlSettings> {
         if (!this.samlSettings) {
-            this.samlSettings = await this._datastore.get('organization', 1, ['saml_enabled', 'saml_metadata_idp', 'saml_metadata_sp', 'saml_private_key']);
+            this.samlSettings = await this._datastore.get('organization', 1, [
+                'saml_enabled',
+                'saml_metadata_idp',
+                'saml_metadata_sp',
+                'saml_private_key'
+            ]);
         }
         return this.samlSettings;
     }
@@ -159,7 +176,5 @@ export class SamlController {
         return samlify.IdentityProvider({
             metadata: (await this.getSamlSettings()).saml_metadata_idp
         });
-
     }
-
 }

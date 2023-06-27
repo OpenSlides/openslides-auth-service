@@ -23,7 +23,7 @@ const corsFunction = (req: Request, res?: Response): void => {
     res.setHeader(
         'Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, X-Content-Type,' +
-        ' Authentication, Authorization, X-Access-Token, Accept'
+            ' Authentication, Authorization, X-Access-Token, Accept'
     );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
