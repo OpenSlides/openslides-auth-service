@@ -161,7 +161,7 @@ export class SamlController {
             requestData
         ])) as HttpResponse<SamlHttpResponse>;
 
-        if (response.status !== 200 || !response.data) {
+        if (response.status !== 200 || !response.results) {
             Logger.error('SAML: Failed calling backend action ' + requestData.action);
             return Promise.resolve(-1);
         }
