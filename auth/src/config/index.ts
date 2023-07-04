@@ -11,6 +11,7 @@ export class Config {
     public static readonly DATABASE_PATH = 'database/';
     public static readonly DATASTORE_READER = getUrl('DATASTORE_READER_HOST', 'DATASTORE_READER_PORT');
     public static readonly DATASTORE_WRITER = getUrl('DATASTORE_WRITER_HOST', 'DATASTORE_WRITER_PORT');
+    public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
 
     private static readonly VERBOSE_TRUE_FIELDS = ['1', 'true', 'on'];
 
