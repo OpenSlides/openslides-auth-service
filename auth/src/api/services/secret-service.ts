@@ -13,7 +13,6 @@ export class SecretService extends SecretHandler {
 
     public constructor() {
         super();
-
         // Load key files early to detect missing ones
         this.loadSecrets();
     }
@@ -32,20 +31,20 @@ export class SecretService extends SecretHandler {
             this.tokenSecret = AUTH_DEV_TOKEN_SECRET;
             this.cookieSecret = AUTH_DEV_COOKIE_SECRET;
         } else {
-            const tokenSecretPath = '/run/secrets/auth_token_key';
-            this.tokenSecret = this.readFile(tokenSecretPath);
-            if (!this.tokenSecret) {
-                throw new SecretException(`No AUTH_TOKEN_SECRET defined in ${tokenSecretPath}`);
-            }
-            const cookieSecretPath = '/run/secrets/auth_cookie_key';
-            this.cookieSecret = this.readFile(cookieSecretPath);
-            if (!this.cookieSecret) {
-                throw new SecretException(`No AUTH_COOKIE_SECRET defined in ${cookieSecretPath}`);
-            }
+            this.tokenSecret = this.getSecret('AUTH_TOKEN_KEY_FILE');
+            this.cookieSecret = this.getSecret('AUTH_COOKIE_KEY_FILE');
         }
     }
 
-    private readFile(path: string): string {
-        return fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+    private getSecret(envVar: string): string {
+        const path = process.env[envVar];
+        if (!path) {
+            throw new SecretException(`${envVar} is not defined.`);
+        }
+        const secret = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+        if (!secret) {
+            throw new SecretException(`No secret defined in ${path} (${envVar})`);
+        }
+        return path;
     }
 }
