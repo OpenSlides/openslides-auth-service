@@ -31,13 +31,13 @@ export class SecretService extends SecretHandler {
             this.tokenSecret = AUTH_DEV_TOKEN_SECRET;
             this.cookieSecret = AUTH_DEV_COOKIE_SECRET;
         } else {
-            this.tokenSecret = this.getSecret('AUTH_TOKEN_KEY_FILE');
-            this.cookieSecret = this.getSecret('AUTH_COOKIE_KEY_FILE');
+            this.tokenSecret = this.getSecret('AUTH_TOKEN_KEY_FILE', '/run/secrets/auth_token_key');
+            this.cookieSecret = this.getSecret('AUTH_COOKIE_KEY_FILE', '/run/secrets/auth_cookie_key');
         }
     }
 
-    private getSecret(envVar: string): string {
-        const path = process.env[envVar];
+    private getSecret(envVar: string, defaultValue: string): string {
+        const path = process.env[envVar] || defaultValue;
         if (!path) {
             throw new SecretException(`${envVar} is not defined.`);
         }

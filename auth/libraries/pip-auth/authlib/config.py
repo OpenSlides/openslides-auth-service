@@ -24,11 +24,15 @@ class Environment:
             self.auth_token_secret = AUTH_DEV_TOKEN_SECRET
             self.auth_cookie_secret = AUTH_DEV_COOKIE_SECRET
         else:
-            self.auth_token_secret = self.get_secret(AUTH_TOKEN_KEY_FILE)
-            self.auth_cookie_secret = self.get_secret(AUTH_COOKIE_KEY_FILE)
+            self.auth_token_secret = self.get_secret(
+                AUTH_TOKEN_KEY_FILE, "/run/secrets/auth_token_key"
+            )
+            self.auth_cookie_secret = self.get_secret(
+                AUTH_COOKIE_KEY_FILE, "/run/secrets/auth_cookie_key"
+            )
 
-    def get_secret(self, var: str) -> str:
-        path = os.getenv(var, "")
+    def get_secret(self, var: str, default: str) -> str:
+        path = os.getenv(var, default)
         if not path:
             raise SecretException(f"{var} is not defined")
         with open(path, "r") as file:
