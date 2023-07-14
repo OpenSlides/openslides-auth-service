@@ -50,10 +50,11 @@ export class SecretService extends SecretHandler {
                 throw new SecretException(`No AUTH_COOKIE_SECRET defined in ${cookieSecretPath}`);
             }
             const internalAuthPasswordPath = '/run/secrets/internal_auth_password';
-            this.internalAuthPassword = this.readFile(internalAuthPasswordPath);
-            if (!this.internalAuthPassword) {
+            const internalAuthPassword = this.readFile(internalAuthPasswordPath);
+            if (!internalAuthPassword) {
                 throw new SecretException(`No INTERNAL_AUTH_PASSWORD defined in ${internalAuthPasswordPath}`);
             }
+            this.internalAuthPassword = Buffer.from(internalAuthPassword).toString('base64');
         }
     }
 
