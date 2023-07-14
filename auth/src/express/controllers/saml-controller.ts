@@ -7,12 +7,16 @@ import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
+import { SecretHandler } from '../../api/interfaces/secret-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
+import { SecretService } from '../../api/services/secret-service';
 import { Config } from '../../config';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
+
+const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface SamlUser {
@@ -60,6 +64,9 @@ export class SamlController {
 
     @Factory(DatastoreAdapter)
     private readonly _datastore: Datastore;
+
+    @Factory(SecretService)
+    private readonly _secretHandler: SecretHandler;
 
     private _samlSettings: SamlSettings;
 
@@ -156,10 +163,10 @@ export class SamlController {
     }
 
     private async makeBackendCall(requestData: SamlBackendCall): Promise<number> {
-        const url = Config.ACTION_URL + '/system/action/handle_request';
-        const response: HttpResponse<SamlHttpResponse> = (await this._httpHandler.post(url, [
-            requestData
-        ])) as HttpResponse<SamlHttpResponse>;
+        const url = Config.ACTION_URL + '/internal/handle_request';
+        const response: HttpResponse<SamlHttpResponse> = (await this._httpHandler.post(url, [requestData], {
+            [INTERNAL_AUTHORIZATION_HEADER]: this._secretHandler.getInternalAuthPassword()
+        })) as HttpResponse<SamlHttpResponse>;
 
         if (response.status !== 200 || !response.results) {
             Logger.error('SAML: Failed calling backend action ' + requestData.action);

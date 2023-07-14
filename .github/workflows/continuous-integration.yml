@@ -20,6 +20,7 @@ jobs:
             mkdir secrets
             echo -n "auth-dev-cookie-key" > secrets/auth_cookie_key
             echo -n "auth-dev-token-key" > secrets/auth_token_key
+            echo -n "openslides" > secrets/internal_auth_password
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build docker prod image
