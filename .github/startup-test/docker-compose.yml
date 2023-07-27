@@ -13,6 +13,7 @@ services:
     secrets:
       - auth_token_key
       - auth_cookie_key
+      - internal_auth_password
 
   datastore-reader:
     build:
@@ -60,5 +61,7 @@ secrets:
     file: ./secrets/auth_token_key
   auth_cookie_key:
     file: ./secrets/auth_cookie_key
+  internal_auth_password:
+    file: ./secrets/internal_auth_password
   postgres_password:
     file: ./secrets/postgres_password

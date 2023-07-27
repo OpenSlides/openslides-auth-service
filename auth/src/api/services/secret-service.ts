@@ -6,10 +6,12 @@ import fs from 'fs';
 
 const AUTH_DEV_TOKEN_SECRET = 'auth-dev-token-key';
 const AUTH_DEV_COOKIE_SECRET = 'auth-dev-cookie-key';
+const INTERNAL_AUTH_PASSWORD_DEV = 'openslides';
 
 export class SecretService extends SecretHandler {
     protected tokenSecret = '';
     protected cookieSecret = '';
+    protected internalAuthPassword = '';
 
     public constructor() {
         super();
@@ -26,11 +28,16 @@ export class SecretService extends SecretHandler {
         return this.tokenSecret;
     }
 
+    public getInternalAuthPassword(): string {
+        return this.internalAuthPassword;
+    }
+
     private loadSecrets(): void {
         Logger.debug('SecretService.loadSecrets -- is in dev-mode:', Config.isDevMode());
         if (Config.isDevMode()) {
             this.tokenSecret = AUTH_DEV_TOKEN_SECRET;
             this.cookieSecret = AUTH_DEV_COOKIE_SECRET;
+            this.internalAuthPassword = INTERNAL_AUTH_PASSWORD_DEV;
         } else {
             const tokenSecretPath = '/run/secrets/auth_token_key';
             this.tokenSecret = this.readFile(tokenSecretPath);
@@ -42,6 +49,12 @@ export class SecretService extends SecretHandler {
             if (!this.cookieSecret) {
                 throw new SecretException(`No AUTH_COOKIE_SECRET defined in ${cookieSecretPath}`);
             }
+            const internalAuthPasswordPath = '/run/secrets/internal_auth_password';
+            const internalAuthPassword = this.readFile(internalAuthPasswordPath);
+            if (!internalAuthPassword) {
+                throw new SecretException(`No INTERNAL_AUTH_PASSWORD defined in ${internalAuthPasswordPath}`);
+            }
+            this.internalAuthPassword = Buffer.from(internalAuthPassword).toString('base64');
         }
     }
 
