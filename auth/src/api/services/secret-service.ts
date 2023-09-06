@@ -15,7 +15,6 @@ export class SecretService extends SecretHandler {
 
     public constructor() {
         super();
-
         // Load key files early to detect missing ones
         this.loadSecrets();
     }
@@ -28,6 +27,7 @@ export class SecretService extends SecretHandler {
         return this.tokenSecret;
     }
 
+    /** The internal auth password is already base64 encoded! */
     public getInternalAuthPassword(): string {
         return this.internalAuthPassword;
     }
@@ -39,26 +39,25 @@ export class SecretService extends SecretHandler {
             this.cookieSecret = AUTH_DEV_COOKIE_SECRET;
             this.internalAuthPassword = INTERNAL_AUTH_PASSWORD_DEV;
         } else {
-            const tokenSecretPath = '/run/secrets/auth_token_key';
-            this.tokenSecret = this.readFile(tokenSecretPath);
-            if (!this.tokenSecret) {
-                throw new SecretException(`No AUTH_TOKEN_SECRET defined in ${tokenSecretPath}`);
-            }
-            const cookieSecretPath = '/run/secrets/auth_cookie_key';
-            this.cookieSecret = this.readFile(cookieSecretPath);
-            if (!this.cookieSecret) {
-                throw new SecretException(`No AUTH_COOKIE_SECRET defined in ${cookieSecretPath}`);
-            }
-            const internalAuthPasswordPath = '/run/secrets/internal_auth_password';
-            const internalAuthPassword = this.readFile(internalAuthPasswordPath);
-            if (!internalAuthPassword) {
-                throw new SecretException(`No INTERNAL_AUTH_PASSWORD defined in ${internalAuthPasswordPath}`);
-            }
+            this.tokenSecret = this.getSecret('AUTH_TOKEN_KEY_FILE', '/run/secrets/auth_token_key');
+            this.cookieSecret = this.getSecret('AUTH_COOKIE_KEY_FILE', '/run/secrets/auth_cookie_key');
+            const internalAuthPassword = this.getSecret(
+                'INTERNAL_AUTH_PASSWORD_FILE',
+                '/run/secrets/internal_auth_password'
+            );
             this.internalAuthPassword = Buffer.from(internalAuthPassword).toString('base64');
         }
     }
 
-    private readFile(path: string): string {
-        return fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+    private getSecret(envVar: string, defaultValue: string): string {
+        const path = process.env[envVar] || defaultValue;
+        if (!path) {
+            throw new SecretException(`${envVar} is not defined.`);
+        }
+        const secret = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+        if (!secret) {
+            throw new SecretException(`No secret defined in ${path} (${envVar})`);
+        }
+        return secret;
     }
 }

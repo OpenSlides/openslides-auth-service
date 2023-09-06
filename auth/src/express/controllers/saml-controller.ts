@@ -196,7 +196,8 @@ export class SamlController {
                 Promise.resolve('skipped')
         });
         return samlify.ServiceProvider({
-            metadata: (await this.getSamlSettings()).saml_metadata_sp
+            metadata: (await this.getSamlSettings()).saml_metadata_sp,
+            privateKey: (await this.getSamlSettings()).saml_private_key
         });
     }
 
