@@ -1,8 +1,8 @@
 export abstract class HashingHandler {
     /**
-     * The length of a hashed value, which was hashed by this service.
+     * The length of a password hashed with SHA-512.
      */
-    public static readonly HASHED_LENGTH = 152;
+    public static readonly SHA512_HASHED_LENGTH = 152;
 
     /**
      * This function hashes a given value.
@@ -11,7 +11,7 @@ export abstract class HashingHandler {
      *
      * @returns The hashed value.
      */
-    public abstract hash(value: string): string;
+    public abstract hash(value: string): Promise<string>;
 
     /**
      * Hashes a given value and compares it with a second one (that is already hashed).
@@ -22,5 +22,12 @@ export abstract class HashingHandler {
      *
      * @returns If the hashed value of `toHash` is equals to `comparingValue`.
      */
-    public abstract isEquals(toHash: string, toCompare: string): boolean;
+    public abstract isEquals(toHash: string, toCompare: string): Promise<boolean>;
+
+    /**
+     * Checks if a given hash is deprecated and should be updated to the current hashing algorithm.
+     *
+     * @param hash The hash to check.
+     */
+    public abstract isDeprecatedHash(hash: string): boolean;
 }

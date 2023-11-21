@@ -15,6 +15,6 @@ export abstract class AuthHandler {
     public abstract getListOfSessions(): Promise<string[]>;
     public abstract clearUserSessionById(sessionId: string): Promise<void>;
     public abstract clearAllSessionsExceptThemselves(sessionId: string): Promise<void>;
-    public abstract toHash(toHash: string): string;
-    public abstract isEquals(toHash: string, toCompare: string): boolean;
+    public abstract toHash(toHash: string): Promise<string>;
+    public abstract isEquals(toHash: string, toCompare: string): Promise<boolean>;
 }

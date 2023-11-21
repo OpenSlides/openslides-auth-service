@@ -49,7 +49,11 @@ export class UserService implements UserHandler {
     }
 
     public async updateLastLogin(userId: Id): Promise<void> {
-        Logger.debug(`Update last login for user ${userId}`);
+        await this.updateUser(userId, { last_login: Math.floor(Date.now() / 1000) });
+    }
+
+    private async updateUser(userId: Id, data: { [K in keyof User]?: unknown }): Promise<void> {
+        Logger.debug(`Update user ${userId}: ` + JSON.stringify(data));
         await this._datastore.write({
             user_id: userId,
             information: {},
@@ -58,14 +62,14 @@ export class UserService implements UserHandler {
                 {
                     type: EventType.UPDATE,
                     fqid: `user/${userId}`,
-                    fields: { last_login: Math.floor(Date.now() / 1000) }
+                    fields: data
                 }
             ]
         });
     }
 
-    private isPasswordCorrect(input: string, toCompare: string): boolean {
-        return this._hashingHandler.isEquals(input, toCompare);
+    private async isPasswordCorrect(input: string, toCompare: string): Promise<boolean> {
+        return await this._hashingHandler.isEquals(input, toCompare);
     }
 
     private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<User> {
@@ -77,11 +81,16 @@ export class UserService implements UserHandler {
             throw new AuthenticationException('Multiple users with same credentials!');
         }
         const thisUser: User = new User(users[0]);
-        if (!thisUser.isExisting() || !this.isPasswordCorrect(password, thisUser.password)) {
+        if (!thisUser.isExisting() || !(await this.isPasswordCorrect(password, thisUser.password))) {
             throw new AuthenticationException('Username or password is incorrect.');
         }
         if (!thisUser.is_active) {
             throw new AuthenticationException('The account is deactivated.');
+        }
+        // migrate old passwords
+        if (this._hashingHandler.isDeprecatedHash(thisUser.password)) {
+            const newHash = await this._hashingHandler.hash(password);
+            await this.updateUser(thisUser.id, { password: newHash });
         }
         return thisUser;
     }

@@ -1,4 +1,5 @@
 import { TestContainer } from './test-container';
+import { Utils } from './utils';
 
 let container: TestContainer;
 
@@ -16,7 +17,7 @@ test('POST hash', async () => {
         data: { toHash: 'helloworld' },
         internal: true
     });
-    expect(hashValue.hash.length).toBe(152);
+    expect(hashValue.hash.substring(0, 7)).toMatch('$argon2');
 });
 
 test('POST hash random salt', async () => {
@@ -34,6 +35,17 @@ test('POST is-equals', async () => {
         data: {
             toHash: toHashValue.toHash,
             toCompare: toCompareValue.hash
+        }
+    });
+    expect(hashValue.isEquals).toBe(true);
+});
+
+test('POST deprecated SHA-512 hashed password', async () => {
+    const hashValue = await container.http.post('is-equals', {
+        internal: true,
+        data: {
+            toHash: 'admin',
+            toCompare: Utils.deprecatedPasswordHash
         }
     });
     expect(hashValue.isEquals).toBe(true);

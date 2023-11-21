@@ -1,6 +1,7 @@
 import { Utils } from './utils';
 import { Validation } from './validation';
 import { TestContainer } from './test-container';
+import { EventType } from '../src/api/interfaces/datastore';
 
 let container: TestContainer;
 
@@ -80,4 +81,19 @@ test('POST login multiple users, forbidden', async () => {
     await container.userService.createUser('ash');
     await container.userService.createUser('ash');
     await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('ash', 'ash'));
+});
+
+test('POST login with deprecated password', async () => {
+    await container.datastore.write([
+        {
+            type: EventType.CREATE,
+            fqid: 'user/42',
+            fields: { id: 42, username: 'test', is_active: true, password: Utils.deprecatedPasswordHash }
+        }
+    ]);
+    const result = await container.request.login("test", "admin");
+    Validation.validateSuccessfulRequest(result);
+    Validation.validateAccessToken(result);
+    const user = await container.userService.getUser(42);
+    expect(user.password.substring(0, 7)).toBe('$argon2');
 });

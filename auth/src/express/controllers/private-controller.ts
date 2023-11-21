@@ -26,13 +26,16 @@ export class PrivateController {
     }
 
     @OnPost()
-    public hash(@Body('toHash') toHash: string): AuthServiceResponse {
-        return createResponse({ hash: this._authHandler.toHash(toHash) });
+    public async hash(@Body('toHash') toHash: string): Promise<AuthServiceResponse> {
+        return createResponse({ hash: await this._authHandler.toHash(toHash) });
     }
 
     @OnPost('is-equals')
-    public isEquals(@Body('toHash') toHash: string, @Body('toCompare') toCompare: string): AuthServiceResponse {
-        return createResponse({ isEquals: this._authHandler.isEquals(toHash, toCompare) });
+    public async isEquals(
+        @Body('toHash') toHash: string,
+        @Body('toCompare') toCompare: string
+    ): Promise<AuthServiceResponse> {
+        return createResponse({ isEquals: await this._authHandler.isEquals(toHash, toCompare) });
     }
 
     @OnPost('create-authorization-token')
