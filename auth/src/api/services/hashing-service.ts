@@ -14,25 +14,13 @@ export class HashingService extends HashingHandler {
         return await argon2.hash(input);
     }
 
-    public isDeprecatedHash(hash: string): boolean {
-        return this.isSHA512Hash(hash);
-    }
-
-    private isSHA512Hash(hash: string): boolean {
-        return !hash?.startsWith(HashingService.ARGON2_HASH_START) && hash?.length === HashingHandler.SHA512_HASHED_LENGTH;
-    }
-
-    private isArgon2Hash(hash: string): boolean {
-        return hash?.startsWith(HashingService.ARGON2_HASH_START);
-    }
-
     public async isEquals(toHash: string, toCompare: string): Promise<boolean> {
         if (!toHash || !toCompare) {
             return false;
         }
         if (this.isArgon2Hash(toCompare)) {
             return await argon2.verify(toCompare, toHash);
-        } else if (this.isSHA512Hash(toCompare)) {
+        } else if (this.isSha512Hash(toCompare)) {
             return crypto.timingSafeEqual(
                 Buffer.from(this.sha512(toHash, toCompare.slice(0, 64))),
                 Buffer.from(toCompare)
@@ -40,6 +28,20 @@ export class HashingService extends HashingHandler {
         } else {
             return false;
         }
+    }
+
+    public isDeprecatedHash(hash: string): boolean {
+        return this.isSha512Hash(hash);
+    }
+
+    private isSha512Hash(hash: string): boolean {
+        return (
+            !hash?.startsWith(HashingService.ARGON2_HASH_START) && hash?.length === HashingHandler.SHA512_HASHED_LENGTH
+        );
+    }
+
+    private isArgon2Hash(hash: string): boolean {
+        return hash?.startsWith(HashingService.ARGON2_HASH_START);
     }
 
     /**

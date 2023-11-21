@@ -1,6 +1,6 @@
 export abstract class HashingHandler {
     /**
-     * The length of a password hashed with SHA-512.
+     * The length of a password hashed with SHA512.
      */
     public static readonly SHA512_HASHED_LENGTH = 152;
 

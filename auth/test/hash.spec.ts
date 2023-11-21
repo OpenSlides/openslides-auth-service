@@ -40,7 +40,7 @@ test('POST is-equals', async () => {
     expect(hashValue.isEquals).toBe(true);
 });
 
-test('POST deprecated SHA-512 hashed password', async () => {
+test('POST deprecated SHA512 hashed password', async () => {
     const hashValue = await container.http.post('is-equals', {
         internal: true,
         data: {
