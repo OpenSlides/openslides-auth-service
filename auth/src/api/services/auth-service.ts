@@ -99,11 +99,11 @@ export class AuthService implements AuthHandler {
         await this._sessionHandler.clearAllSessionsExceptThemselves(sessionId);
     }
 
-    public toHash(input: string): string {
-        return this._hashHandler.hash(input);
+    public async toHash(input: string): Promise<string> {
+        return await this._hashHandler.hash(input);
     }
 
-    public isEquals(toHash: string, toCompare: string): boolean {
-        return this._hashHandler.isEquals(toHash, toCompare);
+    public async isEquals(toHash: string, toCompare: string): Promise<boolean> {
+        return await this._hashHandler.isEquals(toHash, toCompare);
     }
 }
