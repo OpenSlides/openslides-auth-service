@@ -1,24 +1,53 @@
+import * as argon2 from 'argon2';
+
 import { Random } from '../../util/helper';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import crypto from 'crypto';
 
 export class HashingService extends HashingHandler {
-    public hash(input: string): string {
+    private static readonly ARGON2_HASH_START = '$argon2';
+
+    public async hash(input: string): Promise<string> {
         if (!input) {
             return '';
         }
-        return this.sha512(input);
+        return await argon2.hash(input);
     }
 
-    public isEquals(toHash: string, toCompare: string): boolean {
-        if (!toHash || !toCompare || toCompare.length !== HashingHandler.HASHED_LENGTH) {
+    public async isEquals(toHash: string, toCompare: string): Promise<boolean> {
+        if (!toHash || !toCompare) {
             return false;
         }
-        return this.sha512(toHash, toCompare.slice(0, 64)) === toCompare;
+        if (this.isArgon2Hash(toCompare)) {
+            return await argon2.verify(toCompare, toHash);
+        } else if (this.isSha512Hash(toCompare)) {
+            return crypto.timingSafeEqual(
+                Buffer.from(this.sha512(toHash, toCompare.slice(0, 64))),
+                Buffer.from(toCompare)
+            );
+        } else {
+            return false;
+        }
+    }
+
+    public isDeprecatedHash(hash: string): boolean {
+        return this.isSha512Hash(hash);
+    }
+
+    private isSha512Hash(hash: string): boolean {
+        return (
+            !hash?.startsWith(HashingService.ARGON2_HASH_START) && hash?.length === HashingHandler.SHA512_HASHED_LENGTH
+        );
+    }
+
+    private isArgon2Hash(hash: string): boolean {
+        return hash?.startsWith(HashingService.ARGON2_HASH_START);
     }
 
     /**
      * This function hashes a given value by `sha512` and adds a salt value.
+     *
+     * DEPRECATED: Use `argon2` instead to hash passwords.
      *
      * @param value The value, which is hashed.
      * @param salt A salt value, which is appended to the previous value.

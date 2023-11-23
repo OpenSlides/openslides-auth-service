@@ -60,9 +60,9 @@ export class FakeUserService {
         const fqid: Fqid = `user/${++nextUserId}`;
         const update = { ...options };
         if (update.password && typeof update.password === 'string') {
-            update.password = this._hashService.hash(update.password);
+            update.password = await this._hashService.hash(update.password);
         } else {
-            update.password = this._hashService.hash(username);
+            update.password = await this._hashService.hash(username);
         }
         await this._datastore.write([
             {

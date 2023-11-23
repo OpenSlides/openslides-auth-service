@@ -1,5 +1,5 @@
-FROM node:16.10-alpine
-ENV NODE_VERSION=16.10.0
+FROM node:18.16-alpine
+ENV NODE_VERSION=18.16.1
 
 # Install python3.8
 RUN apk update
