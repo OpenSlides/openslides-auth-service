@@ -3,9 +3,6 @@ from typing import Optional
 import argon2
 
 
-HASH_WITH_SALT_LENGTH = 152
-
-
 class HashingHandler:
     def hash(self, to_hash: str, hash_reference: Optional[str] = None) -> str:
         ph = argon2.PasswordHasher()
