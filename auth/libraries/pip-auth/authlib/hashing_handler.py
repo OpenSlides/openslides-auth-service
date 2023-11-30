@@ -10,4 +10,11 @@ class HashingHandler:
 
     def verify(self, hash: str, password: str) -> bool:
         ph = argon2.PasswordHasher()
-        return ph.verify(hash, password)
+        try:
+            return ph.verify(hash, password)
+        except (
+            argon2.exceptions.VerifyMismatchError,
+            argon2.exceptions.VerificationError,
+            argon2.exceptions.InvalidHashError,
+        ):
+            return False
