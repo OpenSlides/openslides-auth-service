@@ -58,9 +58,7 @@ class AuthHandler:
         return self.hashing_handler.hash(to_hash)
 
     def is_equals(self, to_hash: str, to_compare: str) -> bool:
-        return (
-            self.hashing_handler.hash(to_hash, hash_reference=to_compare) == to_compare
-        )
+        return self.hashing_handler.verify(hash=to_compare, password=to_hash)
 
     def create_authorization_token(self, user_id: int, email: str) -> Response:
         return self.token_factory.create(user_id, email)
