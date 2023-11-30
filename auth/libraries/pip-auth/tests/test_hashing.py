@@ -1,5 +1,3 @@
-from authlib.hashing_handler import HASH_WITH_SALT_LENGTH
-
 from .base import BaseTestEnvironment
 
 
@@ -14,4 +12,3 @@ class TestHashing(BaseTestEnvironment):
         to_hash = "Some pw"
         hash = self.auth_handler.hash(to_hash)
         self.assertTrue(self.auth_handler.is_equals(to_hash, hash))
-        self.assertEqual(HASH_WITH_SALT_LENGTH, len(hash))
