@@ -13,6 +13,6 @@ class HashingHandler:
         ph = argon2.PasswordHasher()
         return ph.hash(to_hash)
 
-    def verify(hash: str, password: str) -> bool:
+    def verify(self, hash: str, password: str) -> bool:
         ph = argon2.PasswordHasher()
         return ph.verify(hash, password)
