@@ -262,7 +262,7 @@ def hash(to_hash: str) -> str:
     This method hashes a given string by the algorithm sha512.
     ```
 
-def is_equals(to_hash: str, to_compare: str) -> bool:
+def is_equal(to_hash: str, to_compare: str) -> bool:
     ```
     This method hashes a given string by the algorithm sha512 and
     compares the result with the given to_compare.

@@ -13,7 +13,7 @@ class HashingHandler:
         ph = argon2.PasswordHasher()
         return ph.hash(to_hash)
 
-    def is_equals(self, toHash: str, toCompare: str) -> bool:
+    def is_equal(self, toHash: str, toCompare: str) -> bool:
         if not toHash or not toCompare:
             return False
         if self.is_argon2_hash(toCompare):

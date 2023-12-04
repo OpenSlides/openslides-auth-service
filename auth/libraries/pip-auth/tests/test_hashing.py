@@ -13,11 +13,11 @@ class TestHashing(BaseTestEnvironment):
             self.auth_handler.hash(to_hash), self.auth_handler.hash(to_hash)
         )
 
-    def test_hash_and_is_equals(self):
+    def test_hash_and_is_equal(self):
         to_hash = "Some pw"
         hash = self.auth_handler.hash(to_hash)
         self.assertEqual(hash[0:7], ARGON2_HASH_START)
-        self.assertTrue(self.auth_handler.is_equals(to_hash, hash))
+        self.assertTrue(self.auth_handler.is_equal(to_hash, hash))
 
     def test_deprecated_pw(self):
-        self.assertTrue(self.auth_handler.is_equals("admin", DEPRECATED_PW_HASH))
+        self.assertTrue(self.auth_handler.is_equal("admin", DEPRECATED_PW_HASH))
