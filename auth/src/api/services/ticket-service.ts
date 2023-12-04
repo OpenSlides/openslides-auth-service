@@ -2,6 +2,7 @@ import { Factory } from 'final-di';
 import jwt from 'jsonwebtoken';
 import { Id } from 'src/core/key-transforms';
 
+import { Config } from '../../config';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { ValidationException } from '../../core/exceptions/validation-exception';
 import { Cookie, Ticket, Token } from '../../core/ticket';
@@ -97,7 +98,7 @@ export class TicketService extends TicketHandler {
     private generateToken(sessionId: string | JwtPayload, userId?: Id): Token {
         const payload: JwtPayload =
             typeof sessionId === 'string' && userId ? { sessionId, userId } : (sessionId as JwtPayload);
-        return new Token(payload, this.tokenSecret, { expiresIn: '10m' });
+        return new Token(payload, this.tokenSecret, { expiresIn: `${Config.TOKEN_EXPIRATION_TIME}s` });
     }
 
     private generateCookie(payload: JwtPayload): Cookie;

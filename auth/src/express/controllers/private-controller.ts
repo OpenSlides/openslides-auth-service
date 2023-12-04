@@ -45,10 +45,10 @@ export class PrivateController {
     }
 
     @OnPost('verify-authorization-token')
-    public verifyAuthorizationToken(@Req() req: Request): AuthServiceResponse {
+    public async verifyAuthorizationToken(@Req() req: Request): Promise<AuthServiceResponse> {
         const authorizationToken = req.get(AuthHandler.AUTHORIZATION_HEADER);
         if (authorizationToken) {
-            return createResponse(this._authHandler.verifyAuthorizationToken(authorizationToken));
+            return createResponse(await this._authHandler.verifyAuthorizationToken(authorizationToken));
         } else {
             throw new AuthorizationException('You are not authorized');
         }

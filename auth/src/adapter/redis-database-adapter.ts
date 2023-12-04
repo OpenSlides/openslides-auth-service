@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 
 import { Database, KeyType } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
+import { Config } from '../config';
 
 export class RedisDatabaseAdapter extends Database {
     private _database: Redis.Redis;
@@ -30,23 +31,36 @@ export class RedisDatabaseAdapter extends Database {
         });
     }
 
-    public async set<T>(key: KeyType, obj: T): Promise<void> {
+    public async set<T>(key: KeyType, obj: T, expire: boolean = false): Promise<void> {
+        const redisKey = this.getPrefixedKey(key);
         await new Promise((resolve, reject) => {
-            this._database.hset(this.getHashKey(), this.getPrefixedKey(key), JSON.stringify(obj), (error, result) => {
+            this._database.hset(this.getHashKey(), redisKey, JSON.stringify(obj), (error, result) => {
                 if (error) {
                     return reject(error);
                 }
                 resolve(result);
             });
         });
-        await new Promise((resolve, reject) => {
-            this._database.sadd(`${this.getPrefix()}:index`, key, (error, result) => {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(result);
+        if (expire) {
+            await new Promise((resolve, reject) => {
+                // just to be sure, multiple timeout by 1.1 to avoid timing issues
+                this._database.expire(redisKey, Config.TOKEN_EXPIRATION_TIME * 1.1, (error, result) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                    resolve(result);
+                });
             });
-        });
+        } else {
+            await new Promise((resolve, reject) => {
+                this._database.sadd(`${this.getPrefix()}:index`, key, (error, result) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                    resolve(result);
+                });
+            });
+        }
     }
 
     public async get<T>(key: KeyType): Promise<T> {
@@ -101,7 +115,7 @@ export class RedisDatabaseAdapter extends Database {
     }
 
     private getHashKey(): string {
-        return `${Database.PREFIX}:${this.prefix}`;
+        return this.getPrefix();
     }
 
     private getPrefix(): string {

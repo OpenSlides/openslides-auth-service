@@ -17,10 +17,12 @@ export abstract class Database {
      *
      * @param key The key, where the object is found.
      * @param obj The object to store.
+     * @param expire Optional: If true, the key expires after PASSWORD_RESET_TOKEN_EXPIRATION_TIME. If false,
+     * the key is added to the index set.
      *
      * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
      */
-    public abstract set<T>(key: KeyType, obj: T): Promise<void>;
+    public abstract set<T>(key: KeyType, obj: T, expire?: boolean): Promise<void>;
 
     /**
      * This returns an object stored by the given key.
