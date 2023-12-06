@@ -24,7 +24,7 @@ COPY auth/nodemon.json ./
 COPY auth/tsconfig*.json ./
 COPY auth/wait-for.sh ./
 
-RUN chmod 777 -R .
+RUN chmod -R 777 .
 
 EXPOSE 9004
 
