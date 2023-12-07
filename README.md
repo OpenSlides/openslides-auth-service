@@ -6,7 +6,7 @@ With this Ticket all routes, that are prefixed with a `secure`, are available.
 
 The combination of cookie and token protects against XSS- and CSRF-attacks. Such cookies are issued with the property `httpOnly`. To understand why and read further things, the document [Implement an auth-service](res/Ausarbeitung_Endfassung.pdf) can be read.
 
-The authentiction service supports SSO via SAML. Documentation to configure the required attributes can be found in the [Wiki](https://github.com/OpenSlides/OpenSlides/wiki/SSO)
+The authentication service supports SSO via SAML. Documentation to configure the required attributes can be found in the [Wiki](https://github.com/OpenSlides/OpenSlides/wiki/SSO)
 
 ## API
 
