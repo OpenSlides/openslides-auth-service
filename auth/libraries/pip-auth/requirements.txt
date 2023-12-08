@@ -1,4 +1,6 @@
-pyjwt==2.6.0
-requests==2.31.0
-simplejson==3.18.0
 argon2-cffi==23.1.0
+ordered-set==4.1.0
+pyjwt==2.6.0
+redis==5.0.1
+requests==2.31.0
+simplejson==3.19.2

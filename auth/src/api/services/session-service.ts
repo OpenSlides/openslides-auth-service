@@ -2,6 +2,7 @@ import { Factory } from 'final-di';
 
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { RedisMessageBusAdapter } from '../../adapter/redis-message-bus-adapter';
+import { Id } from '../../core/key-transforms';
 import { User } from '../../core/models/user';
 import { Random } from '../../util/helper';
 import { Database } from '../interfaces/database';
@@ -69,6 +70,13 @@ export class SessionService extends SessionHandler {
             })
         );
         await this._userDatabase.set(userId, [exceptSessionId]);
+    }
+
+    public async clearAllSessions(userId: Id): Promise<void> {
+        Logger.debug(`Clearing all sessions for user ${userId}`);
+        const currentSessions = (await this._userDatabase.get<string[]>(userId)) || [];
+        await Promise.all(currentSessions.map(session => this.removeSession(session)));
+        await this._userDatabase.remove(userId);
     }
 
     public async hasSession(sessionId: string): Promise<boolean> {

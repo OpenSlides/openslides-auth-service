@@ -1,3 +1,4 @@
+import { Id } from '../../core/key-transforms';
 import { User } from '../../core/models/user';
 
 export abstract class SessionHandler {
@@ -26,6 +27,7 @@ export abstract class SessionHandler {
      * @param exceptSessionId The sessionId that is not removed.
      */
     public abstract clearAllSessionsExceptThemselves(exceptSessionId: string): Promise<void>;
+    public abstract clearAllSessions(userId: Id): Promise<void>;
     public abstract hasSession(sessionId: string): Promise<boolean>;
     public abstract getUserIdBySessionId(sessionId: string): Promise<string>;
 

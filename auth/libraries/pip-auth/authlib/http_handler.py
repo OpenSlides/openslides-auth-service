@@ -1,8 +1,10 @@
 import os
 from typing import Any
+from urllib import parse
 
 import requests
 
+from .constants import AUTHENTICATION_HEADER, COOKIE_NAME
 from .exceptions import AuthenticateException
 
 
@@ -21,23 +23,31 @@ class HttpHandler:
     def send_request(
         self, path: str, payload=None, headers=None, cookies=None
     ) -> requests.Response:
-        try:
-            url = f"{self.auth_endpoint}/system/auth{self.format_url(path)}"
-            self.debug_fn(f"Send request to {url}")
-            response = requests.post(
-                url, data=payload, headers=headers, cookies=cookies
-            )
-        except requests.exceptions.ConnectionError as e:
-            raise AuthenticateException(
-                f"Cannot reach the authentication service on {url}. Error: {e}"
-            )
-        return response
+        path = f"/system/auth{self.format_url(path)}"
+        return self.__send_request(path, payload, headers, cookies)
 
     def send_internal_request(
         self, path: str, payload=None, headers=None, cookies=None
     ) -> requests.Response:
+        path = f"/internal/auth{self.format_url(path)}"
+        return self.__send_request(path, payload, headers, cookies)
+
+    def send_secure_request(
+        self, path: str, token: str, cookie: str, payload=None
+    ) -> requests.Response:
+        path = f"/system/auth/secure{self.format_url(path)}"
+        return self.__send_request(
+            path,
+            payload,
+            {AUTHENTICATION_HEADER: token},
+            {COOKIE_NAME: parse.quote(cookie)},
+        )
+
+    def __send_request(
+        self, path: str, payload: Any, headers: Any, cookies: Any
+    ) -> requests.Response:
         try:
-            url = f"{self.auth_endpoint}/internal/auth{self.format_url(path)}"
+            url = f"{self.auth_endpoint}{path}"
             response = requests.post(
                 url, data=payload, headers=headers, cookies=cookies
             )

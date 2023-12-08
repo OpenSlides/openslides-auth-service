@@ -14,6 +14,11 @@ class AuthenticateException(BaseException):
         super().__init__(message)
 
 
+class AuthorizationException(BaseException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
 class SecretException(BaseException):
     def __init__(self, message: str) -> None:
         super().__init__(message)

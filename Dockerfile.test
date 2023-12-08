@@ -24,6 +24,8 @@ COPY auth/nodemon.json ./
 COPY auth/tsconfig*.json ./
 COPY auth/wait-for.sh ./
 
+RUN chmod -R 777 .
+
 EXPOSE 9004
 
 ENV OPENSLIDES_DEVELOPMENT 1

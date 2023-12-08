@@ -1,5 +1,8 @@
+import pytest
+
 from authlib.config import Environment
 from authlib.constants import AUTHORIZATION_HEADER
+from authlib.exceptions import AuthorizationException
 
 from .base import BaseTestEnvironment
 
@@ -16,8 +19,10 @@ class TestAuthorize(BaseTestEnvironment):
 
     def test_verify_authorize(self):
         response = self.auth_handler.create_authorization_token(1, self.example_email)
-        user_id, email = self.auth_handler.verify_authorization_token(
-            response.headers.get(AUTHORIZATION_HEADER, "")
-        )
+        token = response.headers.get(AUTHORIZATION_HEADER, "")
+        user_id, email = self.auth_handler.verify_authorization_token(token)
         self.assertEqual(user_id, 1)
         self.assertEqual(email, self.example_email)
+        # assert that the token is only valid once
+        with pytest.raises(AuthorizationException):
+            self.auth_handler.verify_authorization_token(token)

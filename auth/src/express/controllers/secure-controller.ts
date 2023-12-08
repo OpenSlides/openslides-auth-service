@@ -42,6 +42,13 @@ export class SecureController {
         return createResponse();
     }
 
+    @OnPost('clear-all-sessions')
+    public async clearAllSessions(@Res() res: Response): Promise<AuthServiceResponse> {
+        const token = res.locals['token'] as Token;
+        await this._authHandler.clearAllSessions(token.userId);
+        return createResponse();
+    }
+
     @OnPost('clear-session-by-id')
     public async clearSessionById(@Body('sessionId') sessionId: string): Promise<AuthServiceResponse> {
         await this._authHandler.clearUserSessionById(sessionId);
