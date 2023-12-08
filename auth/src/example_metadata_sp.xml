@@ -2,7 +2,7 @@
  xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
- entityID="http://localhost:9004/saml/metadata">
+ entityID="https://FILL/system/saml/metadata">
     <SPSSODescriptor WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
         <KeyDescriptor use="signing">
             <KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
