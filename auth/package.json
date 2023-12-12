@@ -70,6 +70,6 @@
         "response-time": "^2.3.2",
         "rest-app": "^1.0.0-alpha.9",
         "samlify": "^2.8.9",
-        "tslib": "^2.3.1"
+        "tslib": "^2.6.2"
     }
 }
