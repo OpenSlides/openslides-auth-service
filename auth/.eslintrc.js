@@ -128,7 +128,9 @@ module.exports = {
         ],
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
-        '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: false }],
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-inferrable-types': [
             'error',
             {
@@ -207,7 +209,6 @@ module.exports = {
         ],
         'jsdoc/check-alignment': 'error',
         'jsdoc/check-indentation': 'error',
-        'jsdoc/newline-after-description': 'error',
         'max-classes-per-file': ['error', 1],
         'max-len': [
             'error',

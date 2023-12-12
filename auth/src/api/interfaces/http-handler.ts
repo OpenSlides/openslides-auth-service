@@ -9,7 +9,7 @@ export enum HttpMethod {
 }
 
 export interface HttpHeaders {
-    [key: string]: string | string[];
+    [key: string]: any;
 }
 
 export interface HttpData {
@@ -29,10 +29,12 @@ export interface HttpRequestOptions {
     observe?: 'response' | 'data' | 'all';
 }
 
+const CONTENT_TYPE_HEADER = 'content-type';
+
 export abstract class HttpHandler {
     public static readonly DEFAULT_HEADERS: HttpHeaders = {
         accept: 'application/json',
-        'Content-Type': 'application/json'
+        [CONTENT_TYPE_HEADER]: 'application/json'
     };
 
     public abstract get<T>(

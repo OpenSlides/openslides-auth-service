@@ -39,10 +39,6 @@ class Server {
     public static readonly PORT: number = parseInt(process.env.AUTH_PORT || '', 10) || 9004;
     public static readonly DOMAIN: string = process.env.INSTANCE_DOMAIN || 'http://localhost';
 
-    public get port(): number {
-        return Server.PORT;
-    }
-
     private _application = new RestApplication({
         controllers: [SecureController, PrivateController, PublicController, SamlController],
         port: this.port,
@@ -50,6 +46,10 @@ class Server {
         logger: { logFn: (...args) => Logger.log(...args) },
         errorHandlers: [logErrors]
     });
+
+    public get port(): number {
+        return Server.PORT;
+    }
 
     public start(): void {
         process.on('SIGTERM', () => {

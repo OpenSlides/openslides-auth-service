@@ -1,11 +1,11 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 import { Database, KeyType } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
 import { Config } from '../config';
 
 export class RedisDatabaseAdapter extends Database {
-    private _database: Redis.Redis;
+    private _database: Redis;
 
     /**
      * Constructor.
@@ -21,83 +21,33 @@ export class RedisDatabaseAdapter extends Database {
     }
 
     public async keys(): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            this._database.smembers(`${this.getPrefix()}:index`, (error, results) => {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(results);
-            });
-        });
+        return await this._database.smembers(`${this.getPrefix()}:index`);
     }
 
     public async set<T>(key: KeyType, obj: T, expire: boolean = false): Promise<void> {
         const redisKey = this.getPrefixedKey(key);
-        await new Promise((resolve, reject) => {
-            this._database.hset(this.getHashKey(), redisKey, JSON.stringify(obj), (error, result) => {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(result);
-            });
-        });
+        await this._database.hset(this.getHashKey(), redisKey, JSON.stringify(obj));
         if (expire) {
-            await new Promise((resolve, reject) => {
-                // just to be sure, multiple timeout by 1.1 to avoid timing issues
-                this._database.expire(redisKey, Config.TOKEN_EXPIRATION_TIME * 1.1, (error, result) => {
-                    if (error) {
-                        return reject(error);
-                    }
-                    resolve(result);
-                });
-            });
+            // just to be sure, multiple timeout by 1.1 to avoid timing issues
+            await this._database.expire(redisKey, Config.TOKEN_EXPIRATION_TIME * 1.1);
         } else {
-            await new Promise((resolve, reject) => {
-                this._database.sadd(`${this.getPrefix()}:index`, key, (error, result) => {
-                    if (error) {
-                        return reject(error);
-                    }
-                    resolve(result);
-                });
-            });
+            await this._database.sadd(`${this.getPrefix()}:index`, key);
         }
     }
 
     public async get<T>(key: KeyType): Promise<T> {
-        return new Promise((resolve, reject) => {
-            this._database.hget(this.getHashKey(), this.getPrefixedKey(key), (error, result) => {
-                if (error) {
-                    reject(error);
-                }
-                let parsedObject: T | null = null;
-                if (result) {
-                    parsedObject = this.modelConstructor
-                        ? new this.modelConstructor<T>(result)
-                        : (JSON.parse(result) as T);
-                }
-                resolve(parsedObject as T);
-            });
-        });
+        const result = await this._database.hget(this.getHashKey(), this.getPrefixedKey(key));
+        if (result) {
+            return this.modelConstructor ? new this.modelConstructor<T>(result) : (JSON.parse(result) as T);
+        } else {
+            return result as T;
+        }
     }
 
     public async remove(key: KeyType): Promise<boolean> {
-        const isDeleted = new Promise<boolean>((resolve, reject) => {
-            this._database.hdel(this.getHashKey(), [this.getPrefixedKey(key)], (error, result) => {
-                if (error) {
-                    reject(error);
-                }
-                resolve(result === 1);
-            });
-        });
-        const isRemoved = new Promise<boolean>((resolve, reject) => {
-            this._database.srem(`${this.getPrefix()}:index`, key, (error, result) => {
-                if (error) {
-                    reject(error);
-                }
-                resolve(result === 1);
-            });
-        });
-        return (await isDeleted) && (await isRemoved);
+        const deleted = await this._database.hdel(this.getHashKey(), this.getPrefixedKey(key));
+        const removed = await this._database.srem(`${this.getPrefix()}:index`, key);
+        return deleted === 1 && removed === 1;
     }
 
     private init(): void {

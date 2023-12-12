@@ -1,14 +1,14 @@
 import { Factory } from 'final-di';
 import { Id } from 'src/core/key-transforms';
 
+import { HashingService } from './hashing-service';
+import { Logger } from './logger';
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { User } from '../../core/models/user';
 import { Datastore, EventType, GetManyAnswer } from '../interfaces/datastore';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
-import { HashingService } from './hashing-service';
-import { Logger } from './logger';
 
 const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
 

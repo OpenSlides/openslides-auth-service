@@ -9,7 +9,9 @@ const config: Config.InitialOptions = {
     },
     coverageReporters: ['json-summary', 'text', 'lcov'],
     testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.ts?$',
-    testURL: 'http://localhost:4200',
+    testEnvironmentOptions: {
+        url: 'http://localhost:4200',
+    },
     verbose: true,
     collectCoverage: true,
     collectCoverageFrom: ['src/**/*.{ts,tsx}'],

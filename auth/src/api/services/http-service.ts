@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
-import { HttpHandler, HttpHeaders, HttpMethod, HttpResponse, HttpRequestOptions } from '../interfaces/http-handler';
 import { Logger } from './logger';
+import { HttpHandler, HttpHeaders, HttpMethod, HttpResponse, HttpRequestOptions } from '../interfaces/http-handler';
 
 export interface HttpData {
     [key: string]: unknown;
