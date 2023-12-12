@@ -42,7 +42,7 @@
         "@types/node": "^16.6.1",
         "@types/pg": "^8.6.1",
         "@types/response-time": "^2.3.5",
-        "@types/superagent": "^4.1.12",
+        "@types/superagent": "^4.1.24",
         "@typescript-eslint/eslint-plugin": "^4.29.1",
         "@typescript-eslint/eslint-plugin-tslint": "^4.29.1",
         "@typescript-eslint/parser": "^4.29.1",
