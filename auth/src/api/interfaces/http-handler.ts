@@ -1,3 +1,5 @@
+import { AxiosHeaderValue } from 'axios';
+
 export enum HttpProtocol {
     HTTPS = 'https',
     HTTP = 'http'
@@ -9,7 +11,7 @@ export enum HttpMethod {
 }
 
 export interface HttpHeaders {
-    [key: string]: any;
+    [key: string]: AxiosHeaderValue | undefined;
 }
 
 export interface HttpData {
