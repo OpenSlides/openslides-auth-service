@@ -13,6 +13,8 @@ export class Config {
     public static readonly DATASTORE_WRITER = getUrl('DATASTORE_WRITER_HOST', 'DATASTORE_WRITER_PORT');
     public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
 
+    public static readonly TOKEN_EXPIRATION_TIME = 600;
+
     private static readonly VERBOSE_TRUE_FIELDS = ['1', 'true', 'on'];
 
     public static isDevMode(): boolean {

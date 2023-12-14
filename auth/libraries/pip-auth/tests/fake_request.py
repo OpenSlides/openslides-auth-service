@@ -25,3 +25,7 @@ class FakeRequest:
             response.headers.get(AUTHENTICATION_HEADER, None),
             parse.unquote(cookie),
         )
+
+    def logout(self, token: str, cookie: str) -> None:
+        response = self.http_handler.send_secure_request("logout", token, cookie)
+        assert response.status_code == 200

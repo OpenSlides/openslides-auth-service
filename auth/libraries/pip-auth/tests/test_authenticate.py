@@ -1,10 +1,12 @@
 from datetime import datetime
+from time import sleep
 
 import jwt
+import pytest
 
 from authlib.config import Environment
 from authlib.constants import USER_ID_PROPERTY
-from authlib.exceptions import InvalidCredentialsException
+from authlib.exceptions import AuthenticateException, InvalidCredentialsException
 
 from .base import BaseTestEnvironment
 
@@ -62,3 +64,19 @@ class TestAuthenticate(BaseTestEnvironment):
         )
         self.assertEqual(1, user_id)
         self.assertIsNotNone(access_token)
+
+    def test_authenticate_after_logout(self):
+        token, cookie = self.fake_request.login()
+        assert token and cookie
+        self.auth_handler.authenticate(token, cookie)
+        self.fake_request.logout(token, cookie)
+        sleep(0.01)  # to avoid timing issues with redis
+        with pytest.raises(AuthenticateException):
+            self.auth_handler.authenticate(token, cookie)
+
+    def test_clear_sessions(self):
+        token, cookie = self.fake_request.login()
+        assert token and cookie
+        self.auth_handler.clear_all_sessions(token, cookie)
+        with pytest.raises(AuthenticateException):
+            self.auth_handler.authenticate(token, cookie)

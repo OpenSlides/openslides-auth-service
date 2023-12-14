@@ -7,7 +7,7 @@ build-dev:
 build-test:
 	docker build -t openslides-auth-dev -f Dockerfile.test .
 
-run-dev: | build-dev
+run-dev-standalone: | build-dev
 	docker-compose -f docker-compose.dev.yml up
 	stop-dev
 
@@ -15,9 +15,8 @@ run-pre-test: | build-test
 	docker-compose -f docker-compose.dev.yml up -d
 	docker-compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
 
-run-bash: | run-pre-test
-	docker-compose -f docker-compose.dev.yml exec auth sh
-	docker-compose -f docker-compose.dev.yml down
+run-bash run-dev: | run-pre-test
+	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker-compose -f docker-compose.dev.yml exec auth sh
 
 run-check-lint:
 	docker-compose -f docker-compose.dev.yml exec -T auth npm run lint-check

@@ -1,11 +1,14 @@
 import { Factory, Inject } from 'final-di';
 
+import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
+import { Id } from '../../core/key-transforms';
 import { Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 import { Cookie } from '../../core/ticket/cookie';
 import { AuthHandler } from '../interfaces/auth-handler';
+import { Database } from '../interfaces/database';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { SessionHandler } from '../interfaces/session-handler';
 import { TicketHandler } from '../interfaces/ticket-handler';
@@ -28,6 +31,9 @@ export class AuthService implements AuthHandler {
 
     @Inject(SessionService)
     private _sessionHandler: SessionHandler;
+
+    @Factory(RedisDatabaseAdapter, AuthHandler.TOKEN_DB_KEY)
+    private readonly _tokenDatabase: Database;
 
     public async login(username: string, password: string): Promise<Ticket> {
         if (!username || !password) {
@@ -79,8 +85,14 @@ export class AuthService implements AuthHandler {
         return this._ticketHandler.createJwt(payload).toString();
     }
 
-    public verifyAuthorizationToken(token: string): Token {
-        return this._ticketHandler.verifyJwt(token);
+    public async verifyAuthorizationToken(token: string): Promise<Token> {
+        if (await this._tokenDatabase.get(token)) {
+            throw new AuthenticationException('Token is already used');
+        }
+        const result = this._ticketHandler.verifyJwt(token);
+        // set token as invalid
+        await this._tokenDatabase.set(token, true, true);
+        return result;
     }
 
     public async logout(token: Token): Promise<void> {
@@ -97,6 +109,10 @@ export class AuthService implements AuthHandler {
 
     public async clearAllSessionsExceptThemselves(sessionId: string): Promise<void> {
         await this._sessionHandler.clearAllSessionsExceptThemselves(sessionId);
+    }
+
+    public async clearAllSessions(userId: Id): Promise<void> {
+        await this._sessionHandler.clearAllSessions(userId);
     }
 
     public async toHash(input: string): Promise<string> {

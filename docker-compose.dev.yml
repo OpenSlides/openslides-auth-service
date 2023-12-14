@@ -3,6 +3,7 @@ version: "3"
 services:
   auth:
     image: openslides-auth-dev
+    user: $USER_ID:$GROUP_ID
     restart: always
     depends_on:
       - datastore-reader
@@ -53,7 +54,7 @@ services:
       - redis
 
   postgres:
-    image: postgres:13
+    image: postgres:15
     environment:
       - POSTGRES_USER=openslides
       - POSTGRES_PASSWORD=openslides
