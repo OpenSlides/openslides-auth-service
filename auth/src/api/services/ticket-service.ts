@@ -2,6 +2,7 @@ import { Factory } from 'final-di';
 import jwt from 'jsonwebtoken';
 import { Id } from 'src/core/key-transforms';
 
+import { SecretService } from './secret-service';
 import { Config } from '../../config';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { ValidationException } from '../../core/exceptions/validation-exception';
@@ -9,7 +10,6 @@ import { Cookie, Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 import { SecretHandler } from '../interfaces/secret-handler';
 import { TicketHandler } from '../interfaces/ticket-handler';
-import { SecretService } from './secret-service';
 
 export class TicketService extends TicketHandler {
     @Factory(SecretService)

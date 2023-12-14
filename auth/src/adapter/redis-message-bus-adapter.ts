@@ -1,10 +1,10 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 import { MessageBus } from '../api/interfaces/message-bus';
 import { Logger } from '../api/services/logger';
 
 export class RedisMessageBusAdapter extends MessageBus {
-    private _messageBus: Redis.Redis;
+    private _messageBus: Redis;
 
     public constructor() {
         super();

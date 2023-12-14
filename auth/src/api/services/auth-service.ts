@@ -1,5 +1,10 @@
 import { Factory, Inject } from 'final-di';
 
+import { HashingService } from './hashing-service';
+import { Logger } from './logger';
+import { SessionService } from './session-service';
+import { TicketService } from './ticket-service';
+import { UserService } from './user-service';
 import { RedisDatabaseAdapter } from '../../adapter/redis-database-adapter';
 import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
@@ -13,11 +18,6 @@ import { HashingHandler } from '../interfaces/hashing-handler';
 import { SessionHandler } from '../interfaces/session-handler';
 import { TicketHandler } from '../interfaces/ticket-handler';
 import { UserHandler } from '../interfaces/user-handler';
-import { HashingService } from './hashing-service';
-import { Logger } from './logger';
-import { SessionService } from './session-service';
-import { TicketService } from './ticket-service';
-import { UserService } from './user-service';
 
 export class AuthService implements AuthHandler {
     @Factory(UserService)

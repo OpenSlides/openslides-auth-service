@@ -1,5 +1,5 @@
-FROM node:18.16-alpine
-ENV NODE_VERSION=18.16.1
+FROM node:20.10-alpine
+ENV NODE_VERSION=20.10.1
 
 # Install python3.8
 RUN apk update
@@ -13,7 +13,7 @@ RUN npm ci
 
 # Install pip-dependencies.
 COPY auth/libraries/pip-auth/requirements*.txt ./libraries/pip-auth/
-RUN pip install --no-cache-dir -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
+RUN pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 # Application lays in /app/src
 COPY auth/.eslintrc.js ./
