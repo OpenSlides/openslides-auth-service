@@ -19,7 +19,6 @@ module.exports = {
         'eslint-plugin-jsdoc',
         'eslint-plugin-prefer-arrow',
         '@typescript-eslint',
-        '@typescript-eslint/tslint'
     ],
     rules: {
         '@typescript-eslint/adjacent-overload-signatures': 'error',
@@ -164,6 +163,15 @@ module.exports = {
             }
         ],
         '@typescript-eslint/unified-signatures': 'error',
+        "@typescript-eslint/typedef": [
+            'error',
+            {
+                'propertyDeclaration': true,
+                'parameter': true,
+                'objectDestructuring': true,
+                'arrayDestructuring': true
+            }
+        ],
         'arrow-body-style': 'error',
         'arrow-parens': ['off', 'always'],
         complexity: 'off',
@@ -254,22 +262,6 @@ module.exports = {
             }
         ],
         'use-isnan': 'error',
-        'valid-typeof': 'off',
-        '@typescript-eslint/tslint/config': [
-            'error',
-            {
-                rules: {
-                    typedef: [
-                        true,
-                        'call-signature',
-                        'property-declaration',
-                        'parameter',
-                        'object-destructuring',
-                        'array-destructuring'
-                    ],
-                    whitespace: [true, 'check-branch', 'check-decl', 'check-operator', 'check-separator', 'check-type']
-                }
-            }
-        ]
+        'valid-typeof': 'off'
     }
 };
