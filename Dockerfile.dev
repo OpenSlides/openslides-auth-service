@@ -15,5 +15,5 @@ EXPOSE 9004
 
 ENV OPENSLIDES_DEVELOPMENT 1
 
-ENTRYPOINT [ "./entrypoint.sh" ]
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
