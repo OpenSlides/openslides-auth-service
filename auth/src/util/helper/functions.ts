@@ -1,7 +1,4 @@
-import { trace, Span } from '@opentelemetry/api';
-
 import { AuthServiceResponse } from './definitions';
-import { Config } from '../../config';
 
 export const createResponse = <T = unknown>(
     data?: T,
@@ -9,16 +6,8 @@ export const createResponse = <T = unknown>(
     success: boolean = true
 ): AuthServiceResponse => ({ message, success, ...data });
 
-export const makeSpan = <F extends () => ReturnType<F>>(name: string, fn: F): ReturnType<F> => {
-    if (Config.isOtelEnabled()) {
-        return trace.getTracer('auth').startActiveSpan(name, (span: Span) => {
-            try {
-                return fn();
-            } finally {
-                span.end();
-            }
-        });
-    } else {
-        return fn();
-    }
-};
+export function addShutdownHook(func: () => void): void {
+    ['SIGINT', 'SIGTERM'].forEach(signal => {
+        process.on(signal, func);
+    });
+}

@@ -9,7 +9,8 @@ import { Logger } from '../../api/services/logger';
 import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { anonymous } from '../../core/models/anonymous';
 import { AuthServiceResponse } from '../../util/helper/definitions';
-import { createResponse, makeSpan } from '../../util/helper/functions';
+import { createResponse } from '../../util/helper/functions';
+import { makeSpan } from '../../util/otel';
 
 @RestController({
     prefix: 'system/auth'
