@@ -1,6 +1,4 @@
-const otel = require('./util/otel');
-otel.initOtel();
-
+import './init';
 import { Request, Response } from 'express';
 import { RestApplication } from 'rest-app';
 

@@ -6,8 +6,8 @@ export const createResponse = <T = unknown>(
     success: boolean = true
 ): AuthServiceResponse => ({ message, success, ...data });
 
-export function addShutdownHook(func: () => void): void {
+export const addShutdownHook = (func: () => void): void => {
     ['SIGINT', 'SIGTERM'].forEach(signal => {
         process.on(signal, func);
     });
-}
+};

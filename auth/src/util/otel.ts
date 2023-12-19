@@ -1,6 +1,7 @@
 import { Span, trace } from '@opentelemetry/api';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
@@ -11,7 +12,7 @@ import { addShutdownHook } from './helper';
 import { Logger } from '../api/services/logger';
 import { Config } from '../config';
 
-export function initOtel(): void {
+export const initOtel = (): void => {
     if (!Config.isOtelEnabled()) {
         return;
     }
@@ -27,15 +28,15 @@ export function initOtel(): void {
     provider.register();
     trace.setGlobalTracerProvider(provider);
     registerInstrumentations({
-        instrumentations: [new HttpInstrumentation()]
+        instrumentations: [new HttpInstrumentation(), new ExpressInstrumentation()]
     });
     addShutdownHook(() => {
-        provider.shutdown().catch(Logger.error);
+        provider.shutdown().catch(err => Logger.error(err));
     });
     Logger.log('OpenTelemetry initialized');
-}
+};
 
-export function makeSpan<F extends () => ReturnType<F>>(name: string, fn: F): ReturnType<F> {
+export const makeSpan = <F extends () => ReturnType<F>>(name: string, fn: F): ReturnType<F> => {
     if (Config.isOtelEnabled()) {
         return trace.getTracer('auth').startActiveSpan(name, (span: Span) => {
             try {
@@ -47,4 +48,4 @@ export function makeSpan<F extends () => ReturnType<F>>(name: string, fn: F): Re
     } else {
         return fn();
     }
-}
+};
