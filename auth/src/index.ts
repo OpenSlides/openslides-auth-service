@@ -1,8 +1,10 @@
+import './init';
 import { Request, Response } from 'express';
 import { RestApplication } from 'rest-app';
 
 import { Logger } from './api/services/logger';
 import { PrivateController, PublicController, SamlController, SecureController } from './express/controllers';
+import { addShutdownHook } from './util/helper/functions';
 
 const logRequestInformation = (req: Request): void => {
     Logger.log(`${req.protocol}://${req.headers.host || ''}: ${req.method} -- ${req.originalUrl}`);
@@ -52,8 +54,8 @@ class Server {
     }
 
     public start(): void {
-        process.on('SIGTERM', () => {
-            Logger.log('SIGTERM received, shutting down');
+        addShutdownHook(() => {
+            Logger.log('Kill signal received, shutting down');
             process.exit(0);
         });
         this._application.start();

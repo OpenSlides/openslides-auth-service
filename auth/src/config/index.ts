@@ -18,6 +18,14 @@ export class Config {
     private static readonly VERBOSE_TRUE_FIELDS = ['1', 'true', 'on'];
 
     public static isDevMode(): boolean {
-        return this.VERBOSE_TRUE_FIELDS.includes((process.env.OPENSLIDES_DEVELOPMENT || '').toLowerCase());
+        return this.isTruthy(process.env.OPENSLIDES_DEVELOPMENT);
+    }
+
+    public static isOtelEnabled(): boolean {
+        return this.isTruthy(process.env.OPENTELEMETRY_ENABLED);
+    }
+
+    private static isTruthy(value?: string): boolean {
+        return this.VERBOSE_TRUE_FIELDS.includes(value?.toLowerCase() || '');
     }
 }
