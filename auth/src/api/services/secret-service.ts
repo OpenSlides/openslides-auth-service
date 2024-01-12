@@ -1,7 +1,7 @@
+import { Logger } from './logger';
 import { Config } from '../../config';
 import { SecretException } from '../../core/exceptions/secret-exception';
 import { SecretHandler } from '../interfaces/secret-handler';
-import { Logger } from './logger';
 import fs from 'fs';
 
 const AUTH_DEV_TOKEN_SECRET = 'auth-dev-token-key';

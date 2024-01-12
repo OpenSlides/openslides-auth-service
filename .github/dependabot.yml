@@ -14,6 +14,10 @@ updates:
       interval: "daily"
     assignees:
       - "jsangmeister"
+    groups:
+       typescript-eslint:
+          patterns:
+            - "@typescript-eslint/*"
     open-pull-requests-limit: 42
 
   - package-ecosystem: "docker"

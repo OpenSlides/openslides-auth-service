@@ -7,6 +7,7 @@ from .constants import (  # noqa
 )
 from .exceptions import (  # noqa
     AuthenticateException,
+    AuthorizationException,
     InstanceError,
     InvalidCredentialsException,
 )

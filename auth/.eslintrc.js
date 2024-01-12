@@ -19,7 +19,6 @@ module.exports = {
         'eslint-plugin-jsdoc',
         'eslint-plugin-prefer-arrow',
         '@typescript-eslint',
-        '@typescript-eslint/tslint'
     ],
     rules: {
         '@typescript-eslint/adjacent-overload-signatures': 'error',
@@ -129,6 +128,8 @@ module.exports = {
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: false }],
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-inferrable-types': [
             'error',
             {
@@ -162,6 +163,15 @@ module.exports = {
             }
         ],
         '@typescript-eslint/unified-signatures': 'error',
+        "@typescript-eslint/typedef": [
+            'error',
+            {
+                'propertyDeclaration': true,
+                'parameter': true,
+                'objectDestructuring': true,
+                'arrayDestructuring': true
+            }
+        ],
         'arrow-body-style': 'error',
         'arrow-parens': ['off', 'always'],
         complexity: 'off',
@@ -207,7 +217,6 @@ module.exports = {
         ],
         'jsdoc/check-alignment': 'error',
         'jsdoc/check-indentation': 'error',
-        'jsdoc/newline-after-description': 'error',
         'max-classes-per-file': ['error', 1],
         'max-len': [
             'error',
@@ -253,22 +262,6 @@ module.exports = {
             }
         ],
         'use-isnan': 'error',
-        'valid-typeof': 'off',
-        '@typescript-eslint/tslint/config': [
-            'error',
-            {
-                rules: {
-                    typedef: [
-                        true,
-                        'call-signature',
-                        'property-declaration',
-                        'parameter',
-                        'object-destructuring',
-                        'array-destructuring'
-                    ],
-                    whitespace: [true, 'check-branch', 'check-decl', 'check-operator', 'check-separator', 'check-type']
-                }
-            }
-        ]
+        'valid-typeof': 'off'
     }
 };

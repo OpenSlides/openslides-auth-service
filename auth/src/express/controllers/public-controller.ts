@@ -10,6 +10,7 @@ import { AnonymousException } from '../../core/exceptions/anonymous-exception';
 import { anonymous } from '../../core/models/anonymous';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
+import { makeSpan } from '../../util/otel';
 
 @RestController({
     prefix: 'system/auth'
@@ -41,21 +42,23 @@ export class PublicController {
         @Cookie(AuthHandler.COOKIE_NAME) cookieAsString: string,
         @Res() res: Response
     ): Promise<AuthServiceResponse> {
-        try {
-            const ticket = await this._authHandler.whoAmI(cookieAsString);
-            res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
-            return createResponse();
-        } catch (e) {
-            Logger.debug('Error while who-am-i');
-            Logger.debug(e);
-            res.clearCookie(AuthHandler.COOKIE_NAME);
-            if (e instanceof AnonymousException) {
-                return createResponse(anonymous, 'anonymous');
+        return makeSpan('who-am-i', async () => {
+            try {
+                const ticket = await this._authHandler.whoAmI(cookieAsString);
+                res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
+                return createResponse();
+            } catch (e) {
+                Logger.debug('Error while who-am-i');
+                Logger.debug(e);
+                res.clearCookie(AuthHandler.COOKIE_NAME);
+                if (e instanceof AnonymousException) {
+                    return createResponse(anonymous, 'anonymous');
+                }
+                if (e instanceof TokenExpiredError) {
+                    return createResponse(anonymous, 'anonymous');
+                }
+                throw e;
             }
-            if (e instanceof TokenExpiredError) {
-                return createResponse(anonymous, 'anonymous');
-            }
-            throw e;
-        }
+        });
     }
 }

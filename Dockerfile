@@ -1,5 +1,5 @@
-FROM node:18.16-alpine AS build
-ENV NODE_VERSION=18.16.1
+FROM node:20.10-alpine AS build
+ENV NODE_VERSION=20.10.0
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN npm run build
 
 RUN npm prune --production
 
-FROM node:18.16-alpine
+FROM node:20.10-alpine
 
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
 LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
@@ -32,6 +32,6 @@ COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 9004
-ENTRYPOINT [ "./entrypoint.sh" ]
+ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["node", "index.js"]

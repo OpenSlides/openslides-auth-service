@@ -7,6 +7,7 @@ import { AuthService } from '../../api/services/auth-service';
 import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
+import { makeSpan } from '../../util/otel';
 import { TicketMiddleware } from '../middleware/ticket-validator';
 
 @RestController({
@@ -44,9 +45,11 @@ export class SecureController {
 
     @OnPost('clear-all-sessions')
     public async clearAllSessions(@Res() res: Response): Promise<AuthServiceResponse> {
-        const token = res.locals['token'] as Token;
-        await this._authHandler.clearAllSessions(token.userId);
-        return createResponse();
+        return makeSpan('clear-all-sessions', async () => {
+            const token = res.locals['token'] as Token;
+            await this._authHandler.clearAllSessions(token.userId);
+            return createResponse();
+        });
     }
 
     @OnPost('clear-session-by-id')
