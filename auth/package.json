@@ -41,7 +41,7 @@
         "@types/node": "^20.10.0",
         "@types/pg": "^8.10.9",
         "@types/response-time": "^2.3.8",
-        "@types/superagent": "^8.1.1",
+        "@types/superagent": "^8.1.2",
         "@typescript-eslint/eslint-plugin": "^6.19.1",
         "@typescript-eslint/parser": "^6.19.1",
         "eslint": "^8.56.0",
