@@ -34,19 +34,20 @@ export class SecretService extends SecretHandler {
 
     private loadSecrets(): void {
         Logger.debug('SecretService.loadSecrets -- is in dev-mode:', Config.isDevMode());
+        let decodedInternalAuthPassword: string;
         if (Config.isDevMode()) {
             this.tokenSecret = AUTH_DEV_TOKEN_SECRET;
             this.cookieSecret = AUTH_DEV_COOKIE_SECRET;
-            this.internalAuthPassword = INTERNAL_AUTH_PASSWORD_DEV;
+            decodedInternalAuthPassword = INTERNAL_AUTH_PASSWORD_DEV;
         } else {
             this.tokenSecret = this.getSecret('AUTH_TOKEN_KEY_FILE', '/run/secrets/auth_token_key');
             this.cookieSecret = this.getSecret('AUTH_COOKIE_KEY_FILE', '/run/secrets/auth_cookie_key');
-            const internalAuthPassword = this.getSecret(
+            decodedInternalAuthPassword = this.getSecret(
                 'INTERNAL_AUTH_PASSWORD_FILE',
                 '/run/secrets/internal_auth_password'
             );
-            this.internalAuthPassword = Buffer.from(internalAuthPassword).toString('base64');
         }
+        this.internalAuthPassword = Buffer.from(decodedInternalAuthPassword).toString('base64');
     }
 
     private getSecret(envVar: string, defaultValue: string): string {

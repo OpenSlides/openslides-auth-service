@@ -18,6 +18,9 @@ updates:
        typescript-eslint:
           patterns:
             - "@typescript-eslint/*"
+       opentelemetry:
+          patterns:
+            - "@opentelemetry/*"
     open-pull-requests-limit: 42
 
   - package-ecosystem: "docker"
