@@ -197,7 +197,8 @@ export class SamlController {
         });
         return samlify.ServiceProvider({
             metadata: (await this.getSamlSettings()).saml_metadata_sp,
-            privateKey: (await this.getSamlSettings()).saml_private_key
+            privateKey: (await this.getSamlSettings()).saml_private_key,
+            allowCreate: false
         });
     }
 
