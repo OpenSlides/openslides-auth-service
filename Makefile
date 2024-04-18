@@ -8,54 +8,54 @@ build-test:
 	docker build -t openslides-auth-dev -f Dockerfile.test .
 
 run-dev-standalone: | build-dev
-	docker-compose -f docker-compose.dev.yml up
+	docker compose -f docker-compose.dev.yml up
 	stop-dev
 
 run-pre-test: | build-test
-	docker-compose -f docker-compose.dev.yml up -d
-	docker-compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
+	docker compose -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
 
 run-bash run-dev: | run-pre-test
-	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker-compose -f docker-compose.dev.yml exec auth sh
+	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker compose -f docker-compose.dev.yml exec auth sh
 
 run-check-lint:
-	docker-compose -f docker-compose.dev.yml exec -T auth npm run lint-check
+	docker compose -f docker-compose.dev.yml exec -T auth npm run lint-check
 
 run-check-prettify:
-	docker-compose -f docker-compose.dev.yml exec -T auth npm run prettify-check
+	docker compose -f docker-compose.dev.yml exec -T auth npm run prettify-check
 
 run-check-black:
-	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
+	docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
 
 run-check-isort:
-	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
+	docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
 
 run-check-flake8:
-	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
+	docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
 
 run-check-mypy:
-	docker-compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+	docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
 run-test: | run-pre-test
 	@echo "########################################################################"
 	@echo "###################### Start full system tests #########################"
 	@echo "########################################################################"
-	docker-compose -f docker-compose.dev.yml exec -T auth npm run test
-	docker-compose -f docker-compose.dev.yml exec -T auth pytest
+	docker compose -f docker-compose.dev.yml exec -T auth npm run test
+	docker compose -f docker-compose.dev.yml exec -T auth pytest
 
 run-cleanup: | build-dev
-	docker-compose -f docker-compose.dev.yml up -d
-	docker-compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
-	docker-compose -f docker-compose.dev.yml exec auth npm run cleanup
-	docker-compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
+	docker compose -f docker-compose.dev.yml exec auth npm run cleanup
+	docker compose -f docker-compose.dev.yml down
 
 run-test-and-stop: | run-test
 	stop-dev
 
 run-test-prod: | build-prod
-	docker-compose -f .github/startup-test/docker-compose.yml up -d
-	docker-compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
-	docker-compose -f .github/startup-test/docker-compose.yml down
+	docker compose -f .github/startup-test/docker-compose.yml up -d
+	docker compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
+	docker compose -f .github/startup-test/docker-compose.yml down
 
 stop-dev:
-	docker-compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml down
