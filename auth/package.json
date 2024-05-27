@@ -65,7 +65,7 @@
         "@opentelemetry/instrumentation-express": "^0.39.0",
         "@opentelemetry/instrumentation-http": "^0.51.1",
         "@opentelemetry/sdk-node": "^0.51.1",
-        "argon2": "^0.40.1",
+        "argon2": "^0.40.3",
         "axios": "^1.7.2",
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^5.4.1",
