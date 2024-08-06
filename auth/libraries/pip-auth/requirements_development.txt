@@ -5,5 +5,5 @@ isort==5.13.2
 mypy==1.11.1
 pytest==8.3.2
 
-types-redis==4.6.0.20240726
+types-redis==4.6.0.20240806
 types-requests==2.32.0.20240712
