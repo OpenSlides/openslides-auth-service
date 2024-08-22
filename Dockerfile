@@ -1,4 +1,4 @@
-FROM node:20.16-alpine AS build
+FROM node:20.17-alpine AS build
 ENV NODE_VERSION=20.10.0
 
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN npm run build
 
 RUN npm prune --production
 
-FROM node:20.16-alpine
+FROM node:20.17-alpine
 
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
 LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
