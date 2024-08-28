@@ -19,6 +19,7 @@ module.exports = {
         'eslint-plugin-jsdoc',
         'eslint-plugin-prefer-arrow',
         '@typescript-eslint',
+        '@stylistic',
     ],
     rules: {
         '@typescript-eslint/adjacent-overload-signatures': 'error',
@@ -28,7 +29,7 @@ module.exports = {
                 default: 'array'
             }
         ],
-        '@typescript-eslint/ban-types': [
+        '@typescript-eslint/no-restricted-types': [
             'error',
             {
                 types: {
@@ -147,13 +148,13 @@ module.exports = {
             }
         ],
         '@typescript-eslint/no-unused-expressions': 'error',
-        '@typescript-eslint/no-unused-vars': 'error',
+        '@typescript-eslint/no-unused-vars': ['error', { caughtErrors: 'none' }],
         '@typescript-eslint/no-use-before-define': 'off',
         '@typescript-eslint/no-var-requires': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-function-type': 'error',
         '@typescript-eslint/prefer-namespace-keyword': 'error',
-        '@typescript-eslint/quotes': ['error', 'single'],
+        '@stylistic/quotes': ['error', 'single'],
         '@typescript-eslint/triple-slash-reference': [
             'error',
             {
