@@ -13,7 +13,7 @@ export abstract class AuthHandler {
     public abstract whoAmI(cookieAsString: string): Promise<Ticket>;
     public abstract createAuthorizationToken(payload: JwtPayload): string;
     public abstract verifyAuthorizationToken(token: string): Promise<Token>;
-    public abstract logout(token: Token): void;
+    public abstract logout(token: Token): Promise<void>;
     public abstract getListOfSessions(): Promise<string[]>;
     public abstract clearUserSessionById(sessionId: string): Promise<void>;
     public abstract clearAllSessionsExceptThemselves(sessionId: string): Promise<void>;

@@ -24,9 +24,9 @@ export class SecureController {
     }
 
     @OnPost()
-    public logout(@Res() res: Response): AuthServiceResponse {
+    public async logout(@Res() res: Response): Promise<AuthServiceResponse> {
         const token = res.locals['token'] as Token;
-        this._authHandler.logout(token);
+        await this._authHandler.logout(token);
         res.clearCookie(AuthHandler.COOKIE_NAME);
         return createResponse();
     }
