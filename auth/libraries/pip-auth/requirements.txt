@@ -3,4 +3,4 @@ ordered-set==4.1.0
 pyjwt==2.9.0
 redis==5.0.8
 requests==2.32.3
-simplejson==3.19.2
+simplejson==3.19.3

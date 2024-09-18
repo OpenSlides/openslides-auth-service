@@ -96,7 +96,7 @@ export class AuthService implements AuthHandler {
     }
 
     public async logout(token: Token): Promise<void> {
-        await this._sessionHandler.clearSessionById(token.sessionId);
+        await this.clearUserSessionById(token.sessionId);
     }
 
     public async getListOfSessions(): Promise<string[]> {
