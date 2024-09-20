@@ -11,7 +11,7 @@ with open("requirements.txt") as requirements:
     install_requires = [x.strip() for x in requirements.readlines()]
 
 setuptools.setup(
-    name="authlib",
+    name="os_authlib",
     version="1.0.0",
     author="GabrielInTheWorld",
     author_email="meyergabriel@live.de",
@@ -20,7 +20,7 @@ setuptools.setup(
     url="https://github.com/OpenSlides/openslides-auth-service/auth/libraries/pip-auth",
     packages=setuptools.find_packages(),
     install_requires=install_requires,
-    package_data={"authlib": ["py.typed"]},
+    package_data={"os_authlib": ["py.typed"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

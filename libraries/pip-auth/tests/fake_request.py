@@ -3,8 +3,8 @@ from urllib import parse
 
 import requests
 
-from authlib.constants import AUTHENTICATION_HEADER, COOKIE_NAME
-from authlib.http_handler import HttpHandler
+from os_authlib.constants import AUTHENTICATION_HEADER, COOKIE_NAME
+from os_authlib.http_handler import HttpHandler
 
 
 class FakeRequest:

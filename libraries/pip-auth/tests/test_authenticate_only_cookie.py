@@ -2,9 +2,9 @@ from datetime import datetime
 
 import jwt
 
-from authlib.config import Environment
-from authlib.constants import USER_ID_PROPERTY
-from authlib.exceptions import InvalidCredentialsException
+from os_authlib.config import Environment
+from os_authlib.constants import USER_ID_PROPERTY
+from os_authlib.exceptions import InvalidCredentialsException
 
 from .base import BaseTestEnvironment
 

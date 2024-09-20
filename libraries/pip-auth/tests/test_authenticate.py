@@ -4,9 +4,9 @@ from time import sleep
 import jwt
 import pytest
 
-from authlib.config import Environment
-from authlib.constants import USER_ID_PROPERTY
-from authlib.exceptions import AuthenticateException, InvalidCredentialsException
+from os_authlib.config import Environment
+from os_authlib.constants import USER_ID_PROPERTY
+from os_authlib.exceptions import AuthenticateException, InvalidCredentialsException
 
 from .base import BaseTestEnvironment
 

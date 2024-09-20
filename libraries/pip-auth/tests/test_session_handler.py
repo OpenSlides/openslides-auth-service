@@ -1,6 +1,6 @@
 from time import time
 
-from authlib.session_handler import Session, SessionHandler
+from os_authlib.session_handler import Session, SessionHandler
 
 from .base import BaseTestEnvironment
 
