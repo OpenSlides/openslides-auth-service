@@ -47,7 +47,7 @@
         "@typescript-eslint/parser": "^8.6.0",
         "eslint": "^8.57.0",
         "eslint-plugin-import": "^2.30.0",
-        "eslint-plugin-jsdoc": "^50.2.3",
+        "eslint-plugin-jsdoc": "^50.2.4",
         "eslint-plugin-prefer-arrow": "^1.2.3",
         "express": "^4.19.2",
         "istanbul-badges-readme": "^1.9.0",
