@@ -1,9 +1,15 @@
+import os
 from typing import Any, Callable, Dict, Optional, Tuple
 
-import jwt
+import authlib
+import requests
+from authlib.jose import KeySet, JsonWebKey
+from authlib.jose import jwt
+from jose.exceptions import *
+from jwt import ExpiredSignatureError
 
 from .config import Environment
-from .constants import AUTHENTICATION_HEADER, COOKIE_NAME, USER_ID_PROPERTY
+from .constants import USER_ID_PROPERTY, SESSION_ID_PROPERTY
 from .exceptions import (
     AuthenticateException,
     InstanceError,
@@ -12,11 +18,16 @@ from .exceptions import (
 from .http_handler import HttpHandler
 from .session_handler import SessionHandler
 
+OS_REALM = os.environ.get("OPENSLIDES_AUTH_REALM", "os")
+KEYCLOAK_URL = os.environ.get("OPENSLIDES_KEYCLOAK_URL", 'http://keycloak:8080')
+OS_CLIENT_ID = os.environ.get("OPENSLIDES_OIDC_CLIENT_ID", 'os-ui')
 
 class Validator:
     """
     The validator verifies a given ticket if it is valid.
     """
+    key_set: KeySet
+    oidc_config: Dict[str, Any]
 
     def __init__(self, http_handler: HttpHandler, debug_fn: Any = print) -> None:
         debug_fn("Validator.__init__")
@@ -25,8 +36,21 @@ class Validator:
         self.environment = Environment(debug_fn)
         self.session_handler = SessionHandler(debug_fn)
 
+        # OIDC provider's discovery URL (replace with your provider's URL)
+        discovery_url = f'{KEYCLOAK_URL}/realms/{OS_REALM}/.well-known/openid-configuration'
+        # Discover OIDC configuration
+        response = self.__get_with_root_cert(discovery_url)
+        self.oidc_config = response.json()
+        # Extract JWKS URL
+        jwks_url = self.oidc_config['jwks_uri']
+        # Fetch JWKS
+        response = self.__get_with_root_cert(jwks_url)
+        jwks = response.json()
+        # Parse JWKS
+        self.key_set = JsonWebKey.import_key_set(jwks)
+
     def verify(
-        self, token_encoded: str, cookie_encoded: str
+            self, access_token_encoded: str
     ) -> Tuple[int, Optional[str]]:
         """
         This receives encoded jwts contained in a cookie and a token. Then, it verifies,
@@ -34,53 +58,37 @@ class Validator:
         read from the decoded jwt contained in the token.
         """
         self.debug_fn("Validator.verify")
-        self.__assert_instance_of_encoded_jwt(token_encoded)
-        self.__assert_instance_of_encoded_jwt(cookie_encoded)
-        to_execute = lambda: [self.__verify_ticket(token_encoded, cookie_encoded), None]
-        to_fallback = lambda: self.__verify_ticket_from_auth_service(
-            token_encoded, cookie_encoded
-        )
-        return self.__exception_handler(
-            to_execute, {jwt.exceptions.ExpiredSignatureError: to_fallback}
-        )
+        self.__assert_instance_of_encoded_jwt(access_token_encoded)
+        # TODO: ab--handle possible exceptions
+        claims = self.__decode_access_token(access_token_encoded)
 
-    def verify_only_cookie(self, cookie_encoded: str) -> int:
-        """
-        This receives only an encoded jwt contained in a cookie and verifies, that the
-        jwt is wellformed and still valid. Afterwards, this returns a user_id read from
-        the decoded jwt contained in the cookie. It only returns an int or raises an
-        error.
+        self.debug_fn("Get userId from claims from = " + claims.get(USER_ID_PROPERTY))
+        self.debug_fn("Get sessionId from claims from = " + claims.get(SESSION_ID_PROPERTY))
 
-        Use this with caution, because using only a cookie to verify a valid
-        authentication is vulnerable for CSRF-attacks.
-        """
-        self.debug_fn("Validator.verify_only_cookie")
-        cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
-        get_cookie = lambda: self.__decode(
-            cookie_encoded, self.environment.get_cookie_secret()
-        )
-        cookie = self.__exception_handler(get_cookie)
-        session_id = cookie.get("sessionId")
-        if self.session_handler.is_session_invalid(session_id):
-            raise AuthenticateException("The session is invalid")
-        user_id = cookie.get(USER_ID_PROPERTY)
-        if not isinstance(user_id, int):
-            raise AuthenticateException("user_id is not an int")
-        return user_id
+        to_execute = lambda: (self.__validate_and_extract_user_id(claims), access_token_encoded)
+        result = self.__exception_handler(to_execute)
+        return result
 
-    def verify_authorization_token(self, authorization_token: str) -> Tuple[int, str]:
+    def __validate_and_extract_user_id(self, claims):
+        # TODO: ab--make sure that the user_id is an int, handle parse error (ValueError)
+        to_execute = lambda: int(claims.get(USER_ID_PROPERTY))
+        result = self.__exception_handler(to_execute)
+        return result
+
+    def __decode_access_token(self, access_token_encoded):
+        return jwt.decode(self.__get_jwt_from_bearer_jwt(access_token_encoded), self.key_set)
+
+    def verify_authorization_token(self, access_token: str) -> Tuple[int, str]:
         self.debug_fn("Validator.verify_authorization_token")
-        self.__assert_instance_of_encoded_jwt(authorization_token)
-        authorization_token = self.__get_jwt_from_bearer_jwt(authorization_token)
-        get_token = lambda: self.__decode(
-            authorization_token, self.environment.get_token_secret()
-        )
-        token = self.__exception_handler(get_token)
-        session_id = token.get("sessionId")
+        self.__assert_instance_of_encoded_jwt(access_token)
+        access_token = self.__get_jwt_from_bearer_jwt(access_token)
+        get_token = lambda: self.__decode_access_token(access_token)
+        claims = self.__exception_handler(get_token)
+        session_id = claims.get(SESSION_ID_PROPERTY)
         if self.session_handler.is_session_invalid(session_id):
             raise AuthenticateException("The session is invalid")
-        user_id = token.get(USER_ID_PROPERTY)
-        email = token.get("email")
+        user_id = claims.get(USER_ID_PROPERTY)
+        email = claims.get("email")
         if not isinstance(user_id, str):
             raise AuthenticateException(f"user_id is not a str: {type(user_id)}")
         if not isinstance(email, str):
@@ -121,86 +129,51 @@ class Validator:
 
     def __is_bearer(self, encoded_jwt: str) -> bool:
         self.debug_fn("Validator.__is_bearer")
-        return len(encoded_jwt) >= 7 and encoded_jwt.startswith("bearer ")
+        return len(encoded_jwt) >= 7 and encoded_jwt.lower().startswith("bearer ")
 
-    def __verify_ticket_from_auth_service(
-        self, token_encoded: str, cookie_encoded: str
-    ) -> Tuple[int, Optional[str]]:
-        """
-        Sends a request to the auth-service configured in the constructor.
-        """
-        self.debug_fn("Validator.__verify_ticket_from_auth_service")
-        headers = {AUTHENTICATION_HEADER: token_encoded}
-        cookies = {COOKIE_NAME: cookie_encoded}
-        response = self.http_handler.send_internal_request(
-            "/authenticate", headers=headers, cookies=cookies
-        )
-        if not response.ok:
-            self.debug_fn(
-                "Error from auth-service: " + response.content.decode("utf-8")
-            )
-            raise AuthenticateException(
-                f"Authentication service sends HTTP {response.status_code}. "
-            )
+    def __get_with_root_cert(self, discovery_url):
+        # TODO: ab--use http handler
+        return requests.get(discovery_url, verify=os.path.expanduser("~/.local/share/mkcert/rootCA.pem"))
 
-        user_id = self.__get_user_id_from_response_body(response.json())
-        access_token = response.headers.get(AUTHENTICATION_HEADER, None)
-        return user_id, access_token
-
-    def __get_user_id_from_response_body(self, response_body) -> int:
-        self.debug_fn("Validator.__get_user_id_from_response_body")
-        try:
-            return response_body[USER_ID_PROPERTY]
-        except (TypeError, KeyError) as e:
-            raise AuthenticateException(
-                f"Empty or bad response from authentication service: {e}"
-            )
+    def __post_with_root_cert(self, discovery_url, data):
+        # TODO: ab--use http handler
+        return requests.post(discovery_url, data, verify=os.path.expanduser("~/.local/share/mkcert/rootCA.pem"))
 
     def __exception_handler(
-        self, expression: Callable, except_handlers: Dict[Any, Callable] = {}
+            self, expression: Callable, except_handlers: Dict[Any, Callable] = {}
     ) -> Any:
         self.debug_fn("Validator.__exception_handler")
         try:
             return expression()
+        except authlib.jose.errors.JoseError as e:
+            raise AuthenticateException(e.description or e.error)
         except Exception as e:
             return self.__handle_exception(e, except_handlers)
 
     def __handle_exception(
-        self, exception: Exception, except_handlers: Dict[Any, Callable]
+            self, exception: Exception, except_handlers: Dict[Any, Callable]
     ) -> Any:
-        self.debug_fn("Validator.__handle_exception")
+        self.debug_fn("Validator.__handle_exception: " + type(exception).__name__)
         for key in except_handlers:
             if isinstance(exception, key):
                 return except_handlers[key]()
         self.__handle_unhandled_exception(exception)
 
     def __handle_unhandled_exception(self, exception: Any) -> None:
-        self.debug_fn("Validator.__handle_unhandled_exception")
-        if isinstance(exception, jwt.exceptions.ExpiredSignatureError):
+        self.debug_fn("Validator.__handle_unhandled_exception: " + str(exception))
+
+        # TODO: ab--use authlib exceptions
+        if isinstance(exception, ExpiredSignatureError):
             raise InvalidCredentialsException("The jwt is expired")
-        elif isinstance(exception, jwt.exceptions.InvalidSignatureError):
+        elif isinstance(exception, JWEParseError):
+            raise InvalidCredentialsException("Could not parse the JWE string provided")
+        elif isinstance(exception, JWEInvalidAuth):
+            raise InvalidCredentialsException("The authentication tag did not match the protected sections of the JWE string provided")
+        elif isinstance(exception, JWEAlgorithmUnsupportedError):
+            raise InvalidCredentialsException("The JWE algorithm is not supported by the backend")
+        elif isinstance(exception, JWSSignatureError):
             raise InvalidCredentialsException("The signature of the jwt is invalid")
-        elif isinstance(exception, jwt.exceptions.InvalidTokenError):
-            raise InvalidCredentialsException("The jwt is invalid")
-        elif isinstance(exception, jwt.exceptions.DecodeError):
-            raise InvalidCredentialsException("The jwt is invalid")
-        elif isinstance(exception, jwt.exceptions.InvalidAudienceError):
-            raise InvalidCredentialsException("The audience of the jwt is invalid")
-        elif isinstance(exception, jwt.exceptions.InvalidAlgorithmError):
-            raise InvalidCredentialsException("Unsupported algorithm detected")
-        elif isinstance(exception, jwt.exceptions.InvalidIssuerError):
-            raise InvalidCredentialsException("Wrong issuer detected")
-        elif isinstance(exception, jwt.exceptions.InvalidIssuedAtError):
-            raise InvalidCredentialsException("The 'iat'-timestamp is in the future")
-        elif isinstance(exception, jwt.exceptions.ImmatureSignatureError):
-            raise InvalidCredentialsException("The 'nbf'-timestamp is in the future")
-        elif isinstance(exception, jwt.exceptions.MissingRequiredClaimError):
-            raise InvalidCredentialsException(
-                "The jwt does not contain the required fields"
-            )
-        elif isinstance(exception, jwt.exceptions.InvalidKeyError):
-            raise InvalidCredentialsException(
-                "The specified key for the jwt has a wrong format"
-            )
+        elif isinstance(exception, JWSAlgorithmError):
+            raise InvalidCredentialsException("Invalid algorithm in the jwt")
         else:
             raise exception
