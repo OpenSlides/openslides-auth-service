@@ -51,9 +51,6 @@ class AuthHandler:
     def is_equal(self, to_hash: str, to_compare: str) -> bool:
         return self.hashing_handler.is_equal(to_hash, to_compare)
 
-    def create_authorization_token(self, user_id: int, email: str) -> Response:
-        return self.token_factory.create(user_id, email)
-
     def verify_authorization_token(self, authorization_token: str) -> Tuple[int, str]:
         if self.database.get(authorization_token):
             raise AuthorizationException("Token is already used")
