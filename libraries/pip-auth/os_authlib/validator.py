@@ -7,6 +7,7 @@ from authlib.jose import KeySet, JsonWebKey
 from authlib.jose import jwt
 from jose.exceptions import *
 from jwt import ExpiredSignatureError
+import jwt as jwtAlt
 
 from .config import Environment
 from .constants import USER_ID_PROPERTY, SESSION_ID_PROPERTY
@@ -20,7 +21,6 @@ from .session_handler import SessionHandler
 
 OS_REALM = os.environ.get("OPENSLIDES_AUTH_REALM", "os")
 KEYCLOAK_URL = os.environ.get("OPENSLIDES_KEYCLOAK_URL", 'http://keycloak:8080')
-OS_CLIENT_ID = os.environ.get("OPENSLIDES_OIDC_CLIENT_ID", 'os-ui')
 
 class Validator:
     """
@@ -100,8 +100,8 @@ class Validator:
         token_encoded = self.__get_jwt_from_bearer_jwt(token_encoded, "token")
         cookie_encoded = self.__get_jwt_from_bearer_jwt(cookie_encoded, "cookie")
         # check whether the cookie signature is valid
-        self.__decode(cookie_encoded, self.environment.get_cookie_secret())
-        token = self.__decode(token_encoded, self.environment.get_token_secret())
+        self.decode(cookie_encoded, self.environment.get_cookie_secret())
+        token = self.decode(token_encoded, self.environment.get_token_secret())
         session_id = token["sessionId"]
         if self.session_handler.is_session_invalid(session_id):
             raise AuthenticateException("The session is invalid")
@@ -123,9 +123,9 @@ class Validator:
             raise InvalidCredentialsException(f"Wrong format of {name}: {string}")
         return string[7:]
 
-    def __decode(self, encoded_jwt: str, secret: str) -> Dict:
+    def decode(self, encoded_jwt: str, secret: str) -> Dict:
         self.debug_fn("Validator.__decode")
-        return jwt.decode(encoded_jwt, secret, algorithms=["HS256"])
+        return jwt.decode(encoded_jwt, secret)
 
     def __is_bearer(self, encoded_jwt: str) -> bool:
         self.debug_fn("Validator.__is_bearer")

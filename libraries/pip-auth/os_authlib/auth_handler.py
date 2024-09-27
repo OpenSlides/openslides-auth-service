@@ -1,6 +1,6 @@
 from typing import Any, Optional, Tuple
 
-from requests import Response
+import jwt
 
 from .constants import ANONYMOUS_USER
 from .database import Database
@@ -43,6 +43,18 @@ class AuthHandler:
             self.debug_fn("No access_token")
             return ANONYMOUS_USER, None
         return self.validator.verify(access_token)
+
+    def verify_logout_token(
+            self, logout_token: Optional[str]
+    ) -> dict:
+        """
+        Tries to check and read a user_id from a given access_token and refresh_id.
+        """
+        self.debug_fn(f"Logout Token: {logout_token}")
+        if not logout_token:
+            self.debug_fn("No logout_token")
+            raise AuthorizationException("No logout_token")
+        return self.validator.decode(logout_token, self.validator.key_set)
 
     def hash(self, to_hash: str) -> str:
         self.debug_fn(f"Hash {to_hash}: {self.hashing_handler.hash(to_hash)}")
