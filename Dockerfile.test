@@ -1,4 +1,4 @@
-FROM node:20.17-alpine
+FROM node:23.0-alpine
 ENV NODE_VERSION=20.10.1
 
 # Install python3.8
