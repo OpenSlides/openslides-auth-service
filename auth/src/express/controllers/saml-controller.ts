@@ -19,18 +19,6 @@ import { createResponse } from '../../util/helper/functions';
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
 /* eslint-disable @typescript-eslint/naming-convention */
-export interface SamlUser {
-    saml_id: string;
-    title?: string;
-    first_name: string;
-    last_name: string;
-    email?: string;
-    gender?: string;
-    pronoun?: string;
-    is_active?: boolean;
-    is_physical_person?: boolean | string;
-}
-
 export interface SamlSettings {
     saml_enabled: string;
     saml_metadata_idp: string;
@@ -40,12 +28,12 @@ export interface SamlSettings {
 
 interface SamlBackendCall {
     action: string;
-    data: [SamlUser];
+    data: [SamlAttributes];
 }
 
-interface SamlAttributes extends SamlUser {
+type SamlAttributes = {
     username: string;
-}
+} & { [key: string]: unknown };
 
 interface SamlHttpResponse {
     results: { user_id: number }[][];
@@ -192,7 +180,7 @@ export class SamlController {
     private async getSp(): Promise<samlify.ServiceProviderInstance> {
         samlify.setSchemaValidator({
             validate: () =>
-                /* implment your own or always returns a resolved promise to skip */
+                /* implement your own or always returns a resolved promise to skip */
                 Promise.resolve('skipped')
         });
         return samlify.ServiceProvider({
