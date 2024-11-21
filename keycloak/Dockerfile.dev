@@ -1,0 +1,63 @@
+# Stage 1: Build addon
+FROM gradle:8.8.0-jdk17 AS emailaddon
+WORKDIR /app
+#
+## Copy Gradle project files
+COPY addons/openslides-email-template-provider/build.gradle.kts addons/openslides-email-template-provider/settings.gradle.kts  /app/
+COPY addons/openslides-email-template-provider/src /app/src
+
+# Build the project
+RUN gradle shadowJar --no-daemon
+
+FROM quay.io/keycloak/keycloak:26.0.2 AS base
+
+# 2. configure keycloak
+FROM registry.access.redhat.com/ubi9/ubi:latest AS configurer
+# Install Python and Java
+RUN dnf install -y python3 python3-pip java-21-openjdk-headless glibc-langpack-en findutils procps-ng && \
+    dnf clean all
+
+RUN pip install --no-cache-dir python-keycloak
+ADD configure_keycloak.py /app/configure_keycloak.py
+
+COPY --from=base /opt/keycloak /opt/keycloak
+
+ENV KEYCLOAK_URL=http://localhost:8080/
+ENV KEYCLOAK_ADMIN=admin
+ENV KEYCLOAK_ADMIN_PASSWORD=admin
+
+USER 1000
+
+RUN /opt/keycloak/bin/kc.sh start-dev & \
+    ( \
+        i=0; \
+        until curl -sf http://localhost:8080/realms/master; do \
+            i=$((i+1)); \
+            if [ $i -ge 30 ]; then \
+                echo "Keycloak did not start in time"; \
+                exit 1; \
+            fi; \
+            echo "Waiting for Keycloak to be ready..."; \
+            sleep 1; \
+        done; \
+    ) && \
+    python3 /app/configure_keycloak.py && \
+    kill $(pidof java)
+
+# 3. Final image
+FROM quay.io/keycloak/keycloak:26.0.2
+COPY --from=configurer /opt/keycloak /opt/keycloak
+
+## Copy the built jar file from the build stage
+COPY --from=emailaddon /app/build/libs/openslides-email-template-provider-1.0.0.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+##
+### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+##
+ENV KEYCLOAK_HOSTNAME=https://localhost:8000/idp/
+ENV KEYCLOAK_HTTP_RELATIVE_PATH=/idp/
+##
+ADD themes/os /opt/keycloak/themes/os
+##
+### Set the environment variable to enable the custom email template provider
+ENTRYPOINT []
+CMD /opt/keycloak/bin/kc.sh start-dev --verbose --http-relative-path $KEYCLOAK_HTTP_RELATIVE_PATH --proxy-headers xforwarded --hostname $KEYCLOAK_HOSTNAME --hostname-admin $KEYCLOAK_HOSTNAME --spi-email-template-provider=openslides-email-template-provider --spi-email-template-openslides-email-template-provider-enabled=true
