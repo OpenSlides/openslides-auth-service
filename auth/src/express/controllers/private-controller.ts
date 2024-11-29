@@ -10,6 +10,7 @@ import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import { TicketMiddleware } from '../middleware/ticket-validator';
+import { Id } from '../../core/key-transforms';
 
 @RestController({
     prefix: 'internal/auth'
@@ -52,5 +53,11 @@ export class PrivateController {
         } else {
             throw new AuthorizationException('You are not authorized');
         }
+    }
+
+    @OnPost('clar-sessions-by-user-id')
+    public async clearSessionsByUserId(@Body('userId') userId: Id): Promise<AuthServiceResponse> {
+        await this._authHandler.clearAllSessions(userId);
+        return createResponse();
     }
 }
