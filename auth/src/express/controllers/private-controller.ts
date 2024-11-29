@@ -55,7 +55,7 @@ export class PrivateController {
         }
     }
 
-    @OnPost('clar-sessions-by-user-id')
+    @OnPost('clear-sessions-by-user-id')
     public async clearSessionsByUserId(@Body('userId') userId: Id): Promise<AuthServiceResponse> {
         await this._authHandler.clearAllSessions(userId);
         return createResponse();

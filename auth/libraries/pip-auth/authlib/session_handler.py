@@ -62,9 +62,9 @@ class SessionHandler:
         if response.status_code != 200:
             raise AuthenticateException("Failed to clear all sessions")
 
-    def clear_sessions_by_user_id(self, token: str, cookie: str, user_id: int) -> None:
+    def clear_sessions_by_user_id(self, user_id: int) -> None:
         response = self.http_handler.send_internal_request(
-            "clear-sessions-by-user-id", token, cookie, user_id
+            "clear-sessions-by-user-id", user_id
         )
         if response.status_code != 200:
             raise AuthenticateException(f"Failed to clear all sessions of user {user_id}")
