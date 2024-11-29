@@ -81,4 +81,4 @@ class AuthHandler:
         return self.session_handler.clear_all_sessions(access_token, refresh_id)
 
     def clear_sessions_by_user_id(self, user_id: int, refresh_id: str) -> None:
-        return self.session_handler.clear_sessions_by_user_id(user_id, refresh_id)
+        return self.session_handler.clear_sessions_by_user_id(access_token, refresh_id, user_id)
