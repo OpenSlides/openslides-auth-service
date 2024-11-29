@@ -53,8 +53,8 @@ export class SecureController {
         });
     }
 
-    @OnPost('clear-users-sessions')
-    public async clearUsersSessions(@Body('userId') userId: Id): Promise<AuthServiceResponse> {
+    @OnPost('clear-sessions-by-user-id')
+    public async clearSessionsByUserId(@Body('userId') userId: Id): Promise<AuthServiceResponse> {
         await this._authHandler.clearAllSessions(userId);
         return createResponse();
     }
