@@ -68,5 +68,5 @@ class SessionHandler:
         )
         if response.status_code != 200:
             raise AuthenticateException(
-                f"Failed to clear all sessions of user {user_id}"
+                f"Failed to clear all sessions of user {user_id}."
             )

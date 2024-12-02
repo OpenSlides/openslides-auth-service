@@ -18,11 +18,10 @@ afterAll(async () => {
 });
 
 test('POST clear-sessions-by-user-id', async () => {
-    const fqid = await container.userService.createUser('user1');
-    const user = await container.request.login('user1', 'user1');
     const admin = await container.request.login();
-    await container.request.post('internal/clear-sessions-by-user-id', {
-        data: { userId: +fqid.split('/')[1] }
+    await container.http.post('clear-sessions-by-user-id', {
+        data: { userId: 1 }, 
+        internal: true
     });
     await container.request.sendRequestAndValidateForbiddenRequest(container.request.authenticate());
 });
