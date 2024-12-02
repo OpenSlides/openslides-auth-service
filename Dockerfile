@@ -1,5 +1,5 @@
-FROM node:23.0-alpine AS build
-ENV NODE_VERSION=20.10.0
+FROM node:22.11-alpine AS build
+ENV NODE_VERSION=22.11.0
 
 WORKDIR /app
 
