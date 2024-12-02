@@ -53,14 +53,14 @@ export class SecureController {
         });
     }
 
-    @OnPost('clear-sessions-by-user-id')
-    public async clearSessionsByUserId(@Res() res: Response): Promise<AuthServiceResponse> {
-        return makeSpan('clear-all-sessions', async () => {
-            const token = res.locals['token'] as Token;
-            await this._authHandler.clearAllSessions(token.otherUserId);
-            return createResponse();
-        });
-    }
+    // @OnPost('clear-sessions-by-user-id')
+    // public async clearSessionsByUserId(@Res() res: Response): Promise<AuthServiceResponse> {
+    //     return makeSpan('clear-all-sessions', async () => {
+    //         const token = res.locals['token'] as Token;
+    //         await this._authHandler.clearAllSessions(token.otherUserId);
+    //         return createResponse();
+    //     });
+    // }
 
     @OnPost('clear-session-by-id')
     public async clearSessionById(@Body('sessionId') sessionId: string): Promise<AuthServiceResponse> {
