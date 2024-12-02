@@ -5,12 +5,12 @@ import { Body, OnPost, Res, RestController, Req } from 'rest-app';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { AuthorizationException } from '../../core/exceptions/authorization-exception';
+import { Id } from '../../core/key-transforms';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import { TicketMiddleware } from '../middleware/ticket-validator';
-import { Id } from '../../core/key-transforms';
 
 @RestController({
     prefix: 'internal/auth'

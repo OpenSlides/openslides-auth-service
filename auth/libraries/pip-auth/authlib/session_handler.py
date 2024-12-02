@@ -67,4 +67,6 @@ class SessionHandler:
             "clear-sessions-by-user-id", {"userId": user_id}
         )
         if response.status_code != 200:
-            raise AuthenticateException(f"Failed to clear all sessions of user {user_id}")
+            raise AuthenticateException(
+                f"Failed to clear all sessions of user {user_id}"
+            )

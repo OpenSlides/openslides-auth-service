@@ -9,7 +9,6 @@ import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import { makeSpan } from '../../util/otel';
 import { TicketMiddleware } from '../middleware/ticket-validator';
-import { Id } from '../../core/key-transforms';
 
 @RestController({
     prefix: 'system/auth/secure',
@@ -52,15 +51,6 @@ export class SecureController {
             return createResponse();
         });
     }
-
-    // @OnPost('clear-sessions-by-user-id')
-    // public async clearSessionsByUserId(@Res() res: Response): Promise<AuthServiceResponse> {
-    //     return makeSpan('clear-all-sessions', async () => {
-    //         const token = res.locals['token'] as Token;
-    //         await this._authHandler.clearAllSessions(token.otherUserId);
-    //         return createResponse();
-    //     });
-    // }
 
     @OnPost('clear-session-by-id')
     public async clearSessionById(@Body('sessionId') sessionId: string): Promise<AuthServiceResponse> {

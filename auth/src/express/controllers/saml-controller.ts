@@ -36,7 +36,6 @@ export interface SamlSettings {
     saml_metadata_idp: string;
     saml_metadata_sp: string;
     saml_private_key: string;
-    saml_attribute_mapping: string;
 }
 
 interface SamlBackendCall {
@@ -138,12 +137,6 @@ export class SamlController {
 
         const userId = await this.provisionUser(extract.attributes);
 
-        // private readonly _datastore: Datastore;
-        // orga = await this._datastore.filter<Organization>('organization', property, value, ["saml_attribute_mapping"]);
-        // const orga = await this._orgaHandler.getOrga();
-        // if !user.is_active and orga.saml_attribute_mapping.is_active:
-        //     throw new AuthenticationException('Authentication failed! User is manually set to inactive!');
-
         const ticket = await this._authHandler.doSamlLogin(userId);
 
         Logger.debug(`user: ${username} -- signs in via SAML`);
@@ -190,8 +183,7 @@ export class SamlController {
                 'saml_enabled',
                 'saml_metadata_idp',
                 'saml_metadata_sp',
-                'saml_private_key',
-                'saml_attribute_mapping'
+                'saml_private_key'
             ]);
         }
         return this._samlSettings;
