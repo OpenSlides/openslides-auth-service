@@ -8,11 +8,14 @@ import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
+import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { SecretService } from '../../api/services/secret-service';
+import { UserService } from '../../api/services/user-service';
 import { Config } from '../../config';
+import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 
@@ -36,6 +39,7 @@ export interface SamlSettings {
     saml_metadata_idp: string;
     saml_metadata_sp: string;
     saml_private_key: string;
+    saml_attribute_mapping: object;
 }
 
 interface SamlBackendCall {
@@ -56,6 +60,9 @@ interface SamlHttpResponse {
     prefix: 'system/saml'
 })
 export class SamlController {
+    @Factory(UserService)
+    private _userHandler: UserHandler;
+
     @Factory(AuthService)
     private _authHandler: AuthHandler;
 
@@ -137,6 +144,13 @@ export class SamlController {
 
         const userId = await this.provisionUser(extract.attributes);
 
+        const saml_attribute_mapping = (await this.getSamlSettings()).saml_attribute_mapping;
+        const user = await this._userHandler.getUserByUserId(userId);
+        if (!user.is_active && !('is_active' in saml_attribute_mapping)) {
+            res.redirect('/');
+            throw new AuthenticationException('Authentication failed! User is manually set to inactive within Openslides and the attribute mapping doesn\'t use it!');
+        }
+
         const ticket = await this._authHandler.doSamlLogin(userId);
 
         Logger.debug(`user: ${username} -- signs in via SAML`);
@@ -183,7 +197,8 @@ export class SamlController {
                 'saml_enabled',
                 'saml_metadata_idp',
                 'saml_metadata_sp',
-                'saml_private_key'
+                'saml_private_key',
+                'saml_attribute_mapping'
             ]);
         }
         return this._samlSettings;
