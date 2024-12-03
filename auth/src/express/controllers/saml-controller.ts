@@ -144,11 +144,14 @@ export class SamlController {
 
         const userId = await this.provisionUser(extract.attributes);
 
-        const saml_attribute_mapping = (await this.getSamlSettings()).saml_attr_mapping;
+        const samlAttributeMapping = (await this.getSamlSettings()).saml_attr_mapping;
         const user = await this._userHandler.getUserByUserId(userId);
-        if (!user.is_active && !('is_active' in saml_attribute_mapping)) {
+        if (!user.is_active && !('is_active' in samlAttributeMapping)) {
             // res.redirect('/');
-            throw new AuthenticationException('Authentication failed! User is manually set to inactive within Openslides and the attribute mapping doesn\'t use it!');
+            throw new AuthenticationException(
+                'Authentication failed! \
+User is manually set to inactive within Openslides and the attribute mapping doesn\'t use it!'
+            );
         }
 
         const ticket = await this._authHandler.doSamlLogin(userId);
