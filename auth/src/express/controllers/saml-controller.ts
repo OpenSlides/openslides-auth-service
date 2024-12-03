@@ -39,7 +39,7 @@ export interface SamlSettings {
     saml_metadata_idp: string;
     saml_metadata_sp: string;
     saml_private_key: string;
-    saml_attribute_mapping: object;
+    saml_attr_mapping: object;
 }
 
 interface SamlBackendCall {
@@ -144,10 +144,10 @@ export class SamlController {
 
         const userId = await this.provisionUser(extract.attributes);
 
-        const saml_attribute_mapping = (await this.getSamlSettings()).saml_attribute_mapping;
+        const saml_attribute_mapping = (await this.getSamlSettings()).saml_attr_mapping;
         const user = await this._userHandler.getUserByUserId(userId);
         if (!user.is_active && !('is_active' in saml_attribute_mapping)) {
-            res.redirect('/');
+            // res.redirect('/');
             throw new AuthenticationException('Authentication failed! User is manually set to inactive within Openslides and the attribute mapping doesn\'t use it!');
         }
 
@@ -198,7 +198,7 @@ export class SamlController {
                 'saml_metadata_idp',
                 'saml_metadata_sp',
                 'saml_private_key',
-                'saml_attribute_mapping'
+                'saml_attr_mapping'
             ]);
         }
         return this._samlSettings;
