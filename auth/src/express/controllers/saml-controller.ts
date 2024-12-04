@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 import * as samlify from 'samlify';
+import * as path from 'path';
 
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
@@ -146,22 +147,39 @@ export class SamlController {
 
         const samlAttributeMapping = (await this.getSamlSettings()).saml_attr_mapping;
         const user = await this._userHandler.getUserByUserId(userId);
+        console.log(path.join(__dirname, 'twice_not_is_active.html'));
         if (!user.is_active && !('is_active' in samlAttributeMapping)) {
-            // res.redirect('/');
-            throw new AuthenticationException(
-                'Authentication failed! User is set to inactive within Openslides & is_active missing in attr. mapping!'
-            );
+            // res.set('Content-Type', 'text/html')
+            res.sendFile(
+                // path.join(__dirname, 'twice_not_is_active.html'), 
+                'twice_not_is_active.html',
+                {
+                    root: __dirname,
+                    dotfiles: 'deny',
+                    headers: {
+                        'x-timestamp': Date.now(),
+                        'x-sent': true
+                    }
+                }, 
+                function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                }
+            )
         }
+        else {
 
-        const ticket = await this._authHandler.doSamlLogin(userId);
+            const ticket = await this._authHandler.doSamlLogin(userId);
 
-        Logger.debug(`user: ${username} -- signs in via SAML`);
+            Logger.debug(`user: ${username} -- signs in via SAML`);
 
-        res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
-        res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
+            res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
+            res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
 
-        // Todo: Better way for redirect to frontend?
-        res.redirect('/');
+            // Todo: Better way for redirect to frontend?
+            res.redirect('/');
+        }
     }
 
     /**
