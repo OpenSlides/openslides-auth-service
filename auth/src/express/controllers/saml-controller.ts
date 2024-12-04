@@ -149,8 +149,7 @@ export class SamlController {
         if (!user.is_active && !('is_active' in samlAttributeMapping)) {
             // res.redirect('/');
             throw new AuthenticationException(
-                'Authentication failed! \
-User is manually set to inactive within Openslides and the attribute mapping doesn\'t use it!'
+                'Authentication failed! User is set to inactive within Openslides & is_active missing in attr. mapping!'
             );
         }
 
