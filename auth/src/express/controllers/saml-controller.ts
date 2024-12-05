@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 import * as samlify from 'samlify';
-import * as path from 'path';
 
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
@@ -16,9 +15,10 @@ import { Logger } from '../../api/services/logger';
 import { SecretService } from '../../api/services/secret-service';
 import { UserService } from '../../api/services/user-service';
 import { Config } from '../../config';
-import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
@@ -149,27 +149,10 @@ export class SamlController {
         const user = await this._userHandler.getUserByUserId(userId);
         console.log(path.join(__dirname, 'twice_not_is_active.html'));
         if (!user.is_active && !('is_active' in samlAttributeMapping)) {
-            // res.set('Content-Type', 'text/html')
-            res.sendFile(
-                // path.join(__dirname, 'twice_not_is_active.html'), 
-                'twice_not_is_active.html',
-                {
-                    root: __dirname,
-                    dotfiles: 'deny',
-                    headers: {
-                        'x-timestamp': Date.now(),
-                        'x-sent': true
-                    }
-                }, 
-                function (err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                }
-            )
-        }
-        else {
-
+            res.set('Content-Type', 'text/html');
+            const fileContent = fs.readFileSync(path.join(__dirname, 'twice_not_is_active.html'), 'utf8');
+            res.send(fileContent);
+        } else {
             const ticket = await this._authHandler.doSamlLogin(userId);
 
             Logger.debug(`user: ${username} -- signs in via SAML`);
