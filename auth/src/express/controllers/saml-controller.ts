@@ -19,6 +19,7 @@ import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
@@ -147,11 +148,16 @@ export class SamlController {
 
         const samlAttributeMapping = (await this.getSamlSettings()).saml_attr_mapping;
         const user = await this._userHandler.getUserByUserId(userId);
-        console.log(path.join(__dirname, 'twice_not_is_active.html'));
-        if (!user.is_active && !('is_active' in samlAttributeMapping)) {
+        // userId -1 means that the backend call by provisionUser was bad
+        // fe. malformed is_active and should result in the exception thrown by doSamlLogin
+        if (userId != -1 || !user.is_active) {
             res.set('Content-Type', 'text/html');
-            const fileContent = fs.readFileSync(path.join(__dirname, 'twice_not_is_active.html'), 'utf8');
-            res.send(fileContent);
+            const fileContent = fs.readFileSync(path.join(__dirname, 'not_is_active.html'), 'utf8');
+            if ('is_active' in samlAttributeMapping) {
+                res.send(util.format(fileContent, ''));
+            } else {
+                res.send(util.format(fileContent, ' and the activity status is not being mapped by the SAML data'));
+            }
         } else {
             const ticket = await this._authHandler.doSamlLogin(userId);
 
