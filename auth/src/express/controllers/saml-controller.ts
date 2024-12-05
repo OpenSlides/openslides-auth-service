@@ -150,7 +150,7 @@ export class SamlController {
         const user = await this._userHandler.getUserByUserId(userId);
         // userId -1 means that the backend call by provisionUser was bad
         // fe. malformed is_active and should result in the exception thrown by doSamlLogin
-        if (userId !== -1 || !user.is_active) {
+        if (userId !== -1 && !user.is_active) {
             res.set('Content-Type', 'text/html');
             const fileContent = fs.readFileSync(path.join(__dirname, 'not_is_active.html'), 'utf8');
             if ('is_active' in samlAttributeMapping) {
