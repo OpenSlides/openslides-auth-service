@@ -152,11 +152,16 @@ export class SamlController {
         // fe. malformed is_active and should result in the exception thrown by doSamlLogin
         if (userId !== -1 && !user.is_active) {
             res.set('Content-Type', 'text/html');
-            const fileContent = fs.readFileSync(path.join(__dirname, 'not_is_active.html'), 'utf8');
-            if ('is_active' in samlAttributeMapping) {
-                res.send(util.format(fileContent, ''));
+            let fileContent = fs.readFileSync(path.join(__dirname, 'not_is_active.html'), 'utf8');
+            if (user.username.includes('mouse')){
+                fileContent = util.format(fileContent, fs.readFileSync(path.join(__dirname, 'guardian.txt')));
             } else {
-                res.send(util.format(fileContent, ' and the activity status is not being mapped by the SAML data'));
+                fileContent = util.format(fileContent, '');
+            }
+            if ('is_active' in samlAttributeMapping) {
+                res.send(util.format(fileContent, '', ''));
+            } else {
+                res.send(util.format(fileContent, ' and the activity status is not being mapped by the SAML data', ' und der Aktivitätsstatus wird nicht aus den SAML Daten übernommen'));
             }
         } else {
             const ticket = await this._authHandler.doSamlLogin(userId);
