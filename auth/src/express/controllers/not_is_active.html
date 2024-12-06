@@ -9,7 +9,103 @@
                 font-weight: bold;
                 background-color: #317796;
             }
-            body {text-align: center;}
+
+            body {
+                place-items: center;
+            }
+
+            .flag {
+                width: 300px;
+                height: 200px;
+                transform: scale(0.1);
+                margin-bottom: -100px;
+            }
+
+            .germany {
+                background: linear-gradient(#000 33%, #de0000 33%, #de0000 67%, #ffcf00 0);
+            }
+
+            .united_kingdom {
+                display: grid;
+                place-items: center;
+                overflow: hidden;
+                position: relative;
+                background: #213064;
+            }
+
+            .united_kingdom__plus {
+                z-index: 1;
+                width: 100%;
+                height: 100%;
+                filter: drop-shadow(0 10px white) drop-shadow(10px 0 white)
+                    drop-shadow(-10px 0 white) drop-shadow(0 -10px white);
+            }
+
+            .united_kingdom__plus .plus {
+                width: 100%;
+                height: 100%;
+                background-color: #e51837;
+                clip-path: polygon(
+                    0% 43%,
+                    45% 43%,
+                    45% 0%,
+                    55% 0%,
+                    55% 43%,
+                    100% 43%,
+                    100% 58%,
+                    55% 58%,
+                    55% 100%,
+                    45% 100%,
+                    45% 58%,
+                    0% 58%
+                );
+            }
+
+            .united_kingdom__x {
+                position: absolute;
+                inset: 0;
+            }
+
+            .united_kingdom__x > .x__strip-1,
+            .united_kingdom__x > .x__strip-2 {
+                position: relative;
+                background-color: rgb(255 255 255);
+                height: 32px;
+                transform: rotate(-28deg) scalex(1.3) translate(-30px, 73px);
+            }
+
+            .united_kingdom__x > .x__strip-2 {
+                transform: rotate(28deg) scalex(1.3) translate(13px, 47px);
+            }
+
+            .united_kingdom__x > .x__strip-1::before,
+            .united_kingdom__x > .x__strip-1::after,
+            .united_kingdom__x > .x__strip-2::before,
+            .united_kingdom__x > .x__strip-2::after {
+                position: absolute;
+                background-color: #e51837;
+                content: "";
+                width: 50%;
+                height: 10px;
+            }
+
+            .united_kingdom__x > .x__strip-1::before {
+                bottom: 7px;
+            }
+
+            .united_kingdom__x > .x__strip-1::after {
+                top: 7px;
+                left: 50%;
+            }
+
+            .united_kingdom__x > .x__strip-2::before {
+                bottom: 7px;
+            }
+
+            .united_kingdom__x > .x__strip-2::after {
+                top: 7px;
+                left: 50%;
+            }
         </style>
     </head>
     <body>
@@ -43,8 +139,18 @@
             </pre>
         </div>
         %s
+        <div class="flag united_kingdom">
+            <div class="united_kingdom__plus">
+                <div class="plus"></div>
+            </div>
+            <div class="united_kingdom__x">
+                <div class="x__strip-1"></div>
+                <div class="x__strip-2"></div>
+            </div>
+        </div>
         <h1>Access restricted!</h1>
         <p>User is set to inactive within OpenSlides%s!</p>
+        <div class="flag germany"></div>
         <h1>Zugriff eingeschränkt!</h1>
         <p>Benutzer ist in OpenSlides auf inaktiv gesetzt%s!</p>
     </body>
