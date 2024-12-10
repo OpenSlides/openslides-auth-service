@@ -1,0 +1,17 @@
+<configuration>
+    <!-- Set the root logger to INFO level -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Define an appender (console output in this case) -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.jboss.resteasy" level="DEBUG"/>
+    <logger name="org.jboss.resteasy.core.SynchronousDispatcher" level="DEBUG"/>
+    <logger name="org.jboss.resteasy.spi" level="DEBUG"/>
+</configuration>

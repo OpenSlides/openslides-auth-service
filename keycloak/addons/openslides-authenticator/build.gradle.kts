@@ -9,11 +9,17 @@ plugins {
 dependencies {
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 val trustStorePassword = "changeit"
 
 tasks {
     jar {
-        archiveBaseName.set("openslides-email-template-provider")
+        archiveBaseName.set("openslides-authenticator")
         manifest {
             attributes["Implementation-Title"] = "OpenSlides Email Template Provider"
             attributes["Implementation-Version"] = version
