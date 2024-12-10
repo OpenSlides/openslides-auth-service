@@ -68,7 +68,7 @@ def create_or_get_client(keycloak_admin, realm_name, client_name, client_scope_n
                      "baseUrl": "https://localhost:8000",
                      "attributes": {
                          "login_theme": "os",
-                         "openslides.email-action.url": "http://backend:9002/system/action/email",
+                         "openslides.action.url": "http://backend:9002/system/action/handle_request",
                          "backchannel.logout.url": "http://backend:9002/system/action/logout",
                          "post.logout.redirect.uris": "https://localhost:8000/*",
                          "backchannel.logout.session.required": "true"
@@ -209,7 +209,14 @@ def configure_keycloak(keycloak_admin):
             client_representation.update({"webOrigins": ["*"]})
             keycloak_admin.update_client(client_id, client_representation)
     # Filter the client scopes by name
-    client_scope_id = None
+    add_client_scopes(client_name, client_scopes, clients, keycloak_admin, realm_name)
+    # TODO: ab--hardcoded user names, user ids must match with test data in database
+    user_names = [("admin", 1, "admin"), ("user", 2, "password")]
+    create_or_get_user(keycloak_admin, realm_name, user_names)
+    configure_authenticator(keycloak_admin)
+
+
+def add_client_scopes(client_name, client_scopes, clients, keycloak_admin, realm_name):
     for client in clients:
         print(f"Client: {client.get('clientId')}")
         if client.get('clientId') == client_name:
@@ -227,10 +234,36 @@ def configure_keycloak(keycloak_admin):
                                 "client": client_id,
                                 "clientScopeId": client_scope_id})
                             break
-    # TODO: ab--hardcoded user names, user ids must match with test data in database
-    user_names = [("admin", 1, "admin"), ("user", 2, "password")]
-    create_or_get_user(keycloak_admin, realm_name, user_names)
 
+
+def configure_authenticator(keycloak_admin):
+    # Schritt 1: Login-Flow duplizieren
+    flow_alias = "openslides-browser-flow"
+    existing_flow = keycloak_admin.get_authentication_flow("browser")
+    keycloak_admin.create_authentication_flow({
+        "alias": flow_alias,
+        "description": "Custom flow with external authenticator",
+        "providerId": "basic-flow",
+        "topLevel": True,
+        "builtIn": False
+    })
+
+    # Schritt 2: Authenticator dem neuen Flow hinzufügen
+    authenticator_id = keycloak_admin.create_authentication_execution({
+        "parentFlow": flow_alias,
+        "authenticator": "openslides-authenticator",
+        "requirement": "REQUIRED",
+        "priority": 0,
+        "authenticatorFlow": False
+    })
+
+    # Schritt 3: Flow aktivieren
+    keycloak_admin.update_authentication_flow(flow_alias, {"alias": flow_alias, "topLevel": True})
+    keycloak_admin.update_realm({
+        "realm": "os",
+        "browserFlow": flow_alias
+    })
+    print(f"Custom authenticator added to flow: {flow_alias}")
 
 if __name__ == '__main__':
     keycloak_admin = KeycloakAdmin(server_url=environ.get("KEYCLOAK_URL"),
