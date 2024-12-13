@@ -21,9 +21,9 @@ public class OpenSlidesEmailTemplateProviderIT extends IntegrationTestBase {
     @Test
     public void sendEmailVerification_test() throws Exception {
 
-        setupKeycloak(true);
+        setupKeycloak();
         setupProxyAndConfigureClient(runner);
-        setKeycloakLoginTheme(proxySettings.keycloakUrl(), "os-ui", "os");
+        setKeycloakLoginTheme(DEFAULT_KEYCLOAK_THEME, "os-ui", "os");
 
         GenericContainer<?> mockBackend = runner.createWireMockContainer("backend", 9002);
         mockBackend.start();

@@ -42,7 +42,7 @@ public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
     public void startKeycloakAndConfigureRealm() throws Exception {
         this.mailhog = runner.createContainer("mailhog");
         mailhog.start();
-        setupKeycloak(true);
+        setupKeycloak();
 
         runner.createContainer("redis").start();
         runner.createContainer("postgres").start();
@@ -53,7 +53,7 @@ public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
         backend.start();
 
         setupProxyAndConfigureClient(runner);
-        setKeycloakLoginTheme("keycloak", "os-ui", "os");
+        setKeycloakLoginTheme(DEFAULT_KEYCLOAK_THEME, "os-ui", "os");
     }
 
     @AfterAll

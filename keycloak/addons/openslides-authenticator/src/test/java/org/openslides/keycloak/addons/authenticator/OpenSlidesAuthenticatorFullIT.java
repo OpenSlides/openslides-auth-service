@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.keycloak.admin.client.Keycloak;
 import org.openslides.keycloak.addons.IntegrationTestBase;
-import org.openslides.keycloak.addons.authenticator.snippets.KeycloakAuthUrlGenerator;
+import org.openslides.keycloak.addons.KeycloakAuthUrlGenerator;
 import org.openslides.keycloak.addons.util.KeycloakPage;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -16,23 +16,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @WireMockTest
-public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
+public class OpenSlidesAuthenticatorFullIT extends IntegrationTestBase {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(OpenSlidesEmailTemplateProviderFullIT.class);
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(OpenSlidesAuthenticatorFullIT.class);
 
     private GenericContainer<?> keycloak;
     private Keycloak adminClient;
     private GenericContainer<?> backend;
     private GenericContainer<?> mailhog;
 
-    public OpenSlidesEmailTemplateProviderFullIT() throws Exception {
+    public OpenSlidesAuthenticatorFullIT() throws Exception {
     }
 
     @BeforeAll
     public void startKeycloakAndConfigureRealm() throws Exception {
         this.mailhog = runner.createContainer("mailhog");
         mailhog.start();
-        setupKeycloak(true);
+        setupKeycloak();
 
         runner.createContainer("redis").start();
         runner.createContainer("postgres").start();
@@ -42,8 +42,8 @@ public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
         this.backend = runner.createContainer("backend");
         backend.start();
 
-        setupProxyAndConfigureClient(runner);
-        setKeycloakLoginTheme("keycloak", "os-ui", "os");
+        setupProxyAndConfigureClient();
+        setKeycloakLoginTheme(DEFAULT_KEYCLOAK_THEME, "os-ui", "os");
     }
 
     @AfterAll

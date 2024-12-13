@@ -223,7 +223,6 @@ public class OpenSlidesEmailTemplateProvider implements EmailTemplateProvider {
         return connection;
     }
 
-
     // Encodes and signs a token
 //    public String encodeToken(KeycloakSession session, RealmModel realm, AccessToken token) {
 //        // Retrieve the current active signing key for the realm

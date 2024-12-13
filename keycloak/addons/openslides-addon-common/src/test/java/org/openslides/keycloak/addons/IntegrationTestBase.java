@@ -16,15 +16,14 @@ import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.MountableFile;
 
+import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @WireMockTest
 public class IntegrationTestBase {
 
+    public static final String DEFAULT_KEYCLOAK_THEME = "keycloak";
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(IntegrationTestBase.class);
     protected final DockerComposeRunner runner;
 
@@ -36,23 +35,38 @@ public class IntegrationTestBase {
         this.runner = new DockerComposeRunner(System.getProperty("docker-compose.configfile"));
     }
 
-    protected @NotNull GenericContainer<? extends GenericContainer<?>> setupKeycloak(boolean initOpenSlidesRealm) throws InterruptedException {
-        final var keycloak = runner.createContainer("keycloak")
+    protected @NotNull GenericContainer<? extends GenericContainer<?>> setupKeycloak() throws InterruptedException {
+        String keycloakHostname = "https://localhost:8000/idp/";
+        String keycloakRelativePath = "/idp/";
+        final var keycloak = runner.createContainerFromImage("quay.io/keycloak/keycloak:26.0.2")
+                .withEnv("KC_BOOTSTRAP_ADMIN_USERNAME", "admin")
+                .withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin")
+                .withEnv("KEYCLOAK_HOSTNAME", keycloakHostname)
+                .withEnv("JAVA_OPTS", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005")
+                // expose debug port and bind to 15005
+                .withExposedPorts(5005)
+                .withEnv("KEYCLOAK_HTTP_RELATIVE_PATH", keycloakRelativePath)
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("/bin/sh")
+                            .withCmd("/opt/keycloak/bin/kc.sh", "start-dev", "--verbose",
+                                    "--http-relative-path", keycloakRelativePath, "--proxy-headers", "xforwarded", "--hostname", keycloakHostname, "--hostname-admin", keycloakHostname);
+                })
+                //"--spi-email-template-provider=openslides-email-template-provider", "--spi-email-template-openslides-email-template-provider-enabled=true")
+                .withNetworkAliases("keycloak")
                 .withCopyFileToContainer(
                         MountableFile.forHostPath(System.getProperty("keycloak.addon.path")),
                         "/opt/keycloak/providers/openslides-authenticator.jar"
                 );
-
+        keycloak.setPortBindings(List.of("15005:5005"));
+        runner.addService("keycloak");
         keycloak.start();
         this.keycloak = keycloak;
 
-        if(initOpenSlidesRealm) {
-            final var keycloakInit = runner.createContainer("keycloak-init");
-            keycloakInit.start();
-            Thread.sleep(3000);
-        }
-
         return keycloak;
+    }
+
+    protected void configureKeycloakRealm(String realmName) {
+        new KeycloakConfigurator(proxySettings.keycloakUrl(), "admin", "admin").configureKeycloak(realmName);
     }
 
     @AfterAll
@@ -65,7 +79,7 @@ public class IntegrationTestBase {
         }
     }
 
-    protected void setupProxyAndConfigureClient(DockerComposeRunner runner) {
+    protected void setupProxyAndConfigureClient() {
         this.proxySettings = runner.setupProxy(keycloak);
 
         Client client = ClientBuilder.newClient().register(new KeycloakErrorLoggingFilter(keycloak));

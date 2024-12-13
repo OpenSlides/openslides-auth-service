@@ -21,7 +21,6 @@ public class OpenSlidesAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public void init(Config.Scope config) {
-        // Initialisierung, falls nötig
     }
 
     @Override

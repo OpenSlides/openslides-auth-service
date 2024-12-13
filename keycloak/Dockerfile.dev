@@ -3,8 +3,11 @@ FROM gradle:8.8.0-jdk17 AS emailaddon
 WORKDIR /app
 #
 ## Copy Gradle project files
-COPY addons/openslides-email-template-provider/build.gradle.kts addons/openslides-email-template-provider/settings.gradle.kts  /app/
-COPY addons/openslides-email-template-provider/src /app/src
+COPY addons/openslides-email-template-provider/build.gradle.kts /app/
+COPY addons/openslides-email-template-provider/src /app/openslides-email-template-provider/src
+COPY addons/openslides-authenticator/build.gradle.kts /app/
+COPY addons/openslides-authenticator/src /app/openslides-authenticator/src
+COPY addons/build.gradle.kts  addons/settings.gradle.kts /app/
 
 # Build the project
 RUN gradle shadowJar --no-daemon
@@ -48,8 +51,8 @@ RUN /opt/keycloak/bin/kc.sh start-dev & \
 FROM quay.io/keycloak/keycloak:26.0.2
 COPY --from=configurer /opt/keycloak /opt/keycloak
 
-## Copy the built jar file from the build stage
-COPY --from=emailaddon /app/build/libs/openslides-email-template-provider-1.0.0.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+COPY --from=emailaddon /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+COPY --from=emailaddon /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
 ##
 ### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 ##

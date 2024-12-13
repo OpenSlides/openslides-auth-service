@@ -1,4 +1,6 @@
-package org.openslides.keycloak.addons.authenticator.snippets;
+package org.openslides.keycloak.addons;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -16,7 +18,7 @@ public class KeycloakAuthUrlGenerator {
 
             String authUrl = String.format(
                 "%s/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=%s&scope=%s",
-                keycloakBaseUrl, realmName, clientId, encodedRedirectUri, responseType, encodedScopes
+                    StringUtils.stripEnd(keycloakBaseUrl.stripLeading(), "/"), realmName, clientId, encodedRedirectUri, responseType, encodedScopes
             );
 
             return authUrl;

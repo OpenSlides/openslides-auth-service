@@ -1,34 +1,34 @@
 plugins {
-    id("java")
-}
-
-repositories {
-    mavenCentral()
+    id("application")
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.register<Jar>("testClassesJar") {
+    archiveClassifier.set("tests")
+    from(sourceSets["test"].output)
 }
 
-tasks.register<Jar>("testSourcesJar") {
-    from(sourceSets["test"].allSource)
-    archiveClassifier.set("test-sources")
-}
-
-tasks.named("testSourcesJar").configure {
-    dependsOn(tasks.named("testClasses"))
-}
-
-// add configuration for testArtifacts
 configurations.create("tests") {
     extendsFrom(configurations.testImplementation.get())
 }
 
 artifacts {
-    add("tests", tasks.named("testSourcesJar"))
+    add("tests", tasks.named("testClassesJar"))
+}
+
+application {
+    mainClass.set("org.openslides.keycloak.addons.KeycloakConfigurator")
+}
+
+tasks.named<JavaExec>("run") {
+    dependsOn("createTrustStore")
+    systemProperty("javax.net.ssl.trustStore", layout.buildDirectory.file("proxy-truststore.jks").get().asFile.path)
+    systemProperty("javax.net.ssl.trustStorePassword", "changeit")
+
+    environment("KEYCLOAK_URL", "https://localhost:8000/idp/")
+    environment("KEYCLOAK_ADMIN", "admin")
+    environment("KEYCLOAK_ADMIN_PASSWORD", "admin")
 }

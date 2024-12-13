@@ -6,7 +6,11 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DockerComposeRunner {
@@ -17,19 +21,6 @@ public class DockerComposeRunner {
     private GenericContainer<?> proxy;
 
     private Map<String, Collection<String>> serviceToEnvVarPrefixMapping = new HashMap<>();
-
-    public DockerComposeRunner(String composeConfigPath) throws Exception {
-        this.network = Network.newNetwork();
-        this.compose = DockerComposeParser.parseComposeFile(composeConfigPath);
-        MultiValuedMap<String, String> serviceToEnvVarPrefixMapping = new ArrayListValuedHashMap<>();
-        for (Map.Entry<String, String> entry : compose.services.get("proxy").environmentMap.entrySet()) {
-            if (entry.getValue().matches("\\d+")) {
-                continue;
-            }
-            serviceToEnvVarPrefixMapping.put(entry.getValue(), entry.getKey().split("_")[0]);
-        }
-        this.serviceToEnvVarPrefixMapping = serviceToEnvVarPrefixMapping.asMap();
-    }
 
     public GenericContainer<?> createContainer(String name) {
         if (proxy != null) {
@@ -64,6 +55,23 @@ public class DockerComposeRunner {
         }
     }
 
+    public void addService(String name) {
+        services.add(name);
+    }
+
+    public DockerComposeRunner(String composeConfigPath) throws Exception {
+        this.network = Network.newNetwork();
+        this.compose = DockerComposeParser.parseComposeFile(composeConfigPath);
+        MultiValuedMap<String, String> serviceToEnvVarPrefixMapping = new ArrayListValuedHashMap<>();
+        for (Map.Entry<String, String> entry : compose.services.get("proxy").environmentMap.entrySet()) {
+            if (entry.getValue().matches("\\d+")) {
+                continue;
+            }
+            serviceToEnvVarPrefixMapping.put(entry.getValue(), entry.getKey().split("_")[0]);
+        }
+        this.serviceToEnvVarPrefixMapping = serviceToEnvVarPrefixMapping.asMap();
+    }
+
     public GenericContainer<?> createWireMockContainer(String networkAlias, int port) {
         return new GenericContainer<>("wiremock/wiremock:latest")
                 .withNetwork(network)
@@ -87,5 +95,10 @@ public class DockerComposeRunner {
 
         String keycloakUrl = "https://" + proxy.getHost() + ":" + proxy.getFirstMappedPort() + "/idp/";
         return new ProxySettings(keycloakUrl);
+    }
+
+    public GenericContainer<?> createContainerFromImage(String imageName) {
+        return new GenericContainer<>(imageName)
+                .withNetwork(network);
     }
 }
