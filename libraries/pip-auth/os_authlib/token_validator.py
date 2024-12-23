@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 
 import requests
@@ -7,7 +9,7 @@ from authlib.oauth2.rfc6750.errors import InvalidTokenError
 from authlib.oauth2.rfc9068 import JWTBearerTokenValidator
 from authlib.oidc.discovery import OpenIDProviderMetadata, get_well_known_url
 
-from .claims import OpenSlidesAccessTokenClaims, BackchannelLogoutTokenClaims
+from .claims import OpenSlidesAccessTokenClaims, BackchannelTokenClaims
 from .session_handler import SessionHandler
 
 
@@ -51,7 +53,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
             return jwt.decode(
                 token_string,
                 key=jwks,
-                claims_cls=BackchannelLogoutTokenClaims,
+                claims_cls=BackchannelTokenClaims,
                 claims_options=claims_options,
             )
         except DecodeError:
@@ -90,11 +92,26 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
         # Header Parameter. The resource server MUST reject any JWT in which the value
         # of 'alg' is 'none'. The resource server MUST use the keys provided by the
         # authorization server.
+
+        header_encoded = token_string.split('.')[0]
+
+        # Decode the header (Base64Url decoding)
+        header_bytes = base64.urlsafe_b64decode(header_encoded + '==')
+        header = json.loads(header_bytes)
+
+        claims_cls=OpenSlidesAccessTokenClaims
+
+        # Check if the token is a backchannel token
+        if header.get('b2b') is '1':
+            claims_options = {
+            }
+            claims_cls=BackchannelTokenClaims
+
         try:
             return jwt.decode(
                 token_string,
                 key=jwks,
-                claims_cls=OpenSlidesAccessTokenClaims,
+                claims_cls=claims_cls,
                 claims_options=claims_options,
             )
         except DecodeError:

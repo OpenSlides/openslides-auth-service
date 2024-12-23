@@ -4,7 +4,7 @@ from .constants import ANONYMOUS_USER
 from .exceptions import AuthorizationException
 from .http_handler import HttpHandler
 from .session_handler import SessionHandler
-from .token_validator import JWTBearerOpenSlidesTokenValidator
+from .token_validator import JWTBearerOpenSlidesTokenValidator, ISSUER_REAL, ISSUER_INTERNAL
 
 
 class AuthHandler:
@@ -21,7 +21,7 @@ class AuthHandler:
         self.debug_fn = debug_fn
         self.http_handler = HttpHandler(debug_fn)
         self.session_handler = SessionHandler(debug_fn)
-        self.validator = JWTBearerOpenSlidesTokenValidator(self.session_handler, debug_fn)
+        self.validator = JWTBearerOpenSlidesTokenValidator(self.session_handler, ISSUER_REAL, ISSUER_INTERNAL, 'os')
 
     def authenticate(
         self, access_token: Optional[str]

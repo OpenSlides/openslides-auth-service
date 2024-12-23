@@ -35,7 +35,7 @@ public class OpenSlidesEmailTemplateProviderIT extends IntegrationTestBase {
                         .withBody("{ \"message\": \"Hello from WireMock\" }")));
 
         String loginUrl = KeycloakAuthUrlGenerator.generate("os", "os-ui", proxySettings.keycloakUrl());
-        new KeycloakPage(proxySettings.keycloakUrl()).triggerAccountPasswordReset(loginUrl, "admin@localhost");
+        new KeycloakPage(proxySettings.keycloakUrl(), realmName, clientId).triggerAccountPasswordReset(loginUrl, "admin@localhost");
         List<LoggedRequest> requests = backendMock.findAllUnmatchedRequests();
         assertThat(requests).hasSize(1);
     }

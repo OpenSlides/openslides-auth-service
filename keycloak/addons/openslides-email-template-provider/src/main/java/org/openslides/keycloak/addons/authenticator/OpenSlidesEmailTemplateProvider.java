@@ -17,8 +17,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.openslides.keycloak.addons.OpenSlidesActionClient;
-import org.openslides.keycloak.addons.action.UserForgotPasswordAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +141,7 @@ public class OpenSlidesEmailTemplateProvider implements EmailTemplateProvider {
         final var actionUrl = session.getClient().getAttribute("openslides.action.url");
 
         if (actionUrl != null && !actionUrl.isEmpty()) {
-            new OpenSlidesActionClient(actionUrl).execute(new UserForgotPasswordAction(), new UserForgotPasswordAction.Request(link, expirationInMinutes, user.getEmail()));
+//            new OpenSlidesActionClient(actionUrl).execute(new UserForgotPasswordAction(), new UserForgotPasswordActionRequest(link, expirationInMinutes, user.getEmail()));
         }
     }
 

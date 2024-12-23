@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.keycloak.admin.client.Keycloak;
 import org.openslides.keycloak.addons.IntegrationTestBase;
+import org.openslides.keycloak.addons.KeycloakAuthUrlGenerator;
 import org.openslides.keycloak.addons.authenticator.models.EmailItem;
 import org.openslides.keycloak.addons.authenticator.models.MailHogResponse;
-import org.openslides.keycloak.addons.authenticator.snippets.KeycloakAuthUrlGenerator;
 import org.openslides.keycloak.addons.util.KeycloakPage;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -52,7 +52,7 @@ public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
         this.backend = runner.createContainer("backend");
         backend.start();
 
-        setupProxyAndConfigureClient(runner);
+        setupProxyAndConfigureClient();
         setKeycloakLoginTheme(DEFAULT_KEYCLOAK_THEME, "os-ui", "os");
     }
 
@@ -74,7 +74,7 @@ public class OpenSlidesEmailTemplateProviderFullIT extends IntegrationTestBase {
     @Test
     public void testProviderFunctionality() {
         String loginUrl = KeycloakAuthUrlGenerator.generate("os", "os-ui", proxySettings.keycloakUrl());
-        new KeycloakPage("https://localhost:8000/idp/").triggerAccountPasswordReset(loginUrl, "admin@localhost");
+        new KeycloakPage("https://localhost:8000/idp/", "os", "os-ui").triggerAccountPasswordReset(loginUrl, "admin@localhost");
         checkEmailSent();
     }
 

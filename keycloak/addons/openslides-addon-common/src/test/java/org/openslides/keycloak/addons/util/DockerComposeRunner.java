@@ -73,7 +73,7 @@ public class DockerComposeRunner {
     }
 
     public GenericContainer<?> createWireMockContainer(String networkAlias, int port) {
-        return new GenericContainer<>("wiremock/wiremock:latest")
+        return new GenericContainer<>("wiremock/wiremock:3.9.2")
                 .withNetwork(network)
                 .withNetworkAliases(networkAlias)
                 .withExposedPorts(port)

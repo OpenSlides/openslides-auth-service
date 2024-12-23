@@ -17,7 +17,6 @@ repositories {
 subprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
-    apply(plugin = "com.github.johnrengelman.shadow")
 
     repositories {
         mavenCentral()
@@ -52,6 +51,8 @@ subprojects {
     val trustStorePassword = "changeit"
 
     tasks.register("createTrustStore") {
+        apply(plugin = "com.github.johnrengelman.shadow")
+
         val trustStorePath = layout.buildDirectory.file("proxy-truststore.jks").get().asFile.path
         val certFile = rootProject.projectDir.resolve("../../../openslides-proxy/certs/cert.pem").absolutePath
         val alias = "proxy"
@@ -114,6 +115,7 @@ subprojects {
                 archiveClassifier.set("")
                 dependencies {
                     include(dependency("com.nimbusds:nimbus-jose-jwt"))
+                    include(project(":openslides-addon-common"))
                 }
             }
 

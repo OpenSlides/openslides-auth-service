@@ -1,10 +1,28 @@
 package org.openslides.keycloak.addons.action;
 
-public interface OsAction<REQ, RESP> {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    String getActionName();
+public abstract class OsAction<PAYLOAD, RESP> {
 
-    Class<REQ> getRequestType();
+    private final String action;
+    private final PAYLOAD payload;
 
-    Class<RESP> getResponseType();
+    @JsonCreator
+    public OsAction(@JsonProperty("action") String action, @JsonProperty("data") PAYLOAD payload) {
+        this.action = action;
+        this.payload = payload;
+    }
+
+    @JsonProperty
+    public String getAction() {
+        return action;
+    }
+
+    @JsonProperty("data")
+    public PAYLOAD getPayload() {
+        return payload;
+    }
+
+    public abstract Class<RESP> getResponseType();
 }

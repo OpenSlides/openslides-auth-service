@@ -1,0 +1,94 @@
+alias: "openslides-browser"
+description: "Browser based authentication for OpenSlides"
+providerId: "basic-flow"
+executions:
+  - requirement: "ALTERNATIVE"
+    priority: 10
+    flow:
+      alias: "Cookie subflow"
+      description: "Flow to determine if the user is already authenticated"
+      providerId: "basic-flow"
+      executions:
+      - authenticator: "auth-cookie"
+        requirement: "REQUIRED"
+        priority: 10
+      - authenticator: "openslides-authenticator"
+        requirement: "REQUIRED"
+        priority: 20
+  - requirement: "DISABLED"
+    priority: 20
+    flow:
+      alias: "SPNEGO subflow"
+      description: "Flow to determine if the user is already authenticated via SPNEGO"
+      providerId: "basic-flow"
+      executions:
+        - authenticator: "auth-spnego"
+          requirement: "REQUIRED"
+          priority: 10
+        - authenticator: "openslides-authenticator"
+          requirement: "REQUIRED"
+          priority: 20
+  - requirement: "ALTERNATIVE"
+    priority: 25
+    flow:
+      alias: "Identity Provider Redirector"
+      description: "Flow to redirect to the identity provider"
+      providerId: "basic-flow"
+      executions:
+        - authenticator: "identity-provider-redirector"
+          requirement: "REQUIRED"
+          priority: 25
+        - authenticator: "openslides-authenticator"
+          requirement: "REQUIRED"
+          priority: 20
+  - requirement: "ALTERNATIVE"
+    priority: 26
+    flow:
+      alias: "Organization"
+      description: null
+      providerId: "basic-flow"
+      executions:
+        - authenticator: null
+          requirement: "CONDITIONAL"
+          priority: 10
+          flow:
+            alias: "Browser - Conditional Organization"
+            description: "Flow to determine if the organization identity-first login is\
+          \ to be used"
+            providerId: "basic-flow"
+            executions:
+              - authenticator: "conditional-user-configured"
+                requirement: "REQUIRED"
+                priority: 10
+              - authenticator: "organization"
+                requirement: "ALTERNATIVE"
+                priority: 20
+        - authenticator: "openslides-authenticator"
+          requirement: "REQUIRED"
+          priority: 20
+  - requirement: "ALTERNATIVE"
+    priority: 30
+    flow:
+      alias: "forms"
+      description: "Username, password, otp and other auth forms."
+      providerId: "basic-flow"
+      executions:
+        - authenticator: "auth-username-password-form"
+          requirement: "REQUIRED"
+          priority: 10
+        - requirement: "CONDITIONAL"
+          priority: 20
+          flow:
+            alias: "Browser - Conditional OTP"
+            description: "Flow to determine if the OTP is required for the authentication"
+            providerId: "basic-flow"
+            executions:
+              - authenticator: "conditional-user-configured"
+                requirement: "REQUIRED"
+                priority: 10
+              - authenticator: "auth-otp-form"
+                requirement: "REQUIRED"
+                priority: 20
+        - authenticator: "openslides-authenticator"
+          requirement: "REQUIRED"
+          priority: 20

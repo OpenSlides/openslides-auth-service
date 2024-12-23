@@ -1,5 +1,5 @@
 # Stage 1: Build addon
-FROM gradle:8.8.0-jdk17 AS emailaddon
+FROM gradle:8.8.0-jdk17 AS addons
 WORKDIR /app
 #
 ## Copy Gradle project files
@@ -7,27 +7,29 @@ COPY addons/openslides-email-template-provider/build.gradle.kts /app/
 COPY addons/openslides-email-template-provider/src /app/openslides-email-template-provider/src
 COPY addons/openslides-authenticator/build.gradle.kts /app/
 COPY addons/openslides-authenticator/src /app/openslides-authenticator/src
+COPY addons/openslides-addon-common/build.gradle.kts /app/openslides-addon-common/build.gradle.kts
+COPY addons/openslides-addon-common/src /app/openslides-addon-common/src
 COPY addons/build.gradle.kts  addons/settings.gradle.kts /app/
 
 # Build the project
-RUN gradle shadowJar --no-daemon
+RUN gradle shadowJar bootJar --no-daemon
 
 FROM quay.io/keycloak/keycloak:26.0.2 AS base
 
 # 2. configure keycloak
 FROM registry.access.redhat.com/ubi9/ubi:latest AS configurer
 # Install Python and Java
-RUN dnf install -y python3 python3-pip java-21-openjdk-headless glibc-langpack-en findutils procps-ng && \
+RUN dnf install -y java-21-openjdk-headless glibc-langpack-en findutils procps-ng && \
     dnf clean all
 
-RUN pip install --no-cache-dir python-keycloak
 ADD configure_keycloak.py /app/configure_keycloak.py
 
 COPY --from=base /opt/keycloak /opt/keycloak
+COPY --from=addons /app/openslides-addon-common/build/libs/openslides-addon-common-app.jar /openslides-addon-common.jar
 
 ENV KEYCLOAK_URL=http://localhost:8080/
-ENV KEYCLOAK_ADMIN=admin
-ENV KEYCLOAK_ADMIN_PASSWORD=admin
+ENV KC_BOOTSTRAP_ADMIN_USERNAME=admin
+ENV KC_BOOTSTRAP_ADMIN_PASSWORD=admin
 
 USER 1000
 
@@ -44,15 +46,16 @@ RUN /opt/keycloak/bin/kc.sh start-dev & \
             sleep 1; \
         done; \
     ) && \
-    python3 /app/configure_keycloak.py && \
+    java -jar /openslides-addon-common.jar && \
     kill $(pidof java)
 
 # 3. Final image
 FROM quay.io/keycloak/keycloak:26.0.2
-COPY --from=configurer /opt/keycloak /opt/keycloak
 
-COPY --from=emailaddon /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
-COPY --from=emailaddon /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
+COPY --from=configurer /opt/keycloak /opt/keycloak
+COPY --from=addons /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
+
 ##
 ### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 ##

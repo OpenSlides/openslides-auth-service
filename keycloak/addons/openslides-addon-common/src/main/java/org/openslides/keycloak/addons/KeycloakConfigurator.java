@@ -1,19 +1,19 @@
 package org.openslides.keycloak.addons;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.AuthenticationManagementResource;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
-import org.keycloak.representations.idm.AuthenticationExecutionRepresentation;
-import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
+import org.keycloak.representations.idm.RealmEventsConfigRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,10 +21,10 @@ public class KeycloakConfigurator {
 
     private final Keycloak keycloak;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String serverUrl = System.getenv("KEYCLOAK_URL");
-        String username = System.getenv("KEYCLOAK_ADMIN");
-        String password = System.getenv("KEYCLOAK_ADMIN_PASSWORD");
+        String username = System.getenv("KC_BOOTSTRAP_ADMIN_USERNAME");
+        String password = System.getenv("KC_BOOTSTRAP_ADMIN_PASSWORD");
         String realmName = "os";
         new KeycloakConfigurator(serverUrl, username, password).configureKeycloak(realmName);
     }
@@ -40,21 +40,34 @@ public class KeycloakConfigurator {
                 .build();
     }
 
-    public void configureKeycloak(String realmName) {
+    public void configureKeycloak(String realmName) throws IOException {
         createOrGetRealm(realmName);
         String clientScopeName = "os";
         String clientName = "os-ui";
         List<Map<String, Object>> protocolMappers = createProtocolMappers();
 
         configureAuthenticator(realmName);
+        createOrGetClientScope(realmName, clientScopeName, protocolMappers);
+        createOrGetClient(realmName, clientName, clientScopeName);
+        List<Map<String, Object>> users = List.of(
+                Map.of("username", "admin", "password", "admin"),
+                Map.of("username", "user", "password", "password")
+        );
+        createOrGetUser(realmName, users);
 
-//        createOrGetClientScope(realmName, clientScopeName, protocolMappers);
-//        createOrGetClient(realmName, clientName, clientScopeName);
-//        List<Map<String, Object>> users = List.of(
-//                Map.of("username", "admin", "password", "admin"),
-//                Map.of("username", "user", "password", "password")
-//        );
-//        createOrGetUser(realmName, users);
+        configureLogoutListener(realmName);
+    }
+
+    private void configureLogoutListener(String realmName) {
+        RealmEventsConfigRepresentation eventsConfig = keycloak.realm(realmName).getRealmEventsConfig();
+
+        final var listeners = eventsConfig.getEventsListeners();
+        listeners.add("openslides-logout-listener");
+        eventsConfig.setEventsListeners(eventsConfig.getEventsListeners());
+        eventsConfig.setEnabledEventTypes(eventsConfig.getEnabledEventTypes());
+        eventsConfig.setEventsEnabled(true);
+
+        keycloak.realm(realmName).updateRealmEventsConfig(eventsConfig);
     }
 
     private void createOrGetUser(String realmName, List<Map<String, Object>> users) {
@@ -109,82 +122,15 @@ public class KeycloakConfigurator {
         }
     }
 
-    private void configureAuthenticator(String realmName) {
-        final var flowAlias = "openslides-browser-flow";
+    private void configureAuthenticator(String realmName) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        NestedAuthFlowCreator.AuthFlowConfig config = mapper.readValue(NestedAuthFlowCreator.class.getResourceAsStream("/flow.yaml"), NestedAuthFlowCreator.AuthFlowConfig.class);
+        final var flowId = new NestedAuthFlowCreator(keycloak, "os").createFlowWithExecutions(config);
 
-        RealmResource realm = keycloak.realms().realm(realmName);
-        AuthenticationManagementResource realmFlows = realm.flows();
-
-        AuthenticationFlowRepresentation existingFlow = realmFlows.getFlows().stream()
-                .filter(f -> f.getAlias().equals(flowAlias))
-                .findFirst()
-                .orElse(null);
-        if(existingFlow != null) {
-            realmFlows.deleteFlow(existingFlow.getId());
-        }
-
-        realmFlows.copy("browser", Map.of("newName", flowAlias));
-
-        List<AuthenticationFlowRepresentation> flows = realmFlows.getFlows();
-        AuthenticationFlowRepresentation flow = flows.stream()
-                .filter(f -> f.getAlias().equals(flowAlias))
-                .findFirst()
-                .orElse(null);
-
-        List<AuthenticationExecutionInfoRepresentation> executions = realmFlows.getExecutions(flowAlias);
-        int maxPriority = executions.stream()
-                .mapToInt(AuthenticationExecutionInfoRepresentation::getPriority)
-                .max()
-                .orElse(0);
-
-        // convert each execution to a sub-flow
-        for(AuthenticationExecutionInfoRepresentation execution : executions) {
-            if(execution.getLevel() > 0) {
-                continue;
-            }
-            if(execution.getAuthenticationFlow() != null && execution.getAuthenticationFlow()) {
-
-            } else {
-                final var newFlow = new AuthenticationFlowRepresentation();
-                String newFlowAlias = "openslides-subflow-" + execution.getProviderId();
-                newFlow.setAlias(newFlowAlias);
-                newFlow.setTopLevel(false);
-                newFlow.setProviderId("basic-flow");
-                newFlow.setBuiltIn(false);
-                newFlow.setDescription("Sub-Flow for " + execution.getDescription());
-                final var response = realmFlows.createFlow(newFlow);
-//                newFlow.setAuthenticationExecutions(List.of(execution));
-
-                final var flowExecution = new AuthenticationExecutionRepresentation();
-                flowExecution.setPriority(execution.getPriority());
-                flowExecution.setFlowId("newFlowId");
-                flowExecution.setParentFlow(flowAlias);
-                flowExecution.setAuthenticatorFlow(true);
-                flowExecution.setRequirement(execution.getRequirement());
-                realmFlows.addExecution(flowExecution);
-                realmFlows.removeExecution(execution.getId());
-            }
-//            realmFlows.addExecutionFlow(flowAlias, Map.of(
-//                    // random alias
-//                    "alias", RandomStringUtils.randomAlphabetic(10),
-//                    "type", "subFlow",
-//                    "priority", execution.getPriority(),
-//                    "description", execution.getDescription() != null ? execution.getDescription() : ""
-//            ));
-        }
-
-        List<AuthenticationExecutionInfoRepresentation> executionsNew = realmFlows.getExecutions(flowAlias);
-        System.out.printf(executionsNew.toString());
-        final var authenticator = new AuthenticationExecutionRepresentation();
-        authenticator.setAuthenticator("openslides-authenticator");
-        authenticator.setRequirement("OPTIONAL");
-        authenticator.setPriority(maxPriority + 1);
-        authenticator.setParentFlow(flow.getId());
-        realmFlows.addExecution(authenticator);
-
-//        RealmRepresentation realmRepresentation = new RealmRepresentation();
-//        realmRepresentation.setBrowserFlow(flowAlias);
-//        realm.update(realmRepresentation);
+        final var realm = keycloak.realms().realm(realmName);
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setBrowserFlow("openslides-browser");
+        realm.update(realmRepresentation);
         System.out.println("Custom authenticator added to flow: openslides-browser-flow");
     }
 
@@ -201,7 +147,7 @@ public class KeycloakConfigurator {
             clientScope.setProtocol("openid-connect");
             final var response = keycloak.realms().realm(realmName).clientScopes().create(clientScope);
             // reponse.location contains something like https://localhost:8000/idp/admin/realms/os/client-scopes/bb3fefa8-e212-4ce0-afea-9e4021da989b
-            String clientScopeId = response.getLocation().getPath().substring(response.getLocation().getPath().lastIndexOf("/") + 1);
+            String clientScopeId = Utils.getObjectId(response);
             clientScope.setId(clientScopeId);
             System.out.println("Created client scope: " + clientScopeName);
         }
@@ -256,13 +202,6 @@ public class KeycloakConfigurator {
                         "access.token.claim", "true",
                         "jsonType.label", "String"
                 )),
-                createProtocolMapper("userid-mapper", "oidc-usermodel-attribute-mapper", Map.of(
-                        "user.attribute", "os-userid",
-                        "claim.name", "userId",
-                        "id.token.claim", "true",
-                        "access.token.claim", "true",
-                        "jsonType.label", "String"
-                )),
                 createProtocolMapper("username-mapper", "oidc-usermodel-property-mapper", Map.of(
                         "user.attribute", "username",
                         "claim.name", "username",
@@ -282,6 +221,18 @@ public class KeycloakConfigurator {
                         "claim.name", "lastName",
                         "id.token.claim", "true",
                         "access.token.claim", "true",
+                        "jsonType.label", "String"
+                )),
+                /*
+                lightweight.claim	"false"
+                access.tokenResponse.claim	"false"
+                 */
+                createProtocolMapper("openslides-user-id-mapper", "oidc-usersessionmodel-note-mapper", Map.of(
+                        "claim.name", "os_user_id",
+                        "user.session.note", Utils.SESSION_NOTE_OPENSLIDES_USER_ID,
+                        "id.token.claim", "true",
+                        "access.token.claim", "true",
+                        "userinfo.token.claim", "true",
                         "jsonType.label", "String"
                 ))
         );
@@ -305,9 +256,7 @@ public class KeycloakConfigurator {
             newClient.setAttributes(Map.of(
                     "login_theme", "os",
                     "openslides.action.url", "http://backend:9002/system/action/handle_request",
-                    "backchannel.logout.url", "http://backend:9002/system/action/logout",
-                    "post.logout.redirect.uris", "https://localhost:8000/*",
-                    "backchannel.logout.session.required", "true"
+                    "post.logout.redirect.uris", "https://localhost:8000/*"
             ));
             keycloak.realms().realm(realmName).clients().create(newClient);
             System.out.println("Created client: " + clientName);

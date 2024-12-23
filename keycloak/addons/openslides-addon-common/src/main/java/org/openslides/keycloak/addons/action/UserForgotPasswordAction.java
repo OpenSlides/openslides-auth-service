@@ -1,18 +1,23 @@
 package org.openslides.keycloak.addons.action;
 
-public class UserForgotPasswordAction implements OsAction<UserForgotPasswordActionRequest, UserForgotPasswordActionResponse> {
-    @Override
-    public String getActionName() {
-        return "user.send_invitation_email";
-    }
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    @Override
-    public Class<UserForgotPasswordActionRequest> getRequestType() {
-        return UserForgotPasswordActionRequest.class;
+import java.util.Optional;
+
+public class UserForgotPasswordAction extends OsAction<UserForgotPasswordAction.UserForgotPasswordActionRequestPayload, UserForgotPasswordAction.UserForgotPasswordActionResponse> {
+
+    public UserForgotPasswordAction(UserForgotPasswordActionRequestPayload payload) {
+        super("user.send_invitation_email", payload);
     }
 
     @Override
     public Class<UserForgotPasswordActionResponse> getResponseType() {
         return UserForgotPasswordActionResponse.class;
+    }
+
+    public static record UserForgotPasswordActionRequestPayload(Optional<Long> meetingId) {
+    }
+
+    public static record UserForgotPasswordActionResponse(@JsonProperty("id") Long userId, @JsonProperty("last_email_sent") Integer lastEmailSent) {
     }
 }

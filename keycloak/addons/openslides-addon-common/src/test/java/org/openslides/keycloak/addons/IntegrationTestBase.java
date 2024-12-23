@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class IntegrationTestBase {
         return keycloak;
     }
 
-    protected void configureKeycloakRealm(String realmName) {
+    protected void configureKeycloakRealm(String realmName) throws IOException {
         new KeycloakConfigurator(proxySettings.keycloakUrl(), "admin", "admin").configureKeycloak(realmName);
     }
 

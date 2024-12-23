@@ -24,14 +24,11 @@ class OpenSlidesAccessTokenClaims(JWTAccessTokenClaims):
     def validate_typ(self):
         validate_typ(self.header['typ'])
 
-class BackchannelLogoutTokenClaims(JWTClaims):
-    REGISTERED_CLAIMS = JWTClaims.REGISTERED_CLAIMS + [
-        SESSION_ID_PROPERTY,
-    ]
+class BackchannelTokenClaims(JWTClaims):
+    REGISTERED_CLAIMS = JWTClaims.REGISTERED_CLAIMS + []
 
     def validate(self, **kwargs):
         super().validate(**kwargs)
-        self._validate_claim_value(SESSION_ID_PROPERTY)
 
     def validate_typ(self):
         validate_typ(self.header['typ'])
