@@ -51,8 +51,6 @@ subprojects {
     val trustStorePassword = "changeit"
 
     tasks.register("createTrustStore") {
-        apply(plugin = "com.github.johnrengelman.shadow")
-
         val trustStorePath = layout.buildDirectory.file("proxy-truststore.jks").get().asFile.path
         val certFile = rootProject.projectDir.resolve("../../../openslides-proxy/certs/cert.pem").absolutePath
         val alias = "proxy"
@@ -80,6 +78,8 @@ subprojects {
 
 
     if (project.name != "openslides-addon-common") {
+        apply(plugin = "com.github.johnrengelman.shadow")
+
         dependencies {
             implementation(project(":openslides-addon-common"))
             testImplementation(project(path = ":openslides-addon-common", configuration = "tests"))
