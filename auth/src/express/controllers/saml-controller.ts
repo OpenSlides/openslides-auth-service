@@ -8,13 +8,18 @@ import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
+import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { SecretService } from '../../api/services/secret-service';
+import { UserService } from '../../api/services/user-service';
 import { Config } from '../../config';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as util from 'util';
 
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
@@ -36,6 +41,7 @@ export interface SamlSettings {
     saml_metadata_idp: string;
     saml_metadata_sp: string;
     saml_private_key: string;
+    saml_attr_mapping: object;
 }
 
 interface SamlBackendCall {
@@ -56,6 +62,9 @@ interface SamlHttpResponse {
     prefix: 'system/saml'
 })
 export class SamlController {
+    @Factory(UserService)
+    private _userHandler: UserHandler;
+
     @Factory(AuthService)
     private _authHandler: AuthHandler;
 
@@ -137,15 +146,40 @@ export class SamlController {
 
         const userId = await this.provisionUser(extract.attributes);
 
-        const ticket = await this._authHandler.doSamlLogin(userId);
+        const samlAttributeMapping = (await this.getSamlSettings()).saml_attr_mapping;
+        const user = await this._userHandler.getUserByUserId(userId);
+        // userId -1 means that the backend call by provisionUser was bad
+        // fe. malformed is_active and should result in the exception thrown by doSamlLogin
+        if (userId !== -1 && !user.is_active) {
+            res.set('Content-Type', 'text/html');
+            let fileContent = fs.readFileSync(path.join(__dirname, 'not_is_active.html'), 'utf8');
+            if (user.username.includes('mouse')) {
+                fileContent = util.format(fileContent, fs.readFileSync(path.join(__dirname, 'guardian.txt')));
+            } else {
+                fileContent = util.format(fileContent, '');
+            }
+            if ('is_active' in samlAttributeMapping) {
+                res.send(util.format(fileContent, '', ''));
+            } else {
+                res.send(
+                    util.format(
+                        fileContent,
+                        ' and the activity status is not being mapped by the SAML data',
+                        ' und der Aktivitätsstatus wird nicht aus den SAML Daten übernommen'
+                    )
+                );
+            }
+        } else {
+            const ticket = await this._authHandler.doSamlLogin(userId);
 
-        Logger.debug(`user: ${username} -- signs in via SAML`);
+            Logger.debug(`user: ${username} -- signs in via SAML`);
 
-        res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
-        res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
+            res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
+            res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
 
-        // Todo: Better way for redirect to frontend?
-        res.redirect('/');
+            // Todo: Better way for redirect to frontend?
+            res.redirect('/');
+        }
     }
 
     /**
@@ -183,7 +217,8 @@ export class SamlController {
                 'saml_enabled',
                 'saml_metadata_idp',
                 'saml_metadata_sp',
-                'saml_private_key'
+                'saml_private_key',
+                'saml_attr_mapping'
             ]);
         }
         return this._samlSettings;
