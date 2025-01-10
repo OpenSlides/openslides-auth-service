@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: os_authlib
+Version: 1.0.0
+Summary: Package for OS4 to provide auth functionalities
+Home-page: https://github.com/OpenSlides/openslides-auth-service/auth/libraries/pip-auth
+Author: GabrielInTheWorld
+Author-email: meyergabriel@live.de
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Dist: argon2-cffi==23.1.0
+Requires-Dist: ordered-set==4.1.0
+Requires-Dist: pyjwt==2.9.0
+Requires-Dist: redis==5.1.1
+Requires-Dist: requests==2.32.3
+Requires-Dist: simplejson==3.19.3
+Requires-Dist: authlib==1.3.1
+Requires-Dist: python-jose>=3.0.0
+
+# Pip package for authentication
