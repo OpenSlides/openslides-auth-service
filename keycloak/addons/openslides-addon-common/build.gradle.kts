@@ -32,21 +32,22 @@ tasks {
 }
 
 tasks.named<JavaExec>("run") {
-    dependsOn("createTrustStore")
+    mainClass.set("org.openslides.keycloak.addons.KeycloakConfigurator")
+    environment("KEYCLOAK_URL", "https://localhost:8000/idp/")
+    environment("KC_BOOTSTRAP_ADMIN_USERNAME", "admin")
+    environment("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin")
+}
+
+tasks.withType(JavaExec::class.java) {
+    dependsOn("createTrustStore", "classes")
+    classpath = sourceSets.main.get().runtimeClasspath
+
     systemProperty("javax.net.ssl.trustStore", layout.buildDirectory.file("proxy-truststore.jks").get().asFile.path)
     systemProperty("javax.net.ssl.trustStorePassword", "changeit")
-
-    environment("KEYCLOAK_URL", "https://localhost:8000/idp/")
-    environment("KEYCLOAK_ADMIN", "admin")
-    environment("KEYCLOAK_ADMIN_PASSWORD", "admin")
 }
 
 tasks.register<JavaExec>("runFlowExport") {
     mainClass = "org.openslides.keycloak.addons.NestedAuthFlowCreator"
-    classpath = sourceSets.main.get().runtimeClasspath
-    dependsOn("createTrustStore", "classes")
-    systemProperty("javax.net.ssl.trustStore", layout.buildDirectory.file("proxy-truststore.jks").get().asFile.path)
-    systemProperty("javax.net.ssl.trustStorePassword", "changeit")
 
     environment("KEYCLOAK_URL", "https://localhost:8000/idp/")
     environment("KEYCLOAK_ADMIN", "admin")

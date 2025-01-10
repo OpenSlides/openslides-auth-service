@@ -10,8 +10,19 @@ val versionTestContainers = "1.20.3"
 group = "org.openslides.keycloak.addons"
 version = "1.0.0"
 
+val plugins: Configuration by configurations.creating
+
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    plugins("io.phasetwo.keycloak:keycloak-magic-link:0.33")
+}
+
+tasks.register<Copy>("copyPlugins") {
+    from(plugins)
+    into(layout.buildDirectory.dir("libs"))
 }
 
 subprojects {

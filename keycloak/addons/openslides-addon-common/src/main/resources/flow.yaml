@@ -40,7 +40,7 @@ executions:
           priority: 25
         - authenticator: "openslides-authenticator"
           requirement: "REQUIRED"
-          priority: 20
+          priority: 30
   - requirement: "ALTERNATIVE"
     priority: 26
     flow:

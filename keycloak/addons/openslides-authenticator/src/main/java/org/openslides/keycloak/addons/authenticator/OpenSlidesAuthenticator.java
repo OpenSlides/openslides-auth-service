@@ -18,6 +18,10 @@ public class OpenSlidesAuthenticator implements Authenticator {
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         UserModel user = context.getUser();
+        String actionUrl = context.getAuthenticationSession().getClient().getAttribute("openslides.action.url");
+        if(actionUrl == null) {
+            return;
+        }
         try {
             final var response = new OpenSlidesActionClient(context.getSession(), new OpenSlidesActionClient.SessionData() {
                 @Override
@@ -48,7 +52,7 @@ public class OpenSlidesAuthenticator implements Authenticator {
 
         } catch (Exception e) {
             context.failure(AuthenticationFlowError.INTERNAL_ERROR,
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error").build());
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected exception").build());
         }
     }
 

@@ -29,6 +29,7 @@ import org.openslides.keycloak.addons.action.OsAction;
 import java.io.IOException;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
+import java.util.List;
 
 public class OpenSlidesActionClient {
 
@@ -56,7 +57,7 @@ public class OpenSlidesActionClient {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonPayload = objectMapper.writeValueAsString(osAction);
+            String jsonPayload = objectMapper.writeValueAsString(List.of(osAction));
 
             String encodedToken = createAccessToken();
 
@@ -68,7 +69,8 @@ public class OpenSlidesActionClient {
             try (CloseableHttpResponse response = httpClient.execute(post)) {
                 // Check the response and parse JSON
                 String responseString = EntityUtils.toString(response.getEntity());
-                return new HttpResponse<>(objectMapper.readValue(responseString, osAction.getResponseType()));
+                final var tree = objectMapper.readTree(responseString);
+                return new HttpResponse<>(objectMapper.treeToValue(tree.get("results").get(0).get(0), osAction.getResponseType()));
             }
         }
     }
@@ -89,6 +91,7 @@ public class OpenSlidesActionClient {
                 .issuer("https://example.com")
                 .subject("keycloak")
                 .claim("role", "admin")
+                .claim("userId", -1)
                 .expirationTime(new Date(System.currentTimeMillis() + 60 * 1000))
                 .build();
 

@@ -52,7 +52,7 @@ public class OpenSlidesKeycloakExtensionsIT extends IntegrationTestBase {
 
         KeycloakPage keycloakPage = new KeycloakPage(proxySettings.keycloakUrl(), realmName, clientId);
         final var loginClaims = keycloakPage.triggerLogin("admin", "admin");
-        assertThat(loginClaims.getClaim("os_user_id")).isEqualTo(userId.toString());
+        assertThat(loginClaims.getClaim("os_uid")).isEqualTo(userId.toString());
         List<ServeEvent> serveEvents = getAllServeEvents();
         assertThat(serveEvents).hasSize(1);
         LoggedRequest backchannelLoginRequest = serveEvents.get(0).getRequest();

@@ -2,12 +2,13 @@ package org.openslides.keycloak.addons.action;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Optional;
 
 public class UserForgotPasswordAction extends OsAction<UserForgotPasswordAction.UserForgotPasswordActionRequestPayload, UserForgotPasswordAction.UserForgotPasswordActionResponse> {
 
     public UserForgotPasswordAction(UserForgotPasswordActionRequestPayload payload) {
-        super("user.send_invitation_email", payload);
+        super("user.send_invitation_email", List.of(payload));
     }
 
     @Override

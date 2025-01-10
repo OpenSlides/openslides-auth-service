@@ -12,20 +12,19 @@ COPY addons/openslides-addon-common/src /app/openslides-addon-common/src
 COPY addons/build.gradle.kts  addons/settings.gradle.kts /app/
 
 # Build the project
-RUN gradle shadowJar bootJar --no-daemon
+RUN gradle shadowJar bootJar copyPlugins --no-daemon
 
 FROM quay.io/keycloak/keycloak:26.0.2 AS base
 
 # 2. configure keycloak
 FROM registry.access.redhat.com/ubi9/ubi:latest AS configurer
-# Install Python and Java
+# Install Java
 RUN dnf install -y java-21-openjdk-headless glibc-langpack-en findutils procps-ng && \
     dnf clean all
 
-ADD configure_keycloak.py /app/configure_keycloak.py
-
 COPY --from=base /opt/keycloak /opt/keycloak
 COPY --from=addons /app/openslides-addon-common/build/libs/openslides-addon-common-app.jar /openslides-addon-common.jar
+COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
 
 ENV KEYCLOAK_URL=http://localhost:8080/
 ENV KC_BOOTSTRAP_ADMIN_USERNAME=admin
@@ -47,6 +46,7 @@ RUN /opt/keycloak/bin/kc.sh start-dev & \
         done; \
     ) && \
     java -jar /openslides-addon-common.jar && \
+    sleep 4 && \
     kill $(pidof java)
 
 # 3. Final image
@@ -55,6 +55,7 @@ FROM quay.io/keycloak/keycloak:26.0.2
 COPY --from=configurer /opt/keycloak /opt/keycloak
 COPY --from=addons /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
 COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
+COPY --from=addons /app/build/libs/* /opt/keycloak/providers/
 
 ##
 ### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"

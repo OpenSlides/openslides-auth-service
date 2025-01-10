@@ -125,12 +125,9 @@ public class KeycloakConfigurator {
     private void configureAuthenticator(String realmName) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         NestedAuthFlowCreator.AuthFlowConfig config = mapper.readValue(NestedAuthFlowCreator.class.getResourceAsStream("/flow.yaml"), NestedAuthFlowCreator.AuthFlowConfig.class);
-        final var flowId = new NestedAuthFlowCreator(keycloak, "os").createFlowWithExecutions(config);
 
-        final var realm = keycloak.realms().realm(realmName);
-        RealmRepresentation realmRepresentation = new RealmRepresentation();
-        realmRepresentation.setBrowserFlow("openslides-browser");
-        realm.update(realmRepresentation);
+        new NestedAuthFlowCreator(keycloak, realmName).createFlowWithExecutions(config);
+
         System.out.println("Custom authenticator added to flow: openslides-browser-flow");
     }
 
@@ -228,12 +225,12 @@ public class KeycloakConfigurator {
                 access.tokenResponse.claim	"false"
                  */
                 createProtocolMapper("openslides-user-id-mapper", "oidc-usersessionmodel-note-mapper", Map.of(
-                        "claim.name", "os_user_id",
+                        "claim.name", "os_uid",
                         "user.session.note", Utils.SESSION_NOTE_OPENSLIDES_USER_ID,
                         "id.token.claim", "true",
                         "access.token.claim", "true",
                         "userinfo.token.claim", "true",
-                        "jsonType.label", "String"
+                        "jsonType.label", "long"
                 ))
         );
     }
@@ -249,7 +246,7 @@ public class KeycloakConfigurator {
             ClientRepresentation newClient = new ClientRepresentation();
             newClient.setClientId(clientName);
             newClient.setProtocol("openid-connect");
-            newClient.setDefaultClientScopes(List.of(clientScopeName, "profile", "email"));
+            newClient.setDefaultClientScopes(List.of(clientScopeName, "profile", "email", "offline_access"));
             newClient.setDirectAccessGrantsEnabled(true);
             newClient.setPublicClient(true);
             newClient.setRedirectUris(List.of("https://localhost:8000/*"));

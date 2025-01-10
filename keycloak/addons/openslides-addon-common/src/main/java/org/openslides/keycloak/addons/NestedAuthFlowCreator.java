@@ -6,16 +6,22 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.AuthenticationManagementResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.AuthenticationExecutionRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
+import org.keycloak.representations.idm.RealmRepresentation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class NestedAuthFlowCreator {
 
     private final Keycloak keycloak;
     private final AuthenticationManagementResource flowsResource;
+
+    private final String realmName;
 
     public static void main(String[] args) throws IOException {
         // Connect to Keycloak
@@ -37,6 +43,7 @@ public class NestedAuthFlowCreator {
 
     public NestedAuthFlowCreator(Keycloak keycloak, String realm) {
         this.keycloak = keycloak;
+        this.realmName = realm;
         this.flowsResource = keycloak.realm(realm).flows();
     }
 
@@ -70,11 +77,29 @@ public class NestedAuthFlowCreator {
      * @return The ID of the created flow
      */
     public String createFlowWithExecutions(AuthFlowConfig config) {
-        final var flowId = flowsResource.getFlows().stream().filter(f -> f.getAlias().equals(config.alias())).findFirst().map(AuthenticationFlowRepresentation::getId).orElse(null);
-        return createFlowWithExecutions(config, null);
+        Optional<AuthenticationFlowRepresentation> existingFlow = flowsResource.getFlows().stream().filter(f -> f.getAlias().equals(config.alias())).findFirst();
+
+        if(existingFlow.isPresent()) {
+            System.out.println("Flow already exists... deleting: " + config.alias());
+            setFlowInRealm("browser");
+            flowsResource.deleteFlow(existingFlow.get().getId());
+        }
+
+
+        String flowId = createFlowWithExecutions(config, null);
+        setFlowInRealm("openslides-browser");
+        return flowId;
+    }
+
+    private void setFlowInRealm(String browser) {
+        final var realmResource = keycloak.realms().realm(realmName);
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setBrowserFlow(browser);
+        realmResource.update(realmRepresentation);
     }
 
     private String createFlowWithExecutions(AuthFlowConfig config, String parentFlowId) {
+
         AuthenticationFlowRepresentation flow = new AuthenticationFlowRepresentation();
         flow.setAlias(config.alias()  + (parentFlowId != null ? "-" + RandomStringUtils.insecure().nextAlphabetic(10) : ""));
         flow.setDescription(config.description());

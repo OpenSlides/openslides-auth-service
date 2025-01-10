@@ -12,20 +12,31 @@ from authlib.oidc.discovery import OpenIDProviderMetadata, get_well_known_url
 from .claims import OpenSlidesAccessTokenClaims, BackchannelTokenClaims
 from .session_handler import SessionHandler
 
+def decode_base64url(segment: str) -> bytes:
+    pad = 4 - (len(segment) % 4)
+    print("adding padding", pad)
+    if pad < 4:
+        segment += "=" * pad
+
+    print("decoding", segment, len(segment))
+    return base64.b64decode(segment)
 
 class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
     # Cache the JWKS keys to avoid fetching them repeatedly
     jwk_set = None
 
-    def __init__(self, session_handler: SessionHandler, issuer, issuer_internal, resource_server, *args, **kwargs):
+    def __init__(self, session_handler: SessionHandler, issuer, issuer_internal,
+                 certs_uri,
+                 resource_server, *args, **kwargs):
+        self.certs_uri = certs_uri
         self.issuerInternal = issuer_internal
         self.session_handler = session_handler
         super().__init__(issuer, resource_server,*args, **kwargs)
 
     def get_jwks(self):
         if self.jwk_set is None:
-            oidc_configuration = OpenIDProviderMetadata(requests.get(get_well_known_url(self.issuerInternal, True)).json())
-            response = requests.get(oidc_configuration.get('jwks_uri'))
+            # oidc_configuration = OpenIDProviderMetadata(requests.get(get_well_known_url(self.issuerInternal, True)).json())
+            response = requests.get(self.certs_uri)
             response.raise_for_status()
             jwks_keys = response.json()
             self.jwk_set = JsonWebKey.import_key_set(jwks_keys)
@@ -77,8 +88,8 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
             'groups': {'essential': False},
             'roles': {'essential': False},
             'entitlements': {'essential': False},
-            'sid': {'essential': True, 'validate': self.validate_sid},
-            'os_uid': {'essential': True. self.validate_os_uid},
+            'sid': {'essential': True, 'validate': self.validate_sid },
+            'os_uid': {'essential': True, 'validate': self.validate_os_uid },
         }
         jwks = self.get_jwks()
 
@@ -96,7 +107,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
         header_encoded = token_string.split('.')[0]
 
         # Decode the header (Base64Url decoding)
-        header_bytes = base64.urlsafe_b64decode(header_encoded + '==')
+        header_bytes = decode_base64url(header_encoded)
         header = json.loads(header_bytes)
 
         claims_cls=OpenSlidesAccessTokenClaims
@@ -137,5 +148,7 @@ assert CLIENT_ID is not None, "OPENSLIDES_AUTH_CLIENT_ID must be set in environm
 
 ISSUER_INTERNAL = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}"
 
+CERTS_URI = f"{ISSUER_INTERNAL}/protocol/openid-connect/certs"
+
 def create_openslides_token_validator():
-    return JWTBearerOpenSlidesTokenValidator(SessionHandler(), ISSUER_REAL, ISSUER_INTERNAL, 'os')
+    return JWTBearerOpenSlidesTokenValidator(SessionHandler(), ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI,'os')

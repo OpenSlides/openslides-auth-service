@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.junit.jupiter.api.Test;
 import org.openslides.keycloak.addons.IntegrationTestBase;
-import org.openslides.keycloak.addons.authenticator.snippets.KeycloakAuthUrlGenerator;
+import org.openslides.keycloak.addons.KeycloakAuthUrlGenerator;
 import org.openslides.keycloak.addons.util.KeycloakPage;
 import org.testcontainers.containers.GenericContainer;
 
@@ -22,7 +22,7 @@ public class OpenSlidesEmailTemplateProviderIT extends IntegrationTestBase {
     public void sendEmailVerification_test() throws Exception {
 
         setupKeycloak();
-        setupProxyAndConfigureClient(runner);
+        setupProxyAndConfigureClient();
         setKeycloakLoginTheme(DEFAULT_KEYCLOAK_THEME, "os-ui", "os");
 
         GenericContainer<?> mockBackend = runner.createWireMockContainer("backend", 9002);
@@ -35,7 +35,7 @@ public class OpenSlidesEmailTemplateProviderIT extends IntegrationTestBase {
                         .withBody("{ \"message\": \"Hello from WireMock\" }")));
 
         String loginUrl = KeycloakAuthUrlGenerator.generate("os", "os-ui", proxySettings.keycloakUrl());
-        new KeycloakPage(proxySettings.keycloakUrl(), realmName, clientId).triggerAccountPasswordReset(loginUrl, "admin@localhost");
+        new KeycloakPage(proxySettings.keycloakUrl(), "os", "os-ui").triggerAccountPasswordReset(loginUrl, "admin@localhost");
         List<LoggedRequest> requests = backendMock.findAllUnmatchedRequests();
         assertThat(requests).hasSize(1);
     }
