@@ -1,15 +1,10 @@
 from typing import Any, Optional, Tuple
 
-import jwt
-
 from .constants import ANONYMOUS_USER
-from .database import Database
 from .exceptions import AuthorizationException
-from .hashing_handler import HashingHandler
 from .http_handler import HttpHandler
 from .session_handler import SessionHandler
-from .token_factory import TokenFactory
-from .validator import Validator
+from .token_validator import JWTBearerOpenSlidesTokenValidator, ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI
 
 
 class AuthHandler:
@@ -25,11 +20,8 @@ class AuthHandler:
     def __init__(self, debug_fn: Any = print) -> None:
         self.debug_fn = debug_fn
         self.http_handler = HttpHandler(debug_fn)
-        self.validator = Validator(self.http_handler, debug_fn)
-        self.token_factory = TokenFactory(self.http_handler, debug_fn)
-        self.hashing_handler = HashingHandler()
-        self.database = Database(AuthHandler.TOKEN_DB_KEY, debug_fn)
         self.session_handler = SessionHandler(debug_fn)
+        self.validator = JWTBearerOpenSlidesTokenValidator(self.session_handler, ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI, 'os')
 
     def authenticate(
         self, access_token: Optional[str]
@@ -42,7 +34,9 @@ class AuthHandler:
         if not access_token:
             self.debug_fn("No access_token")
             return ANONYMOUS_USER, None
-        return self.validator.verify(access_token)
+        token = access_token.split(" ")[1]
+        claims = self.validator.authenticate_token(token)
+        return claims.get("os_uid"), token
 
     def verify_logout_token(
             self, logout_token: Optional[str]
@@ -54,7 +48,7 @@ class AuthHandler:
         if not logout_token:
             self.debug_fn("No logout_token")
             raise AuthorizationException("No logout_token")
-        return self.validator.decode(logout_token, self.validator.key_set)
+        return self.validator.authenticate_logout_token(logout_token)
 
     def hash(self, to_hash: str) -> str:
         self.debug_fn(f"Hash {to_hash}: {self.hashing_handler.hash(to_hash)}")
@@ -62,13 +56,6 @@ class AuthHandler:
 
     def is_equal(self, to_hash: str, to_compare: str) -> bool:
         return self.hashing_handler.is_equal(to_hash, to_compare)
-
-    def verify_authorization_token(self, authorization_token: str) -> Tuple[int, str]:
-        if self.database.get(authorization_token):
-            raise AuthorizationException("Token is already used")
-        result = self.validator.verify_authorization_token(authorization_token)
-        self.database.set(authorization_token, True, True)
-        return result
 
     def clear_all_sessions(self, access_token: str, refresh_id: str) -> None:
         return self.session_handler.clear_all_sessions(access_token, refresh_id)

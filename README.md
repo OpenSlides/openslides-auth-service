@@ -230,13 +230,13 @@ To avoid a separate request to the auth-service, you can install a library for a
 
 Currently, only a pip-library is available:
 
-Local install using pip: `pip install -e "git+ssh://git@github.com/OpenSlides/openslides-auth-service#egg=authlib&subdirectory=auth/libraries/pip-auth"`
+Local install using pip: `pip install -e "git+ssh://git@github.com/OpenSlides/openslides-auth-service#egg=authlib&subdirectory=libraries/pip-auth"`
 
 The pip-library has the following API:
 
 ````python
 # The class `AuthHandler` and the constants `AUTHENTICATION_HEADER`, `AUTHORIZATION_HEADER`, `COOKIE_NAME` are exported
-from authlib import AuthHandler, AUTHENTICATION_HEADER, AUTHORIZATION_HEADER, COOKIE_NAME
+from os_authlib import AuthHandler, AUTHENTICATION_HEADER, AUTHORIZATION_HEADER, COOKIE_NAME
 
 authhandler = AuthHandler(debug_fn?) # Optional: a function to print debug information can be passed.
 access_token = requests.headers.get(HEADER_NAME, NONE)

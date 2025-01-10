@@ -1,7 +1,7 @@
 AUTHENTICATION_HEADER = "authentication"
 AUTHORIZATION_HEADER = "authorization"
 COOKIE_NAME = "refreshId"
-USER_ID_PROPERTY = "userId"
+USER_ID_PROPERTY = "os_uid"
 SESSION_ID_PROPERTY = "sid"
 ANONYMOUS_USER = 0
 
