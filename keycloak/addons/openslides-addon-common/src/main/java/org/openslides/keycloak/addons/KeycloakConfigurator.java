@@ -12,10 +12,15 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmEventsConfigRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.userprofile.config.UPAttribute;
+import org.keycloak.representations.userprofile.config.UPAttributePermissions;
+import org.keycloak.representations.userprofile.config.UPAttributeRequired;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class KeycloakConfigurator {
 
@@ -50,8 +55,9 @@ public class KeycloakConfigurator {
         createOrGetClientScope(realmName, clientScopeName, protocolMappers);
         createOrGetClient(realmName, clientName, clientScopeName);
         List<Map<String, Object>> users = List.of(
-                Map.of("username", "admin", "password", "admin"),
-                Map.of("username", "user", "password", "password")
+                Map.of("username", "admin", "password", "admin", "osUserId", "1"),
+                Map.of("username", "a", "password", "a", "osUserId", "2"),
+                Map.of("username", "b", "password", "jKwSLGCk", "osUserId", "3")
         );
         createOrGetUser(realmName, users);
 
@@ -82,6 +88,7 @@ public class KeycloakConfigurator {
             userRepresentation.setEmailVerified(true);
             userRepresentation.setFirstName(userData.get("username").toString());
             userRepresentation.setLastName("User");
+            userRepresentation.setAttributes(Map.of("osUserId", List.of(userData.get("osUserId").toString())));
             CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
             credentialRepresentation.setType("password");
             credentialRepresentation.setValue(userData.get("password").toString());
@@ -120,6 +127,20 @@ public class KeycloakConfigurator {
             keycloak.realms().create(realm);
             System.out.println("Created realm: " + realmName);
         }
+
+        final var realm = keycloak.realms().realm(realmName);
+        final var userProfile = realm.users().userProfile().getConfiguration();
+        final var username = userProfile.getAttribute("username");
+        username.setValidations(username.getValidations().entrySet().stream().filter(e -> !e.getKey().equals("length")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+        final var osUserId = new UPAttribute();
+        osUserId.setName("osUserId");
+        osUserId.setRequired(new UPAttributeRequired(Set.of("admin", "user"), null));
+        osUserId.addValidation("integer", Map.of("min", "1"));
+        osUserId.setPermissions(new UPAttributePermissions(Set.of("user", "admin"), Set.of("admin")));
+        userProfile.addOrReplaceAttribute(osUserId);
+
+        realm.users().userProfile().update(userProfile);
     }
 
     private void configureAuthenticator(String realmName) throws IOException {
@@ -224,12 +245,19 @@ public class KeycloakConfigurator {
                 lightweight.claim	"false"
                 access.tokenResponse.claim	"false"
                  */
-                createProtocolMapper("openslides-user-id-mapper", "oidc-usersessionmodel-note-mapper", Map.of(
+//                createProtocolMapper("openslides-user-id-mapper", "oidc-usersessionmodel-note-mapper", Map.of(
+//                        "claim.name", "os_uid",
+//                        "user.session.note", Utils.SESSION_NOTE_OPENSLIDES_USER_ID,
+//                        "id.token.claim", "true",
+//                        "access.token.claim", "true",
+//                        "userinfo.token.claim", "true",
+//                        "jsonType.label", "long"
+//                )),
+                createProtocolMapper("openslides-user-id-mapper", "oidc-usermodel-property-mapper", Map.of(
+                        "user.attribute", "osUserId",
                         "claim.name", "os_uid",
-                        "user.session.note", Utils.SESSION_NOTE_OPENSLIDES_USER_ID,
                         "id.token.claim", "true",
                         "access.token.claim", "true",
-                        "userinfo.token.claim", "true",
                         "jsonType.label", "long"
                 ))
         );
