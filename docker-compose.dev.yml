@@ -47,8 +47,6 @@ services:
     environment:
       - DATASTORE_DATABASE_HOST=postgres
       - OPENSLIDES_DEVELOPMENT=1
-      - COMMAND=create_initial_data
-      - DATASTORE_INITIAL_DATA_FILE=https://raw.githubusercontent.com/OpenSlides/openslides-backend/main/global/data/example-data.json
     depends_on:
       - postgres
       - redis
