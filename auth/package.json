@@ -40,7 +40,7 @@
         "@types/jest": "^29.5.14",
         "@types/jsonwebtoken": "^9.0.7",
         "@types/node": "^20.10.0",
-        "@types/pg": "^8.11.10",
+        "@types/pg": "^8.11.11",
         "@types/response-time": "^2.3.8",
         "@types/superagent": "^8.1.9",
         "@typescript-eslint/eslint-plugin": "^8.14.0",
