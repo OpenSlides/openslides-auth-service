@@ -1,0 +1,54 @@
+# Stage 1: Build addon
+FROM gradle:8.8.0-jdk17 AS addons
+WORKDIR /app
+#
+## Copy Gradle project files
+COPY addons/openslides-email-template-provider/build.gradle.kts /app/
+COPY addons/openslides-authenticator/build.gradle.kts /app/
+COPY addons/openslides-addon-common/build.gradle.kts /app/openslides-addon-common/build.gradle.kts
+COPY addons/build.gradle.kts  addons/settings.gradle.kts /app/
+
+RUN gradle --no-daemon dependencies
+
+COPY addons/openslides-addon-common/src /app/openslides-addon-common/src
+COPY addons/openslides-authenticator/src /app/openslides-authenticator/src
+COPY addons/openslides-email-template-provider/src /app/openslides-email-template-provider/src
+
+# Build the project
+RUN gradle bootJar shadowJar copyPlugins --no-daemon
+
+FROM quay.io/keycloak/keycloak:26.0.2 AS init
+
+WORKDIR /app
+ADD configure-keycloak.sh /app/configure-keycloak.sh
+USER root
+RUN chmod +x /app/configure-keycloak.sh
+USER keycloak
+COPY --from=addons /app/openslides-addon-common/build/libs/openslides-addon-common-app.jar /openslides-addon-common.jar
+
+# Run the application
+ENTRYPOINT ["/app/configure-keycloak.sh"]
+
+# 3. Final image
+FROM quay.io/keycloak/keycloak:26.0.2
+
+#COPY --from=addons /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
+#COPY --from=addons /app/build/libs/* /opt/keycloak/providers/
+
+##
+### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+##
+ENV KEYCLOAK_HOSTNAME=https://localhost:8000/idp/
+ENV KEYCLOAK_HTTP_RELATIVE_PATH=/idp/
+##
+ADD themes/os /opt/keycloak/themes/os
+##
+### Set the environment variable to enable the custom email template provider
+ENTRYPOINT []
+COPY --chown=keycloak:keycloak start-keycloak.sh /opt/keycloak/start-keycloak.sh
+RUN chmod +x /opt/keycloak/start-keycloak.sh
+
+#CMD /opt/keycloak/bin/kc.sh start-dev --verbose --http-relative-path $KEYCLOAK_HTTP_RELATIVE_PATH --proxy-headers xforwarded --hostname $KEYCLOAK_HOSTNAME --hostname-admin $KEYCLOAK_HOSTNAME --spi-email-template-provider=openslides-email-template-provider --spi-email-template-openslides-email-template-provider-enabled=true
+# CMD with JSON arguments
+CMD ["/opt/keycloak/start-keycloak.sh"]
