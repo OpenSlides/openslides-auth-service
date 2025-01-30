@@ -1,6 +1,7 @@
 package org.openslides.keycloak.addons;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -25,6 +26,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.openslides.keycloak.addons.action.HttpResponse;
 import org.openslides.keycloak.addons.action.OsAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.interfaces.RSAPrivateKey;
@@ -32,6 +35,8 @@ import java.util.Date;
 import java.util.List;
 
 public class OpenSlidesActionClient {
+
+    private static final Logger log = LoggerFactory.getLogger(OpenSlidesActionClient.class);
 
     private final KeycloakSession keycloakSession;
     private final SessionData session;
@@ -70,7 +75,11 @@ public class OpenSlidesActionClient {
                 // Check the response and parse JSON
                 String responseString = EntityUtils.toString(response.getEntity());
                 final var tree = objectMapper.readTree(responseString);
-                return new HttpResponse<>(objectMapper.treeToValue(tree.get("results").get(0).get(0), osAction.getResponseType()));
+                if(tree.get("results").isEmpty() || tree.get("results").get(0).isEmpty() || tree.get("results").get(0).get(0) == null) {
+                    log.error("Error in action response: {}", responseString);
+                }
+                JsonNode responseValue = tree.get("results").get(0).get(0);
+                return new HttpResponse<>(objectMapper.treeToValue(responseValue, osAction.getResponseType()));
             }
         }
     }
