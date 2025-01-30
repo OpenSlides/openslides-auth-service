@@ -4,58 +4,35 @@ WORKDIR /app
 #
 ## Copy Gradle project files
 COPY addons/openslides-email-template-provider/build.gradle.kts /app/
-COPY addons/openslides-email-template-provider/src /app/openslides-email-template-provider/src
 COPY addons/openslides-authenticator/build.gradle.kts /app/
-COPY addons/openslides-authenticator/src /app/openslides-authenticator/src
 COPY addons/openslides-addon-common/build.gradle.kts /app/openslides-addon-common/build.gradle.kts
-COPY addons/openslides-addon-common/src /app/openslides-addon-common/src
 COPY addons/build.gradle.kts  addons/settings.gradle.kts /app/
 
+RUN gradle --no-daemon dependencies
+
+COPY addons/openslides-addon-common/src /app/openslides-addon-common/src
+COPY addons/openslides-authenticator/src /app/openslides-authenticator/src
+COPY addons/openslides-email-template-provider/src /app/openslides-email-template-provider/src
+
 # Build the project
-RUN gradle shadowJar bootJar copyPlugins --no-daemon
+RUN gradle bootJar shadowJar copyPlugins --no-daemon
 
-FROM quay.io/keycloak/keycloak:26.0.2 AS base
+FROM amazoncorretto:17-al2023-headless AS init
 
-# 2. configure keycloak
-FROM registry.access.redhat.com/ubi9/ubi:latest AS configurer
-# Install Java
-RUN dnf install -y java-21-openjdk-headless glibc-langpack-en findutils procps-ng && \
-    dnf clean all
-
-COPY --from=base /opt/keycloak /opt/keycloak
+WORKDIR /app
+ADD configure-keycloak.sh /app/configure-keycloak.sh
+RUN chmod +x /app/configure-keycloak.sh
 COPY --from=addons /app/openslides-addon-common/build/libs/openslides-addon-common-app.jar /openslides-addon-common.jar
-COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
 
-ENV KEYCLOAK_URL=http://localhost:8080/
-ENV KC_BOOTSTRAP_ADMIN_USERNAME=admin
-ENV KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-
-USER 1000
-
-RUN /opt/keycloak/bin/kc.sh start-dev & \
-    ( \
-        i=0; \
-        until curl -sf http://localhost:8080/realms/master; do \
-            i=$((i+1)); \
-            if [ $i -ge 30 ]; then \
-                echo "Keycloak did not start in time"; \
-                exit 1; \
-            fi; \
-            echo "Waiting for Keycloak to be ready..."; \
-            sleep 1; \
-        done; \
-    ) && \
-    java -jar /openslides-addon-common.jar && \
-    sleep 4 && \
-    kill $(pidof java)
+# Run the application
+ENTRYPOINT ["/app/configure-keycloak.sh"]
 
 # 3. Final image
 FROM quay.io/keycloak/keycloak:26.0.2
 
-COPY --from=configurer /opt/keycloak /opt/keycloak
-COPY --from=addons /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
+#COPY --from=addons /app/openslides-email-template-provider/build/libs/openslides-email-template-provider.jar /opt/keycloak/providers/openslides-email-template-provider.jar
 COPY --from=addons /app/openslides-authenticator/build/libs/openslides-authenticator.jar /opt/keycloak/providers/openslides-authenticator.jar
-COPY --from=addons /app/build/libs/* /opt/keycloak/providers/
+#COPY --from=addons /app/build/libs/* /opt/keycloak/providers/
 
 ##
 ### - JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
@@ -67,4 +44,9 @@ ADD themes/os /opt/keycloak/themes/os
 ##
 ### Set the environment variable to enable the custom email template provider
 ENTRYPOINT []
-CMD /opt/keycloak/bin/kc.sh start-dev --verbose --http-relative-path $KEYCLOAK_HTTP_RELATIVE_PATH --proxy-headers xforwarded --hostname $KEYCLOAK_HOSTNAME --hostname-admin $KEYCLOAK_HOSTNAME --spi-email-template-provider=openslides-email-template-provider --spi-email-template-openslides-email-template-provider-enabled=true
+COPY --chown=keycloak:keycloak start-keycloak.sh /opt/keycloak/start-keycloak.sh
+RUN chmod +x /opt/keycloak/start-keycloak.sh
+
+#CMD /opt/keycloak/bin/kc.sh start-dev --verbose --http-relative-path $KEYCLOAK_HTTP_RELATIVE_PATH --proxy-headers xforwarded --hostname $KEYCLOAK_HOSTNAME --hostname-admin $KEYCLOAK_HOSTNAME --spi-email-template-provider=openslides-email-template-provider --spi-email-template-openslides-email-template-provider-enabled=true
+# CMD with JSON arguments
+CMD ["/opt/keycloak/start-keycloak.sh"]

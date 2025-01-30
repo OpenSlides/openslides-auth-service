@@ -67,7 +67,7 @@ public class IntegrationTestBase {
     }
 
     protected void configureKeycloakRealm(String realmName) throws IOException {
-        new KeycloakConfigurator(proxySettings.keycloakUrl(), "admin", "admin").configureKeycloak(realmName);
+        new KeycloakConfigurator(proxySettings.keycloakUrl(), "admin", "admin").configureKeycloak(realmName, clientId);
     }
 
     @AfterAll

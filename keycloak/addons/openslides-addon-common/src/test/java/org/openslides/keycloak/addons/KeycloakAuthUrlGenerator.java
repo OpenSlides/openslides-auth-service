@@ -11,7 +11,7 @@ public class KeycloakAuthUrlGenerator {
         try {
             String redirectUri = "https://localhost:8000/";
             String responseType = "code";
-            String scopes = "openid profile email";
+            String scopes = "openid profile email os";
 
             String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8.toString());
             String encodedScopes = URLEncoder.encode(scopes, StandardCharsets.UTF_8.toString());

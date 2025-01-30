@@ -48,7 +48,7 @@ public class OpenSlidesKeycloakExtensionsIT extends IntegrationTestBase {
         stubFor(post(urlPathEqualTo("/system/action/handle_request"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(mapper.writeValueAsString(new BackchannelLoginAction.BackchannelLoginActionResponse(userId)))));
+                        .withBody(mapper.writeValueAsString(new BackchannelLoginAction.BackchannelLoginActionResponse()))));
 
         KeycloakPage keycloakPage = new KeycloakPage(proxySettings.keycloakUrl(), realmName, clientId);
         final var loginClaims = keycloakPage.triggerLogin("admin", "admin");

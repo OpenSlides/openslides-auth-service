@@ -1,25 +1,23 @@
 package org.openslides.keycloak.addons.authenticator;
 
+import jakarta.ws.rs.core.Response;
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.authentication.AuthenticationFlowError;
-
-import jakarta.ws.rs.core.Response;
 import org.openslides.keycloak.addons.OpenSlidesActionClient;
-import org.openslides.keycloak.addons.Utils;
 import org.openslides.keycloak.addons.action.BackchannelLoginAction;
 
-public class OpenSlidesAuthenticator implements Authenticator {
+public class OpenSlidesBackchannelLogin implements Authenticator {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         UserModel user = context.getUser();
         String actionUrl = context.getAuthenticationSession().getClient().getAttribute("openslides.action.url");
-        if(actionUrl == null) {
+        if (actionUrl == null) {
             return;
         }
         try {
@@ -33,24 +31,17 @@ public class OpenSlidesAuthenticator implements Authenticator {
                 public String getRealmName() {
                     return context.getRealm().getName();
                 }
-            }).execute(new BackchannelLoginAction(new BackchannelLoginAction.BackchannelLoginActionRequestPayload(user.getId())));
+            }).execute(new BackchannelLoginAction(new BackchannelLoginAction.BackchannelLoginActionRequestPayload(Long.valueOf(user.getFirstAttribute("osUserId")))));
 
-            if(response == null || response.resp() == null) {
+            if (response == null || response.resp() == null) {
                 context.failure(AuthenticationFlowError.INTERNAL_ERROR,
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("OpenSlides backend cannot be reached").build());
                 return;
             }
-            Long userId = response.resp().userId();
-            if(userId == null) {
-                context.failure(AuthenticationFlowError.INTERNAL_ERROR,
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error").build());
-                return;
-            }
-            context.getAuthenticationSession().setUserSessionNote(Utils.SESSION_NOTE_OPENSLIDES_USER_ID, userId.toString());
-
             context.success();
 
         } catch (Exception e) {
+            e.printStackTrace();
             context.failure(AuthenticationFlowError.INTERNAL_ERROR,
                     Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected exception").build());
         }

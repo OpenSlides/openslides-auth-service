@@ -12,7 +12,7 @@ executions:
       - authenticator: "auth-cookie"
         requirement: "REQUIRED"
         priority: 10
-      - authenticator: "openslides-authenticator"
+      - authenticator: "openslides-backchannel-login"
         requirement: "REQUIRED"
         priority: 20
   - requirement: "DISABLED"
@@ -25,7 +25,7 @@ executions:
         - authenticator: "auth-spnego"
           requirement: "REQUIRED"
           priority: 10
-        - authenticator: "openslides-authenticator"
+        - authenticator: "openslides-backchannel-login"
           requirement: "REQUIRED"
           priority: 20
   - requirement: "ALTERNATIVE"
@@ -38,7 +38,7 @@ executions:
         - authenticator: "identity-provider-redirector"
           requirement: "REQUIRED"
           priority: 25
-        - authenticator: "openslides-authenticator"
+        - authenticator: "openslides-backchannel-login"
           requirement: "REQUIRED"
           priority: 30
   - requirement: "ALTERNATIVE"
@@ -63,7 +63,7 @@ executions:
               - authenticator: "organization"
                 requirement: "ALTERNATIVE"
                 priority: 20
-        - authenticator: "openslides-authenticator"
+        - authenticator: "openslides-backchannel-login"
           requirement: "REQUIRED"
           priority: 20
   - requirement: "ALTERNATIVE"
@@ -89,6 +89,6 @@ executions:
               - authenticator: "auth-otp-form"
                 requirement: "REQUIRED"
                 priority: 20
-        - authenticator: "openslides-authenticator"
+        - authenticator: "openslides-backchannel-login"
           requirement: "REQUIRED"
           priority: 20

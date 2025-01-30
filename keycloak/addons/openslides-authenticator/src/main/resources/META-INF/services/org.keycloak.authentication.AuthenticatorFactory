@@ -1,1 +1,1 @@
-org.openslides.keycloak.addons.authenticator.OpenSlidesAuthenticatorFactory
+org.openslides.keycloak.addons.authenticator.OpenSlidesBackchannelLoginFactory

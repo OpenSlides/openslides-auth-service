@@ -1,22 +1,22 @@
 package org.openslides.keycloak.addons.authenticator;
 
 import org.keycloak.Config;
+import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
 
-public class OpenSlidesAuthenticatorFactory implements AuthenticatorFactory {
+public class OpenSlidesBackchannelLoginFactory implements AuthenticatorFactory {
 
-    public static final String PROVIDER_ID = "openslides-authenticator";
+    public static final String PROVIDER_ID = "openslides-backchannel-login";
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new OpenSlidesAuthenticator();
+        return new OpenSlidesBackchannelLogin();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class OpenSlidesAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getDisplayType() {
-        return "OpenSlides Authenticator";
+        return "OpenSlides Backchannel Login";
     }
 
     @Override
@@ -48,7 +48,7 @@ public class OpenSlidesAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getHelpText() {
-        return "A authenticator for logging into OpenSlides.";
+        return "Makes backchannel login requests...";
     }
 
     @Override

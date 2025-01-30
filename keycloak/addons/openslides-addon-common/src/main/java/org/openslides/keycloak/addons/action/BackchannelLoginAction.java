@@ -16,10 +16,10 @@ public class BackchannelLoginAction extends OsAction<BackchannelLoginAction.Back
         return BackchannelLoginActionResponse.class;
     }
 
-    public record BackchannelLoginActionRequestPayload(@JsonProperty("idp_id") String idpId) {
+    public record BackchannelLoginActionRequestPayload(@JsonProperty("os_uid") Long osUserId) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record BackchannelLoginActionResponse(@JsonProperty("id") Long userId) {
+    public record BackchannelLoginActionResponse() {
     }
 }

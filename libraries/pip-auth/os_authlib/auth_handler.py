@@ -1,10 +1,12 @@
+import logging
 from typing import Any, Optional, Tuple
 
 from .constants import ANONYMOUS_USER
 from .exceptions import AuthorizationException
 from .http_handler import HttpHandler
 from .session_handler import SessionHandler
-from .token_validator import JWTBearerOpenSlidesTokenValidator, ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI
+from .token_validator import JWTBearerOpenSlidesTokenValidator, ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI, \
+    create_openslides_token_validator
 
 
 class AuthHandler:
@@ -18,10 +20,11 @@ class AuthHandler:
     TOKEN_DB_KEY = "tokens"
 
     def __init__(self, debug_fn: Any = print) -> None:
+        self.logger = logging.getLogger(__name__)
         self.debug_fn = debug_fn
         self.http_handler = HttpHandler(debug_fn)
         self.session_handler = SessionHandler(debug_fn)
-        self.validator = JWTBearerOpenSlidesTokenValidator(self.session_handler, ISSUER_REAL, ISSUER_INTERNAL, CERTS_URI, 'os')
+        self.validator = create_openslides_token_validator()
 
     def authenticate(
         self, access_token: Optional[str]
@@ -29,13 +32,14 @@ class AuthHandler:
         """
         Tries to check and read a user_id from a given access_token and refresh_id.
         """
-        self.debug_fn("Try to authenticate with")
-        self.debug_fn(f"AccessToken: {access_token}")
         if not access_token:
             self.debug_fn("No access_token")
             return ANONYMOUS_USER, None
-        token = access_token.split(" ")[1]
-        claims = self.validator.authenticate_token(token)
+        token_string = access_token.split(" ")[1]
+        # validator.validate_token(token, scopes, request, **kwargs)
+        token = self.validator.authenticate_token(token_string)
+        claims = self.validator.validate_token(token, ["openid", "profile", "os", "offline_access", "email"], None)
+
         return claims.get("os_uid"), token
 
     def verify_logout_token(

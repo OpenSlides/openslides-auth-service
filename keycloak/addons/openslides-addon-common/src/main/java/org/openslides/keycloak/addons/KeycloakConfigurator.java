@@ -17,6 +17,7 @@ import org.keycloak.representations.userprofile.config.UPAttributePermissions;
 import org.keycloak.representations.userprofile.config.UPAttributeRequired;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,14 +28,39 @@ public class KeycloakConfigurator {
     private final Keycloak keycloak;
 
     public static void main(String[] args) throws IOException {
-        String serverUrl = System.getenv("KEYCLOAK_URL");
-        String username = System.getenv("KC_BOOTSTRAP_ADMIN_USERNAME");
-        String password = System.getenv("KC_BOOTSTRAP_ADMIN_PASSWORD");
-        String realmName = "os";
-        new KeycloakConfigurator(serverUrl, username, password).configureKeycloak(realmName);
+        String serverUrl = System.getenv("OPENSLIDES_KEYCLOAK_URL");
+        String username = System.getenv("OPENSLIDES_KEYCLOAK_ADMIN_USERNAME");
+        String password = System.getenv("OPENSLIDES_KEYCLOAK_ADMIN_PASSWORD");
+        String clientId = System.getenv("OPENSLIDES_AUTH_CLIENT_ID");
+        String realmName = System.getenv("OPENSLIDES_AUTH_REALM");
+        new KeycloakConfigurator(serverUrl, username, password).configureKeycloak(realmName, clientId);
     }
     
     KeycloakConfigurator(String serverUrl, String username, String password) {
+
+        // in a loop, wait for keycloak to be ready, use http client to check if keycloak is ready
+        while (true) {
+            try {
+                // use apache http client to check if keycloak is ready
+                HttpClient client = HttpClient.newHttpClient();
+                var request = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create(serverUrl + "/realms/master"))
+                        .build();
+                var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    break;
+                } else {
+                    System.out.println("Keycloak not ready, retrying in 5 seconds...");
+                }
+            } catch (Exception e) {
+                System.out.println("Keycloak not ready, retrying in 5 seconds...");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+            }
+        }
 
         this.keycloak = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
@@ -45,10 +71,9 @@ public class KeycloakConfigurator {
                 .build();
     }
 
-    public void configureKeycloak(String realmName) throws IOException {
+    public void configureKeycloak(String realmName, String clientName) throws IOException {
         createOrGetRealm(realmName);
-        String clientScopeName = "os";
-        String clientName = "os-ui";
+        String clientScopeName = realmName;
         List<Map<String, Object>> protocolMappers = createProtocolMappers();
 
         configureAuthenticator(realmName);
@@ -61,7 +86,7 @@ public class KeycloakConfigurator {
         );
         createOrGetUser(realmName, users);
 
-        configureLogoutListener(realmName);
+//        configureLogoutListener(realmName);
     }
 
     private void configureLogoutListener(String realmName) {
@@ -80,7 +105,7 @@ public class KeycloakConfigurator {
         keycloak.realm(realmName);
         RealmResource realm = keycloak.realms().realm(realmName);
         for (Map<String, Object> userData : users) {
-            final var existingUsers = realm.users().search(userData.get("username").toString());
+            final var existingUsers = realm.users().searchByUsername(userData.get("username").toString(), true);
             UserRepresentation userRepresentation = new UserRepresentation();
             userRepresentation.setUsername(userData.get("username").toString());
             userRepresentation.setEmail(userData.get("username") + "@localhost");
@@ -253,7 +278,7 @@ public class KeycloakConfigurator {
 //                        "userinfo.token.claim", "true",
 //                        "jsonType.label", "long"
 //                )),
-                createProtocolMapper("openslides-user-id-mapper", "oidc-usermodel-property-mapper", Map.of(
+                createProtocolMapper("openslides-user-id-mapper", "oidc-usermodel-attribute-mapper", Map.of(
                         "user.attribute", "osUserId",
                         "claim.name", "os_uid",
                         "id.token.claim", "true",

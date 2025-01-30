@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import os
 
 import requests
@@ -7,18 +8,14 @@ from authlib.jose import jwt, JsonWebKey
 from authlib.jose.errors import DecodeError
 from authlib.oauth2.rfc6750.errors import InvalidTokenError
 from authlib.oauth2.rfc9068 import JWTBearerTokenValidator
-from authlib.oidc.discovery import OpenIDProviderMetadata, get_well_known_url
 
 from .claims import OpenSlidesAccessTokenClaims, BackchannelTokenClaims
 from .session_handler import SessionHandler
 
 def decode_base64url(segment: str) -> bytes:
     pad = 4 - (len(segment) % 4)
-    print("adding padding", pad)
     if pad < 4:
         segment += "=" * pad
-
-    print("decoding", segment, len(segment))
     return base64.b64decode(segment)
 
 class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
@@ -28,6 +25,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
     def __init__(self, session_handler: SessionHandler, issuer, issuer_internal,
                  certs_uri,
                  resource_server, *args, **kwargs):
+        self.logger = logging.getLogger(__name__)
         self.certs_uri = certs_uri
         self.issuerInternal = issuer_internal
         self.session_handler = session_handler
@@ -39,6 +37,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
             response = requests.get(self.certs_uri)
             response.raise_for_status()
             jwks_keys = response.json()
+
             self.jwk_set = JsonWebKey.import_key_set(jwks_keys)
         return self.jwk_set
 
@@ -73,6 +72,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
             )
 
     def authenticate_token(self, token_string):
+        logging.info(f"Token: {token_string}")
         claims_options = {
             'iss': {'essential': True, 'validate': self.validate_iss},
             'exp': {'essential': True},
@@ -93,38 +93,23 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
         }
         jwks = self.get_jwks()
 
-        # If the JWT access token is encrypted, decrypt it using the keys and algorithms
-        # that the resource server specified during registration. If encryption was
-        # negotiated with the authorization server at registration time and the incoming
-        # JWT access token is not encrypted, the resource server SHOULD reject it.
-
-        # The resource server MUST validate the signature of all incoming JWT access
-        # tokens according to [RFC7515] using the algorithm specified in the JWT 'alg'
-        # Header Parameter. The resource server MUST reject any JWT in which the value
-        # of 'alg' is 'none'. The resource server MUST use the keys provided by the
-        # authorization server.
-
         header_encoded = token_string.split('.')[0]
 
-        # Decode the header (Base64Url decoding)
         header_bytes = decode_base64url(header_encoded)
         header = json.loads(header_bytes)
 
         claims_cls=OpenSlidesAccessTokenClaims
 
         # Check if the token is a backchannel token
-        if header.get('b2b') is '1':
+        if 'b2b' in header and header.get('b2b') == '1':
             claims_options = {
             }
             claims_cls=BackchannelTokenClaims
 
         try:
-            return jwt.decode(
-                token_string,
-                key=jwks,
-                claims_cls=claims_cls,
-                claims_options=claims_options,
-            )
+            token = jwt.decode(token_string, key=jwks, claims_cls=claims_cls, claims_options=claims_options)
+            token.validate()
+            return token
         except DecodeError:
             raise InvalidTokenError(
                 realm=self.realm, extra_attributes=self.extra_attributes
@@ -134,7 +119,7 @@ class JWTBearerOpenSlidesTokenValidator(JWTBearerTokenValidator):
         return not self.session_handler.is_session_invalid(sid)
 
     def validate_os_uid(self, claims, os_uid: 'str') -> bool:
-        return os_uid.isdigit()
+        return str(os_uid).isdigit()
 
 KEYCLOAK_REALM = os.environ.get("OPENSLIDES_AUTH_REALM")
 KEYCLOAK_URL = os.environ.get("OPENSLIDES_KEYCLOAK_URL")
