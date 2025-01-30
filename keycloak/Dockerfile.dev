@@ -17,11 +17,13 @@ COPY addons/openslides-email-template-provider/src /app/openslides-email-templat
 # Build the project
 RUN gradle bootJar shadowJar copyPlugins --no-daemon
 
-FROM amazoncorretto:17-al2023-headless AS init
+FROM quay.io/keycloak/keycloak:26.0.2 AS init
 
 WORKDIR /app
 ADD configure-keycloak.sh /app/configure-keycloak.sh
+USER root
 RUN chmod +x /app/configure-keycloak.sh
+USER keycloak
 COPY --from=addons /app/openslides-addon-common/build/libs/openslides-addon-common-app.jar /openslides-addon-common.jar
 
 # Run the application
