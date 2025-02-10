@@ -53,7 +53,7 @@
         "express": "^4.19.2",
         "istanbul-badges-readme": "^1.9.0",
         "jest": "^29.7.0",
-        "nodemon": "^3.1.7",
+        "nodemon": "^3.1.9",
         "pg": "^8.13.1",
         "prettier": "^3.4.2",
         "ts-jest": "^29.2.5",
