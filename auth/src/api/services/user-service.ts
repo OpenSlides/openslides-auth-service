@@ -11,6 +11,8 @@ import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 
 const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
+const dummyPassword =
+    '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM';
 
 export class UserService implements UserHandler {
     @Factory(DatastoreAdapter)
@@ -81,7 +83,8 @@ export class UserService implements UserHandler {
             throw new AuthenticationException('Multiple users with same credentials!');
         }
         const thisUser: User = new User(users[0]);
-        if (!thisUser.isExisting() || !(await this.isPasswordCorrect(password, thisUser.password))) {
+        const passwordCorrect = await this.isPasswordCorrect(password, thisUser?.password || dummyPassword);
+        if (!thisUser.isExisting() || !passwordCorrect) {
             throw new AuthenticationException('Username or password is incorrect.');
         }
         if (!thisUser.is_active) {
