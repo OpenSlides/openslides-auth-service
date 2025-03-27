@@ -74,7 +74,7 @@
         "jsonwebtoken": "^9.0.2",
         "response-time": "^2.3.3",
         "rest-app": "^1.0.0-alpha.9",
-        "samlify": "2.9.0",
+        "samlify": "2.9.1",
         "tslib": "^2.8.1"
     }
 }
