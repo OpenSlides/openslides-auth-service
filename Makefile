@@ -22,7 +22,7 @@ build-prod:
 #docker build -t openslides-auth-dev -f Dockerfile.dev .
 
 build-test:
-	docker build -t openslides-auth-dev -f Dockerfile.test .
+	make build-aio context=tests submodule=auth
 
 run-dev-standalone: | build-dev
 	docker compose -f docker-compose.dev.yml up
