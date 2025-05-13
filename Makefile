@@ -13,12 +13,13 @@ build-aio:
 
 	@docker build -f ./Dockerfile.AIO ./ --tag openslides-${submodule}-${context} --build-arg CONTEXT=${context} --target ${context} ${args}
 
+build-dev:
+	make build-aio context=dev submodule=auth
 
 build-prod:
 	docker build -t openslides-auth -f Dockerfile .
 
-build-dev:
-	docker build -t openslides-auth-dev -f Dockerfile.dev .
+#docker build -t openslides-auth-dev -f Dockerfile.dev .
 
 build-test:
 	docker build -t openslides-auth-dev -f Dockerfile.test .
