@@ -1,3 +1,5 @@
+
+CATCH=10
 build-aio:
 	@if [ -z "${submodule}" ] ; then \
 		echo "Please provide the name of the submodule service to build (submodule=<submodule service name>)"; \
@@ -54,11 +56,7 @@ run-check-mypy: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
 run-tests run-test: | run-pre-test
-	@echo "########################################################################"
-	@echo "###################### Start full system tests #########################"
-	@echo "########################################################################"
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth pytest
+	bash dev/run-tests.sh
 
 run-cleanup: | build-dev
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml up -d
