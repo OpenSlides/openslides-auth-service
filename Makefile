@@ -53,7 +53,7 @@ run-check-flake8: | run-pre-test
 run-check-mypy: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
-run-test: | run-pre-test
+run-tests run-test: | run-pre-test
 	@echo "########################################################################"
 	@echo "###################### Start full system tests #########################"
 	@echo "########################################################################"
