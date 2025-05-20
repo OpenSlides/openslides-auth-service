@@ -57,7 +57,7 @@ CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
 
 
 # Production Image
-FROM base as prod
+FROM base as build
 
 # Now the source-files can be transpiled
 RUN npm run build
@@ -65,4 +65,27 @@ RUN npm run build
 RUN npm prune --production
 
 ## File Copies
+CMD ["node", "index.js"]
+
+
+FROM node:${NODE_IMAGE_VERSION}-alpine AS prod
+
+ARG NODE_IMAGE_VERSION
+ARG CONTEXT
+
+LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
+LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
+
+WORKDIR /app
+
+COPY --from=build /app/build .
+COPY --from=build /app/entrypoint.sh .
+COPY --from=build /app/wait-for.sh .
+COPY --from=build /app/node_modules ./node_modules
+
+EXPOSE 9004
+ENTRYPOINT ["./entrypoint.sh"]
+
 CMD ["node", "index.js"]
