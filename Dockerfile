@@ -17,6 +17,8 @@ RUN npm run build
 
 RUN npm prune --production
 
+
+
 FROM node:23.0-alpine
 
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"

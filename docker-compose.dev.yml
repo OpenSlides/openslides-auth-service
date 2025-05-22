@@ -2,7 +2,7 @@ version: "3"
 
 services:
   auth:
-    image: openslides-auth-dev
+    image: openslides-auth-$CONTEXT
     user: $USER_ID:$GROUP_ID
     restart: always
     depends_on:
