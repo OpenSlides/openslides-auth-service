@@ -80,10 +80,16 @@ LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-
 
 WORKDIR /app
 
+# Add appuser
+RUN adduser --system --no-create-home appuser
+RUN chown appuser /app/
+
 COPY --from=build /app/build .
 COPY --from=build /app/entrypoint.sh .
 COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
+
+USER appuser
 
 EXPOSE 9004
 ENTRYPOINT ["./entrypoint.sh"]
