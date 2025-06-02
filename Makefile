@@ -1,30 +1,15 @@
-
+SERVICE=auth
 CATCH=10
-build-aio:
-	@if [ -z "${submodule}" ] ; then \
-		echo "Please provide the name of the submodule service to build (submodule=<submodule service name>)"; \
-		exit 1; \
-	fi
-
-	@if [ "${context}" != "prod" -a "${context}" != "dev" -a "${context}" != "tests" ] ; then \
-		echo "Please provide a context for this build (context=<desired_context> , possible options: prod, dev, tests)"; \
-		exit 1; \
-	fi
-
-	echo "Building submodule '${submodule}' for ${context} context"
-
-	@docker build -f ./Dockerfile.AIO ./ --tag openslides-${submodule}-${context} --build-arg CONTEXT=${context} --target ${context} ${args}
 
 build-dev:
-	make build-aio context=dev submodule=auth
+	bash ../dev/scripts/makefile/build-service.sh $(SERVICE) dev
 
 build-prod:
-	docker build -t openslides-auth -f Dockerfile .
-
-#docker build -t openslides-auth-dev -f Dockerfile.dev .
+	bash ../dev/scripts/makefile/build-service.sh $(SERVICE) prod
 
 build-test:
-	make build-aio context=tests submodule=auth
+	bash ../dev/scripts/makefile/build-service.sh $(SERVICE) tests
+
 
 run-dev-standalone: | build-dev
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml up
@@ -33,6 +18,7 @@ run-dev-standalone: | build-dev
 run-pre-test: | build-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
+
 
 run-bash run-dev: | run-pre-test
 	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker compose -f docker-compose.dev.yml exec auth sh

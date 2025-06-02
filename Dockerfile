@@ -1,25 +1,77 @@
-FROM node:22.11-alpine AS build
-ENV NODE_VERSION=22.11.0
+ARG CONTEXT=prod
+ARG NODE_IMAGE_VERSION=22.11
+
+FROM node:${NODE_IMAGE_VERSION}-alpine AS base
+
+ARG NODE_IMAGE_VERSION
+ARG CONTEXT
 
 WORKDIR /app
 
-# Install dependencies. the `node_modules` folder is in /app
-COPY auth/package.json .
-COPY auth/package-lock.json .
+## Context-based setup
+ENV NODE_VERSION=${NODE_IMAGE_VERSION}.0
 
-RUN npm ci
-
+## File copies
 # Application lays in /app/src
 COPY ./auth ./
+
+## NPM
+RUN npm ci
+
+LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
+LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
+
+## Function
+EXPOSE 9004
+ENTRYPOINT ["./entrypoint.sh"]
+
+
+
+# Development Image
+FROM base as dev
+
+ENV OPENSLIDES_DEVELOPMENT 1
+
+CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
+
+
+
+# Test Image
+FROM base as tests
+
+## Install Pip & dependencies
+RUN (apk update && \
+    apk add --no-cache \
+    python3 python3-dev py3-pip gcc libc-dev)
+RUN pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
+
+
+RUN chmod -R 777 .
+
+ENV OPENSLIDES_DEVELOPMENT 1
+
+CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
+
+
+
+# Production Image
+FROM base as build
 
 # Now the source-files can be transpiled
 RUN npm run build
 
 RUN npm prune --production
 
+## File Copies
+CMD ["node", "index.js"]
 
 
-FROM node:23.0-alpine
+FROM node:${NODE_IMAGE_VERSION}-alpine AS prod
+
+ARG NODE_IMAGE_VERSION
+ARG CONTEXT
 
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
 LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
@@ -28,10 +80,16 @@ LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-
 
 WORKDIR /app
 
+# Add appuser
+RUN adduser --system --no-create-home appuser
+RUN chown appuser /app/
+
 COPY --from=build /app/build .
 COPY --from=build /app/entrypoint.sh .
 COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
+
+USER appuser
 
 EXPOSE 9004
 ENTRYPOINT ["./entrypoint.sh"]
