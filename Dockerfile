@@ -3,28 +3,29 @@ ARG NODE_IMAGE_VERSION=22.11
 
 FROM node:${NODE_IMAGE_VERSION}-alpine AS base
 
+## Setup
 ARG NODE_IMAGE_VERSION
 ARG CONTEXT
-
 WORKDIR /app
-
-## Context-based setup
+ENV ${CONTEXT}=1
 ENV NODE_VERSION=${NODE_IMAGE_VERSION}.0
 
-## File copies
-# Application lays in /app/src
+## Install
 COPY ./auth ./
-
-## NPM
 RUN npm ci
 
+## External Information
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
 LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
 
-## Function
 EXPOSE 9004
+
+## Command
+COPY ./dev/command.sh ./
+RUN chmod +x command.sh
+CMD ["./command.sh"]
 ENTRYPOINT ["./entrypoint.sh"]
 
 
@@ -34,64 +35,60 @@ FROM base as dev
 
 ENV OPENSLIDES_DEVELOPMENT 1
 
-CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
-
 
 
 # Test Image
 FROM base as tests
 
 ## Install Pip & dependencies
-RUN (apk update && \
-    apk add --no-cache \
-    python3 python3-dev py3-pip gcc libc-dev)
-RUN pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
-
-
-RUN chmod -R 777 .
+RUN (apk add --no-cache \
+    python3 python3-dev py3-pip gcc libc-dev) && \
+    pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt && \
+    chmod -R 777 .
 
 ENV OPENSLIDES_DEVELOPMENT 1
-
-CMD ["node", "node_modules/.bin/nodemon", "src/index.ts"]
-
 
 
 # Production Image
 FROM base as build
 
 # Now the source-files can be transpiled
-RUN npm run build
-
-RUN npm prune --production
-
-## File Copies
-CMD ["node", "index.js"]
+RUN npm run build && \
+    npm prune --production
 
 
 FROM node:${NODE_IMAGE_VERSION}-alpine AS prod
 
+## Setup
 ARG NODE_IMAGE_VERSION
 ARG CONTEXT
+WORKDIR /app
+ENV ${CONTEXT}=1
+ENV NODE_VERSION=${NODE_IMAGE_VERSION}.0
 
+## Installs
+COPY --from=build /app/build .
+COPY --from=build /app/entrypoint.sh .
+COPY --from=build /app/wait-for.sh .
+COPY --from=build /app/node_modules ./node_modules
+COPY ./dev/command.sh .
+
+# Add appuser
+RUN adduser --system --no-create-home appuser && \
+    chown appuser /app/ && \
+    chmod +x command.sh
+
+USER appuser
+
+
+## Public Information
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
 LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
 
-WORKDIR /app
-
-# Add appuser
-RUN adduser --system --no-create-home appuser
-RUN chown appuser /app/
-
-COPY --from=build /app/build .
-COPY --from=build /app/entrypoint.sh .
-COPY --from=build /app/wait-for.sh .
-COPY --from=build /app/node_modules ./node_modules
-
-USER appuser
-
 EXPOSE 9004
-ENTRYPOINT ["./entrypoint.sh"]
 
-CMD ["node", "index.js"]
+## Command
+CMD ["./command.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
