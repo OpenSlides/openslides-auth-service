@@ -10,15 +10,19 @@ build-prod:
 build-test:
 	bash ../dev/scripts/makefile/build-service.sh $(SERVICE) tests
 
-
 run-dev-standalone: | build-dev
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml up
 	stop-dev
 
+run-cleanup: | build-dev
+	CONTEXT="dev" docker compose -f docker-compose.dev.yml up -d
+	CONTEXT="dev" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
+	CONTEXT="dev" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
+	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
+
 run-pre-test: | build-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
-
 
 run-bash run-dev: | run-pre-test
 	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker compose -f docker-compose.dev.yml exec auth sh
@@ -41,14 +45,11 @@ run-check-flake8: | run-pre-test
 run-check-mypy: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
+
+## Deprecated
+
 run-tests run-test:
 	bash dev/run-tests.sh
-
-run-cleanup: | build-dev
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml up -d
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
 
 run-test-and-stop: | run-test
 	stop-dev
