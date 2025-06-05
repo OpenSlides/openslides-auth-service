@@ -33,9 +33,9 @@ jobs:
         run: |
               cd ../..
               ls -a
-              make build-prod
               cd ..
               ls -a
+              make build-prod
               cd .github/startup-test
 
       - name: Run prod image
