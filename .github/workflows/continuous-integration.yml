@@ -30,7 +30,7 @@ jobs:
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build Prod
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
         with:
           service: auth
           context: prod
@@ -54,13 +54,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Dev
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
         with:
           service: auth
           context: dev
 
       - name: Build Test
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
         with:
           service: auth
           context: tests
