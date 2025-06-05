@@ -16,13 +16,35 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      
       - name: Build Test
         uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
         with:
           service: auth
           context: dev
+
       - name: Run tests
         run: bash dev/run-tests.sh
+      - name: Check prettify
+        run: make run-check-prettify
+
+      - name: Check lint
+        run: make run-check-lint
+
+      - name: Check black
+        run: make run-check-black
+
+      - name: Check isort
+        run: make run-check-isort
+
+      - name: Check flake8
+        run: make run-check-flake8
+
+      - name: Check mypy
+        run: make run-check-mypy
+
+      - name: Stop dev containers
+        run: make stop-dev
 
   build-and-test-prod-image:
     name: Build and test production image
