@@ -11,6 +11,14 @@ on:
       - checks_requested
 
 jobs:
+  debug-test:
+    name: Testing reusable actions
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use actions
+        uses: Janmtbehrens/OpenSlides/actions/test-submodule@main
+
   build-and-test-prod-image:
     name: Build and test production image
     runs-on: ubuntu-22.04
@@ -30,13 +38,7 @@ jobs:
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build docker prod image
-        run: |
-              cd ../..
-              ls -a
-              cd ..
-              ls -a
-              make build-prod
-              cd .github/startup-test
+        run: make build-prod
 
       - name: Run prod image
         run: docker compose up -d
