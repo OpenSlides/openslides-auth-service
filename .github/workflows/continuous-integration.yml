@@ -9,7 +9,8 @@ on:
   merge_group:
     types:
       - checks_requested
-      
+
+jobs:
   build-and-test-prod-image:
     name: Build and test production image
     runs-on: ubuntu-22.04
