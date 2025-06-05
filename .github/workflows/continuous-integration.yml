@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      
+
 
       - name: Build Test
         uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
         with:
           service: auth
-          context: dev
+          context: tests
 
       - name: Run tests
         run: bash dev/run-tests.sh
