@@ -16,8 +16,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Use actions
-        uses: Janmtbehrens/OpenSlides/actions/test-submodule@main
+      - name: Build Test
+        uses: Janmtbehrens/OpenSlides/actions/build-service@main
+        with:
+          service: auth
+          context: dev
 
   build-and-test-prod-image:
     name: Build and test production image
