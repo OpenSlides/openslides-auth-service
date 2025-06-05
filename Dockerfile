@@ -1,14 +1,12 @@
 ARG CONTEXT=prod
-ARG NODE_IMAGE_VERSION=22.11
 
-FROM node:${NODE_IMAGE_VERSION}-alpine AS base
+FROM node:22.11-alpine AS base
 
 ## Setup
-ARG NODE_IMAGE_VERSION
 ARG CONTEXT
 WORKDIR /app
 ENV ${CONTEXT}=1
-ENV NODE_VERSION=${NODE_IMAGE_VERSION}.0
+ENV NODE_VERSION=22.11.0
 
 ## Install
 COPY ./auth ./
@@ -57,14 +55,13 @@ RUN npm run build && \
     npm prune --production
 
 
-FROM node:${NODE_IMAGE_VERSION}-alpine AS prod
+FROM node:22.11-alpine AS prod
 
 ## Setup
-ARG NODE_IMAGE_VERSION
 ARG CONTEXT
 WORKDIR /app
 ENV ${CONTEXT}=1
-ENV NODE_VERSION=${NODE_IMAGE_VERSION}.0
+ENV NODE_VERSION=22.11.0
 
 ## Installs
 COPY --from=build /app/build .
