@@ -32,7 +32,10 @@ jobs:
       - name: Build docker prod image
         run: |
               cd ../..
+              ls -a
               make build-prod
+              cd ..
+              ls -a
               cd .github/startup-test
 
       - name: Run prod image
