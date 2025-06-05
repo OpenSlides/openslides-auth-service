@@ -17,10 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build Test
-        uses: Janmtbehrens/OpenSlides/actions/build-service@main
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
         with:
           service: auth
           context: dev
+      - name: Run tests
+        run: bash dev/run-tests.sh
 
   build-and-test-prod-image:
     name: Build and test production image
