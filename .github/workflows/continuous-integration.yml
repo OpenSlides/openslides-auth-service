@@ -9,44 +9,7 @@ on:
   merge_group:
     types:
       - checks_requested
-
-jobs:
-  debug-test:
-    name: Testing reusable actions
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-
-      - name: Build Test
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
-        with:
-          service: auth
-          context: tests
-
-      - name: Run tests
-        run: bash dev/run-tests.sh
-      - name: Check prettify
-        run: make run-check-prettify
-
-      - name: Check lint
-        run: make run-check-lint
-
-      - name: Check black
-        run: make run-check-black
-
-      - name: Check isort
-        run: make run-check-isort
-
-      - name: Check flake8
-        run: make run-check-flake8
-
-      - name: Check mypy
-        run: make run-check-mypy
-
-      - name: Stop dev containers
-        run: make stop-dev
-
+      
   build-and-test-prod-image:
     name: Build and test production image
     runs-on: ubuntu-22.04
@@ -65,8 +28,11 @@ jobs:
             echo -n "openslides" > secrets/internal_auth_password
             echo -n "openslides" > secrets/postgres_password
 
-      - name: Build docker prod image
-        run: make build-prod
+      - name: Build Prod
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        with:
+          service: auth
+          context: prod
 
       - name: Run prod image
         run: docker compose up -d
@@ -86,26 +52,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Build Dev
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        with:
+          service: auth
+          context: dev
+
+      - name: Build Test
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@main
+        with:
+          service: auth
+          context: tests
+
       - name: Run tests
-        run: make run-tests
-
-      - name: Check prettify
-        run: make run-check-prettify
-
-      - name: Check lint
-        run: make run-check-lint
-
-      - name: Check black
-        run: make run-check-black
-
-      - name: Check isort
-        run: make run-check-isort
-
-      - name: Check flake8
-        run: make run-check-flake8
-
-      - name: Check mypy
-        run: make run-check-mypy
-
-      - name: Stop dev containers
-        run: make stop-dev
+        run: bash dev/run-tests.sh
