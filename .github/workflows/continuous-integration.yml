@@ -29,20 +29,23 @@ jobs:
             echo -n "openslides" > secrets/internal_auth_password
             echo -n "openslides" > secrets/postgres_password
 
-      - name: Build docker prod image
-        run: make -C ../.. build-prod
+      - name: Build Prod
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
+        with:
+          service: auth
+          context: prod
 
       - name: Run prod image
-        run: docker compose up -d
+        run: CONTEXT="prod" docker compose up -d
 
       - name: Wait for auth-service
-        run: docker compose exec -T auth ./wait-for.sh auth:9004
+        run: CONTEXT="prod" docker compose exec -T auth ./wait-for.sh auth:9004
 
       - name: Test connection
         run: curl -I localhost:9004/system/auth
 
       - name: Stop prod containers
-        run: docker compose down --volumes
+        run: CONTEXT="prod" docker compose down --volumes
 
   build-and-test-dev-image:
     name: Build and test development image
@@ -50,26 +53,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run tests
-        run: make run-test
+      # Auth requires both dev and tests context
+      - name: Build Dev
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
+        with:
+          service: auth
+          context: dev
 
-      - name: Check prettify
-        run: make run-check-prettify
-
-      - name: Check lint
-        run: make run-check-lint
-
-      - name: Check black
-        run: make run-check-black
-
-      - name: Check isort
-        run: make run-check-isort
-
-      - name: Check flake8
-        run: make run-check-flake8
-
-      - name: Check mypy
-        run: make run-check-mypy
-
-      - name: Stop dev containers
-        run: make stop-dev
+      - name: Run Test
+        uses: Janmtbehrens/OpenSlides/dev/actions/build-and-test-service@all-in-one
+        with:
+          service: auth
+          context: tests
