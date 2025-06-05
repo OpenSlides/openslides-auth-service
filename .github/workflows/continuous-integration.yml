@@ -36,16 +36,16 @@ jobs:
           context: prod
 
       - name: Run prod image
-        run: docker compose up -d
+        run: CONTEXT="prod" docker compose up -d
 
       - name: Wait for auth-service
-        run: docker compose exec -T auth ./wait-for.sh auth:9004
+        run: CONTEXT="prod" docker compose exec -T auth ./wait-for.sh auth:9004
 
       - name: Test connection
         run: curl -I localhost:9004/system/auth
 
       - name: Stop prod containers
-        run: docker compose down --volumes
+        run: CONTEXT="prod" docker compose down --volumes
 
   build-and-test-dev-image:
     name: Build and test development image
