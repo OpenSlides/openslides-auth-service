@@ -25,7 +25,7 @@ run-pre-test: | build-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
 
 run-bash run-dev: | run-pre-test
-	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) docker compose -f docker-compose.dev.yml exec auth sh
+	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) CONTEXT="dev" docker compose -f docker-compose.dev.yml exec auth sh
 
 run-check-lint: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run lint-check
