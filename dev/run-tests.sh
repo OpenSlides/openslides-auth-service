@@ -3,13 +3,14 @@
 # Executes all tests. Should errors occur, CATCH will be set to 1, causing an erronous exit code.
 
 echo "########################################################################"
-echo "###################### Start full system tests #########################"
+echo "###################### Run Tests and Linters ###########################"
 echo "########################################################################"
 
+IMAGE_TAG=openslides-auth-tests
 CATCH=0
 PERSIST_CONTAINERS=$1
 
-make build-test || true
+if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-test || CATCH=1; fi
 CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d || CATCH=1
 CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004 || CATCH=1
 CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test || CATCH=1
