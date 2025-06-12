@@ -64,4 +64,3 @@ jobs:
         uses: Janmtbehrens/OpenSlides/dev/actions/build-and-test-service@all-in-one
         with:
           service: auth
-          context: tests
