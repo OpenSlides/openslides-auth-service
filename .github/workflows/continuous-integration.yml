@@ -1,4 +1,4 @@
-name: CI
+name: CI - Build and Test Service
 
 on:
   pull_request:
