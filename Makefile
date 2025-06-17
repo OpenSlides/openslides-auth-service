@@ -1,5 +1,4 @@
 SERVICE=auth
-CATCH=10
 
 build-dev:
 	bash ../dev/scripts/makefile/build-service.sh $(SERVICE) dev
