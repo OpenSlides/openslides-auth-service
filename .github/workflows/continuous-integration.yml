@@ -47,9 +47,10 @@ jobs:
       - name: Stop prod containers
         run: CONTEXT="prod" docker compose down --volumes
 
-  build-and-test-dev-image:
-    name: Build and test development image
-    runs-on: ubuntu-22.04
+  # This setups and runs the dev/run-tests.sh script
+  run-test-script:
+    name: Run-tests.sh Script
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
