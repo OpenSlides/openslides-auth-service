@@ -33,6 +33,6 @@ eval "$DC exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff aut
 eval "$DC exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/ || CATCH=1"
 eval "$DC exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/ || CATCH=1"
 
-if [ -z $PERSIST_CONTAINERS ]; then eval "$DC down || CATCH=1"; fi
+if [ -z "$PERSIST_CONTAINERS" ]; then eval "$DC down || CATCH=1"; fi
 
 exit $CATCH
