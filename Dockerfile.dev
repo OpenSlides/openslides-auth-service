@@ -5,7 +5,9 @@ FROM node:22.11-alpine AS base
 ## Setup
 ARG CONTEXT
 WORKDIR /app
-ENV ${CONTEXT}=1
+# Used for easy target differentiation
+ARG ${CONTEXT}=1 
+ENV APP_CONTEXT=${CONTEXT}
 ENV NODE_VERSION=22.11.0
 
 ## Install
