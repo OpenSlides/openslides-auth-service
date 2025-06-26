@@ -5,8 +5,6 @@ FROM node:22.11-alpine AS base
 ## Setup
 ARG CONTEXT
 WORKDIR /app
-# Used for easy target differentiation
-ARG ${CONTEXT}=1 
 ENV APP_CONTEXT=${CONTEXT}
 ENV NODE_VERSION=22.11.0
 
@@ -28,14 +26,10 @@ RUN chmod +x command.sh
 CMD ["./command.sh"]
 ENTRYPOINT ["./entrypoint.sh"]
 
-
-
 # Development Image
 FROM base as dev
 
 ENV OPENSLIDES_DEVELOPMENT 1
-
-
 
 # Test Image
 FROM base as tests
@@ -43,11 +37,9 @@ FROM base as tests
 ## Install Pip & dependencies
 RUN (apk add --no-cache \
     python3 python3-dev py3-pip gcc libc-dev) && \
-    pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt && \
-    chmod -R 777 .
+    pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
 ENV OPENSLIDES_DEVELOPMENT 1
-
 
 # Production Image
 FROM base as build
@@ -55,7 +47,6 @@ FROM base as build
 # Now the source-files can be transpiled
 RUN npm run build && \
     npm prune --production
-
 
 FROM node:22.11-alpine AS prod
 
@@ -78,7 +69,6 @@ RUN adduser --system --no-create-home appuser && \
     chmod +x command.sh
 
 USER appuser
-
 
 ## Public Information
 LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
