@@ -1,16 +1,22 @@
 #!/bin/bash
 
-# Executes all tests. Should errors occur, CATCH will be set to 1, causing an erroneous exit code.
+# Executes all tests and linters. Should errors occur, CATCH will be set to 1, causing an erroneous exit code.
 
 echo "########################################################################"
 echo "###################### Run Tests and Linters ###########################"
 echo "########################################################################"
 
 # Parameters
-PERSIST_CONTAINERS=$1
+while getopts "p" FLAG; do
+    case "${FLAG}" in
+    p) PERSIST_CONTAINERS=true ;;
+    *) echo "Can't parse flag ${FLAG}" && break ;;
+    esac
+done
 
 # Setup
 IMAGE_TAG=openslides-auth-tests
+LOCAL_PWD=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 CATCH=0
 
 # Helpers
@@ -26,12 +32,7 @@ eval "$DC exec -T auth npm run test || CATCH=1"
 eval "$DC exec -T auth pytest || CATCH=1"
 
 # Linters
-eval "$DC exec -T auth npm run lint-check || CATCH=1"
-eval "$DC exec -T auth npm run prettify-check || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/ || CATCH=1"
+bash "$LOCAL_PWD"/run-lint.sh
 
 if [ -z "$PERSIST_CONTAINERS" ]; then eval "$DC down || CATCH=1"; fi
 

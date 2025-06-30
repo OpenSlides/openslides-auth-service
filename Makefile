@@ -1,7 +1,7 @@
 SERVICE=auth
 MAKEFILE_PATH=../dev/scripts/makefile
 DOCKER_COMPOSE_FILE=./docker-compose.dev.yml
-
+TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml exec
 
 # Build images for different contexts
 
@@ -17,6 +17,9 @@ run-dev run-dev-standalone run-dev-attached run-dev-detached run-dev-help run-de
 
 run-tests:
 	bash dev/run-tests.sh
+
+run-lint:
+	bash dev/run-lint.sh -l
 
 # Cleanup
 
