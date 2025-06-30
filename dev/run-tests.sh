@@ -25,14 +25,14 @@ GROUP_ID=$(id -g)
 DC="CONTEXT=tests USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker compose -f docker-compose.dev.yml"
 
 # Execution
-if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-test || CATCH=1; fi
+if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-tests || CATCH=1; fi
 eval "$DC up -d || CATCH=1"
 eval "$DC exec -T auth ./wait-for.sh auth:9004 || CATCH=1"
 eval "$DC exec -T auth npm run test || CATCH=1"
 eval "$DC exec -T auth pytest || CATCH=1"
 
 # Linters
-bash "$LOCAL_PWD"/run-lint.sh
+bash "$LOCAL_PWD"/run-lint.sh || CATCH=1
 
 if [ -z "$PERSIST_CONTAINERS" ]; then eval "$DC down || CATCH=1"; fi
 

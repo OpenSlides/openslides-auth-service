@@ -1,7 +1,7 @@
-SERVICE=auth
-MAKEFILE_PATH=../dev/scripts/makefile
-DOCKER_COMPOSE_FILE=./docker-compose.dev.yml
-TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml exec
+override SERVICE=auth
+override MAKEFILE_PATH=../dev/scripts/makefile
+override DOCKER_COMPOSE_FILE=./docker-compose.dev.yml
+override TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml exec
 
 # Build images for different contexts
 
