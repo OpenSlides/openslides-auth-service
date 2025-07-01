@@ -31,7 +31,7 @@ DC_PIP="$DC exec -w /app/libraries/pip-auth/"
 if [ -n "$BUILD" ]
 then
     if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-tests || CATCH=1; fi
-    eval "$DC up -d || CATCH=1"
+    eval "$DC up -d" || CATCH=1
 fi
 
 # Execution
