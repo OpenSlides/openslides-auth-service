@@ -10,6 +10,7 @@ echo "########################################################################"
 while getopts "p" FLAG; do
     case "${FLAG}" in
     p) PERSIST_CONTAINERS=true ;;
+    s) SKIP_BUILD=true ;;
     *) echo "Can't parse flag ${FLAG}" && break ;;
     esac
 done
@@ -25,14 +26,14 @@ GROUP_ID=$(id -g)
 DC="CONTEXT=tests USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker compose -f docker-compose.dev.yml"
 
 # Execution
-if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-tests || CATCH=1; fi
+if [ -z "$SKIP_BUILD" ]; then make build-tests || CATCH=1; fi
 eval "$DC up -d || CATCH=1"
 eval "$DC exec -T auth ./wait-for.sh auth:9004 || CATCH=1"
 eval "$DC exec -T auth npm run test || CATCH=1"
 eval "$DC exec -T auth pytest || CATCH=1"
 
 # Linters
-bash "$LOCAL_PWD"/run-lint.sh || CATCH=1
+bash "$LOCAL_PWD"/run-lint.sh -s -c || CATCH=1
 
 if [ -z "$PERSIST_CONTAINERS" ]; then eval "$DC down || CATCH=1"; fi
 

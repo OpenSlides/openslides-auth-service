@@ -7,10 +7,11 @@ echo "###################### Run Linters #####################################"
 echo "########################################################################"
 
 # Parameters
-while getopts "lbp" FLAG; do
+while getopts "lscp" FLAG; do
     case "${FLAG}" in
     l) LOCAL=true ;;
-    b) BUILD=true ;;
+    s) SKIP_BUILD=true ;;
+    c) SKIP_CONTAINER_UP=true ;;
     p) PERSIST_CONTAINERS=true ;;
     *) echo "Can't parse flag ${FLAG}" && break ;;
     esac
@@ -28,11 +29,8 @@ DC_AUTH="$DC exec -T auth"
 DC_PIP="$DC exec -w /app/libraries/pip-auth/"
 
 # Optionally build & start
-if [ -n "$BUILD" ]
-then
-    if [ "$(docker images -q $IMAGE_TAG)" = "" ]; then make build-tests || CATCH=1; fi
-    eval "$DC up -d" || CATCH=1
-fi
+if [ -z "$SKIP_BUILD" ]; then make build-tests || CATCH=1; fi
+if [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC up -d" || CATCH=1; fi
 
 # Execution
 eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")npm run lint-check" || CATCH=1
@@ -42,6 +40,6 @@ eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth isort --check-only --diff au
 eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth flake8 authlib/ tests/" || CATCH=1
 eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth mypy authlib/ tests/" || CATCH=1
 
-if [ -z "$PERSIST_CONTAINERS" ] && [ -n "$BUILD" ]; then eval "$DC down || CATCH=1"; fi
+if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down || CATCH=1"; fi
 
 exit $CATCH
