@@ -13,11 +13,6 @@ COPY ./auth ./
 RUN npm ci
 
 ## External Information
-LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
-LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
-
 EXPOSE 9004
 
 ## Command
@@ -57,11 +52,11 @@ ENV APP_CONTEXT=prod
 ENV NODE_VERSION=22.11.0
 
 ## Installs
-COPY --from=build /app/build .
-COPY --from=build /app/entrypoint.sh .
-COPY --from=build /app/wait-for.sh .
-COPY --from=build /app/node_modules ./node_modules
-COPY ./dev/command.sh .
+COPY --from=build /app/build /
+COPY --from=build /app/entrypoint.sh /
+COPY --from=build /app/wait-for.sh /
+COPY --from=build /app/node_modules /node_modules
+COPY ./dev/command.sh /
 
 # Add appuser
 RUN adduser --system --no-create-home appuser && \
