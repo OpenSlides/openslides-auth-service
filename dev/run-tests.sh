@@ -6,12 +6,12 @@ echo "########################################################################"
 echo "###################### Run Tests and Linters ###########################"
 echo "########################################################################"
 
-# Parameters
-PERSIST_CONTAINERS=$1
-
 # Setup
 IMAGE_TAG=openslides-auth-tests
 CATCH=0
+
+# Safe Exit
+trap 'eval $DC down' EXIT
 
 # Helpers
 USER_ID=$(id -u)
@@ -32,7 +32,5 @@ eval "$DC exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/
 eval "$DC exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/ || CATCH=1"
 eval "$DC exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/ || CATCH=1"
 eval "$DC exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/ || CATCH=1"
-
-if [ -z "$PERSIST_CONTAINERS" ]; then eval "$DC down || CATCH=1"; fi
 
 exit $CATCH
