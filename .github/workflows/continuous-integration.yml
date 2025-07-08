@@ -30,10 +30,7 @@ jobs:
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build Prod
-        uses: OpenSlides/OpenSlides/dev/actions/build-service@main
-        with:
-          service: auth
-          context: prod
+        run: make build-prod
 
       - name: Run prod image
         run: CONTEXT="prod" docker compose up -d
@@ -53,13 +50,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # Auth requires both dev and tests context
-      - name: Build Dev
-        uses: OpenSlides/OpenSlides/dev/actions/build-service@main
-        with:
-          service: auth
-          context: dev
 
       - name: Run Test
         uses: OpenSlides/OpenSlides/dev/actions/build-and-test-service@main
