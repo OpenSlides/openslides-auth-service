@@ -30,7 +30,10 @@ jobs:
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build Prod
-        run: make build-prod
+        run: |
+            ls -a
+            cat Makefile
+            make build-prod
 
       - name: Run prod image
         run: CONTEXT="prod" docker compose up -d
