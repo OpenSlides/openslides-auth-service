@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run tests
-        run: make run-test
+        run: make run-test-ci
 
       - name: Check prettify
         run: make run-check-prettify
@@ -72,4 +72,4 @@ jobs:
         run: make run-check-mypy
 
       - name: Stop dev containers
-        run: make stop-dev
+        run: make stop-dev-ci
