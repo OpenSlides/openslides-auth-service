@@ -44,14 +44,32 @@ jobs:
       - name: Stop prod containers
         run: CONTEXT="prod" docker compose down --volumes
 
-  # This setups and runs the dev/run-tests.sh script
-  run-test-script:
-    name: Run-tests.sh Script
-    runs-on: ubuntu-latest
+  build-and-test-dev-image:
+    name: Build and test development image
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Test
-        uses: OpenSlides/OpenSlides/dev/actions/build-and-test-service@main
-        with:
-          service: auth
+      - name: Run tests
+        run: make run-test
+
+      - name: Check prettify
+        run: make run-check-prettify
+
+      - name: Check lint
+        run: make run-check-lint
+
+      - name: Check black
+        run: make run-check-black
+
+      - name: Check isort
+        run: make run-check-isort
+
+      - name: Check flake8
+        run: make run-check-flake8
+
+      - name: Check mypy
+        run: make run-check-mypy
+
+      - name: Stop dev containers
+        run: make stop-dev

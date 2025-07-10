@@ -44,11 +44,21 @@ run-check-flake8: | run-pre-test
 run-check-mypy: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
-
-## Deprecated
-
-run-tests run-test:
+run-tests:
 	bash dev/run-tests.sh
+
+run-test: | run-pre-test
+	@echo "########################################################################"
+	@echo "###################### Start full system tests #########################"
+	@echo "########################################################################"
+	docker compose -f docker-compose.dev.yml exec -T auth npm run test
+	docker compose -f docker-compose.dev.yml exec -T auth pytest
+
+run-cleanup: | build-dev
+	docker compose -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
+	docker compose -f docker-compose.dev.yml exec auth npm run cleanup
+	docker compose -f docker-compose.dev.yml down
 
 run-test-and-stop: | run-test
 	stop-dev

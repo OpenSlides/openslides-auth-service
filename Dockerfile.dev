@@ -56,7 +56,7 @@ COPY --from=build /app/build .
 COPY --from=build /app/entrypoint.sh .
 COPY --from=build /app/wait-for.sh .
 COPY --from=build /app/node_modules ./node_modules
-COPY ./dev/command.sh ./
+COPY ./dev/command.sh .
 
 # Add appuser
 RUN adduser --system --no-create-home appuser && \
