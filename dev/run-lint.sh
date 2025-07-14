@@ -28,18 +28,17 @@ DC="CONTEXT=tests USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker compose -f docker-c
 DC_AUTH="$DC exec -T auth"
 DC_PIP="$DC exec -w /app/libraries/pip-auth/"
 
+# Safe Exit
+trap 'if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down"' EXIT
+
 # Optionally build & start
-if [ -z "$SKIP_BUILD" ]; then make build-tests || CATCH=1; fi
-if [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC up -d" || CATCH=1; fi
+if [ -z "$SKIP_BUILD" ]; then make build-tests; fi
+if [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC up -d"; fi
 
 # Execution
-eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")npm run lint-check" || CATCH=1
-eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")auth npm run prettify-check" || CATCH=1
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth black --check --diff authlib/ tests/" || CATCH=1
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth isort --check-only --diff authlib/ tests/" || CATCH=1
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth flake8 authlib/ tests/" || CATCH=1
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth mypy authlib/ tests/" || CATCH=1
-
-if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down || CATCH=1"; fi
-
-exit $CATCH
+eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")npm run lint-check"
+eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")auth npm run prettify-check"
+eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth black --check --diff authlib/ tests/"
+eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth isort --check-only --diff authlib/ tests/"
+eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth flake8 authlib/ tests/"
+eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth mypy authlib/ tests/"
