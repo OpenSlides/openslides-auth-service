@@ -30,10 +30,7 @@ jobs:
             echo -n "openslides" > secrets/postgres_password
 
       - name: Build Prod
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
-        with:
-          service: auth
-          context: prod
+        run: make -C ../.. build-prod
 
       - name: Run prod image
         run: CONTEXT="prod" docker compose up -d
@@ -47,21 +44,32 @@ jobs:
       - name: Stop prod containers
         run: CONTEXT="prod" docker compose down --volumes
 
-  # This setups and runs the dev/run-tests.sh script
-  run-test-script:
-    name: Run-tests.sh Script
-    runs-on: ubuntu-latest
+  build-and-test-dev-image:
+    name: Build and test development image
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      # Auth requires both dev and tests context 
-      - name: Build Dev
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-service@all-in-one
-        with:
-          service: auth
-          context: dev
+      - name: Run tests
+        run: make run-test-ci
 
-      - name: Run Test
-        uses: Janmtbehrens/OpenSlides/dev/actions/build-and-test-service@all-in-one
-        with:
-          service: auth
+      - name: Check prettify
+        run: make run-check-prettify
+
+      - name: Check lint
+        run: make run-check-lint
+
+      - name: Check black
+        run: make run-check-black
+
+      - name: Check isort
+        run: make run-check-isort
+
+      - name: Check flake8
+        run: make run-check-flake8
+
+      - name: Check mypy
+        run: make run-check-mypy
+
+      - name: Stop dev containers
+        run: make stop-dev-ci

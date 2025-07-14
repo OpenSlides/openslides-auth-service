@@ -13,11 +13,6 @@ COPY ./auth ./
 RUN npm ci
 
 ## External Information
-LABEL org.opencontainers.image.title="OpenSlides Authentication Service"
-LABEL org.opencontainers.image.description="Service for OpenSlides which handles the authentication of users."
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.source="https://github.com/OpenSlides/openslides-auth-service"
-
 EXPOSE 9004
 
 ## Command

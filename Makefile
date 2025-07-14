@@ -5,8 +5,14 @@ override TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml exec
 
 # Build images for different contexts
 
-build build-prod build-dev build-tests:
-	bash $(MAKEFILE_PATH)/make-build-service.sh $@ $(SERVICE)
+build-prod:
+	docker build ./ --tag "openslides-$(SERVICE)" --build-arg CONTEXT="prod" --target "prod"
+
+build-dev:
+	docker build ./ --tag "openslides-$(SERVICE)-dev" --build-arg CONTEXT="dev" --target "dev"
+
+build-test:
+	docker build ./ --tag "openslides-$(SERVICE)-tests" --build-arg CONTEXT="tests" --target "tests"
 
 # Development
 
@@ -16,7 +22,6 @@ run-dev%:
 	bash $(MAKEFILE_PATH)/make-run-dev.sh "$@" "$(SERVICE)" "$(DOCKER_COMPOSE_FILE)" "$(ARGS)" "$(USED_SHELL)"
 
 # Tests
-
 run-tests:
 	bash dev/run-tests.sh
 
@@ -74,3 +79,34 @@ run-check-flake8: | deprecation-warning run-pre-test
 
 run-check-mypy: | deprecation-warning run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+
+## TODO
+run-test-ci: | run-pre-test
+	@echo "########################################################################"
+	@echo "###################### Start full system tests #########################"
+	@echo "########################################################################"
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth pytest
+
+run-cleanup-ci: | build-dev
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml down
+
+
+## Deprecated
+
+run-tests run-test:
+	bash dev/run-tests.sh
+
+run-test-and-stop: | run-test
+	stop-dev
+
+run-test-prod: | build-prod
+	docker compose -f .github/startup-test/docker-compose.yml up -d
+	docker compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
+	docker compose -f .github/startup-test/docker-compose.yml down
+
+stop-dev:
+	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
