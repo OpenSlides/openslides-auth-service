@@ -29,7 +29,7 @@ DC_AUTH="$DC exec -T auth"
 DC_PIP="$DC exec -w /app/libraries/pip-auth/"
 
 # Safe Exit
-trap 'if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down"' EXIT
+trap 'if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down"; fi' EXIT
 
 # Optionally build & start
 if [ -z "$SKIP_BUILD" ]; then make build-tests; fi
