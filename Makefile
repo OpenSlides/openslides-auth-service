@@ -16,25 +16,25 @@ build-tests:
 
 # Development
 
-.PHONY: run-dev%
+.PHONY: dev%
 
-run-dev%:
-	bash $(MAKEFILE_PATH)/make-run-dev.sh "$@" "$(SERVICE)" "$(DOCKER_COMPOSE_FILE)" "$(ARGS)" "$(USED_SHELL)"
+dev%:
+	bash $(MAKEFILE_PATH)/make-dev.sh "$@" "$(SERVICE)" "$(DOCKER_COMPOSE_FILE)" "$(ARGS)" "$(USED_SHELL)"
 
 # Tests
 run-tests:
 	bash dev/run-tests.sh
 
-run-lint:
+lint:
 	bash dev/run-lint.sh -l
 
 # Cleanup
 
 run-cleanup:
-	make run-dev-detached ARGS="auth"
-	make run-dev-exec ARGS="auth ./wait-for.sh auth:9004"
-	make run-dev-exec ARGS="auth npm run cleanup"
-	make run-dev-stop
+	make dev-detached ARGS="auth"
+	make dev-exec ARGS="auth ./wait-for.sh auth:9004"
+	make dev-exec ARGS="auth npm run cleanup"
+	make dev-stop
 
 
 ########################## Deprecation List ##########################
@@ -43,7 +43,7 @@ deprecation-warning:
 	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh
 
 stop-dev:
-	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh "run-dev-stop"
+	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh "dev-stop"
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
 
 run-test:
