@@ -10,9 +10,6 @@ echo "########################################################################"
 while getopts "lscp" FLAG; do
     case "${FLAG}" in
     l) LOCAL=true ;;
-    s) SKIP_BUILD=true ;;
-    c) SKIP_CONTAINER_UP=true ;;
-    p) PERSIST_CONTAINERS=true ;;
     *) echo "Can't parse flag ${FLAG}" && break ;;
     esac
 done
@@ -29,16 +26,29 @@ DC_AUTH="$DC exec -T auth"
 DC_PIP="$DC exec -w /app/libraries/pip-auth/"
 
 # Safe Exit
-trap 'if [ -z "$PERSIST_CONTAINERS" ] && [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC down"; fi' EXIT
-
-# Optionally build & start
-if [ -z "$SKIP_BUILD" ]; then make build-tests; fi
-if [ -z "$SKIP_CONTAINER_UP" ]; then eval "$DC up -d"; fi
+trap 'if [ -z "$LOCAL" ]; then eval "$DC down"; fi' EXIT
 
 # Execution
-eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")npm run lint-check"
-eval "$( [ -z "$LOCAL" ] && echo "$DC_AUTH ")auth npm run prettify-check"
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth black --check --diff authlib/ tests/"
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth isort --check-only --diff authlib/ tests/"
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth flake8 authlib/ tests/"
-eval "$( [ -z "$LOCAL" ] && echo "$DC_PIP ")-T auth mypy authlib/ tests/"
+if [ -z "$LOCAL" ]
+then
+    # Setup
+    make build-tests
+
+    eval "$DC up -d"
+
+    # Container Mode
+    eval "$DC_AUTH npm run lint-check"
+    eval "$DC_AUTH auth npm run prettify-check"
+    eval "$DC_PIP -T auth black --check --diff authlib/ tests/"
+    eval "$DC_PIP -T auth isort --check-only --diff authlib/ tests/"
+    eval "$DC_PIP -T auth flake8 authlib/ tests/"
+    eval "$DC_PIP -T auth mypy authlib/ tests/"
+else
+    # Local Mode
+    npm run lint-check
+    npm run prettify-check
+    black --check --diff authlib/ tests/
+    isort --check-only --diff authlib/ tests/
+    flake8 authlib/ tests/
+    mypy authlib/ tests/
+fi

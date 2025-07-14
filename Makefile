@@ -93,20 +93,3 @@ run-cleanup-ci: | build-dev
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml down
-
-
-## Deprecated
-
-run-tests run-test:
-	bash dev/run-tests.sh
-
-run-test-and-stop: | run-test
-	stop-dev
-
-run-test-prod: | build-prod
-	docker compose -f .github/startup-test/docker-compose.yml up -d
-	docker compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
-	docker compose -f .github/startup-test/docker-compose.yml down
-
-stop-dev:
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
