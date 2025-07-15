@@ -16,9 +16,7 @@ build-tests:
 
 # Development
 
-.PHONY: dev%
-
-dev%:
+dev dev-help dev-standalone dev-detached dev-attached dev-stop dev-exec dev-enter:
 	bash $(MAKEFILE_PATH)/make-dev.sh "$@" "$(SERVICE)" "$(DOCKER_COMPOSE_FILE)" "$(ARGS)" "$(USED_SHELL)"
 
 # Tests
@@ -28,6 +26,13 @@ run-tests:
 lint:
 	bash dev/run-lint.sh -l
 
+run-test-ci: | run-pre-test
+	@echo "########################################################################"
+	@echo "###################### Start full system tests #########################"
+	@echo "########################################################################"
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth pytest
+
 # Cleanup
 
 run-cleanup:
@@ -35,7 +40,6 @@ run-cleanup:
 	make dev-exec ARGS="auth ./wait-for.sh auth:9004"
 	make dev-exec ARGS="auth npm run cleanup"
 	make dev-stop
-
 
 ########################## Deprecation List ##########################
 
@@ -80,15 +84,7 @@ run-check-flake8: | deprecation-warning run-pre-test
 run-check-mypy: | deprecation-warning run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
-## TODO
-run-test-ci: | run-pre-test
-	@echo "########################################################################"
-	@echo "###################### Start full system tests #########################"
-	@echo "########################################################################"
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth pytest
-
-run-cleanup-ci: | build-dev
+run-cleanup-ci: | deprecation-warning build-dev
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
