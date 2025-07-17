@@ -1,7 +1,5 @@
 override SERVICE=auth
-override MAKEFILE_PATH=../dev/scripts/makefile
-override DOCKER_COMPOSE_FILE=./docker-compose.dev.yml
-override TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml exec
+override TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml
 
 # Build images for different contexts
 
@@ -14,13 +12,6 @@ build-dev:
 build-tests:
 	docker build ./ --tag "openslides-$(SERVICE)-tests" --build-arg CONTEXT="tests" --target "tests"
 
-# Development
-
-.PHONY: dev
-
-dev dev-help dev-standalone dev-detached dev-attached dev-stop dev-exec dev-enter:
-	bash $(MAKEFILE_PATH)/make-dev.sh "$@" "$(SERVICE)" "$(DOCKER_COMPOSE_FILE)" "$(ARGS)" "$(USED_SHELL)"
-
 # Tests
 run-tests:
 	bash dev/run-tests.sh
@@ -32,8 +23,8 @@ run-test-ci: | run-pre-test
 	@echo "########################################################################"
 	@echo "###################### Start full system tests #########################"
 	@echo "########################################################################"
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth pytest
+	$(TEST_DC) exec -T auth npm run test
+	$(TEST_DC) exec -T auth pytest
 
 # Cleanup
 
@@ -68,29 +59,29 @@ run-test-prod: | deprecation-warning build-prod
 	docker compose -f .github/startup-test/docker-compose.yml down
 
 run-pre-test: | deprecation-warning build-tests
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth ./wait-for.sh auth:9004
+	$(TEST_DC) up -d
+	$(TEST_DC) exec -T auth ./wait-for.sh auth:9004
 
 run-check-lint: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run lint-check
+	$(TEST_DC) exec -T auth npm run lint-check
 
 run-check-prettify: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run prettify-check
+	$(TEST_DC) exec -T auth npm run prettify-check
 
 run-check-black: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
 
 run-check-isort: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
 
 run-check-flake8: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
 
 run-check-mypy: | deprecation-warning run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
 
 run-cleanup-ci: | deprecation-warning build-dev
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml up -d
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth ./wait-for.sh auth:9004
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec auth npm run cleanup
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml down
+	$(TEST_DC) up -d
+	$(TEST_DC) exec auth ./wait-for.sh auth:9004
+	$(TEST_DC) exec auth npm run cleanup
+	$(TEST_DC) down
