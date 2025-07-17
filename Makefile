@@ -46,14 +46,17 @@ run-cleanup:
 ########################## Deprecation List ##########################
 
 deprecation-warning:
-	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh
+	@echo "\033[1;33m DEPRECATION WARNING: This make command is deprecated and will be removed soon! \033[0m"
+
+deprecation-warning-alternative: | deprecation-warning
+	@echo "\033[1;33m Please use the following command instead: $(ALTERNATIVE) \033[0m"
 
 stop-dev:
-	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh "dev-stop"
+	@make deprecation-warning-alternative ALTERNATIVE="dev-stop"
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
 
 run-test:
-	bash $(MAKEFILE_PATH)/make-deprecation-warning.sh "run-tests"
+	@make deprecation-warning-alternative ALTERNATIVE="run-tests"
 	bash dev/run-tests.sh
 
 run-test-and-stop: | deprecation-warning run-test
