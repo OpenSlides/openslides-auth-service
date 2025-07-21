@@ -24,7 +24,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 # Development Image
 FROM base as dev
 
-ENV OPENSLIDES_DEVELOPMENT 1
+ENV OPENSLIDES_DEVELOPMENT=1
 
 # Test Image
 FROM base as tests
@@ -34,7 +34,7 @@ RUN (apk add --no-cache \
     python3 python3-dev py3-pip gcc libc-dev) && \
     pip install --no-cache-dir --break-system-packages -r ./libraries/pip-auth/requirements.txt -r ./libraries/pip-auth/requirements_development.txt
 
-ENV OPENSLIDES_DEVELOPMENT 1
+ENV OPENSLIDES_DEVELOPMENT=1
 
 # Production Image
 FROM base as build
