@@ -1,4 +1,4 @@
-ARG CONTEXT=prod
+ ARG CONTEXT=prod
 
 FROM node:22.17-alpine AS base
 
@@ -22,12 +22,12 @@ CMD ["./command.sh"]
 ENTRYPOINT ["./entrypoint.sh"]
 
 # Development Image
-FROM base as dev
+FROM base AS dev
 
 ENV OPENSLIDES_DEVELOPMENT=1
 
 # Test Image
-FROM base as tests
+FROM base AS tests
 
 ## Install Pip & dependencies
 RUN (apk add --no-cache \
@@ -37,7 +37,7 @@ RUN (apk add --no-cache \
 ENV OPENSLIDES_DEVELOPMENT=1
 
 # Production Image
-FROM base as build
+FROM base AS build
 
 # Now the source-files can be transpiled
 RUN npm run build && \
