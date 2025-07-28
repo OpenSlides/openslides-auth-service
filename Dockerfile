@@ -1,4 +1,4 @@
- ARG CONTEXT=prod
+ARG CONTEXT=prod
 
 FROM node:22.17-alpine AS base
 
