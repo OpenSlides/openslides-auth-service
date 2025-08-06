@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/auth/libraries/pip-auth/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     assignees:
       - "bastianjoel"
     open-pull-requests-limit: 42
@@ -11,7 +11,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/auth/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     assignees:
       - "bastianjoel"
     groups:
@@ -26,14 +26,14 @@ updates:
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     assignees:
       - "bastianjoel"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     assignees:
       - "bastianjoel"
       - "rrenkert"
