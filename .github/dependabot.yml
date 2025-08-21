@@ -3,9 +3,9 @@ updates:
   - package-ecosystem: "pip"
     directory: "/auth/libraries/pip-auth/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     assignees:
-      - "bastianjoel"
+      - "hjanott"
     open-pull-requests-limit: 42
 
   - package-ecosystem: "npm"
