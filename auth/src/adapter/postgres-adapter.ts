@@ -2,15 +2,14 @@ import { readFileSync } from 'fs';
 import { Pool, PoolClient } from 'pg';
 
 import { Config } from '../config';
-import { Datastore, GetManyAnswer, WriteRequest, EventType } from '../api/interfaces/datastore';
+import { GetManyAnswer, WriteRequest, EventType } from '../api/interfaces/datastore';
 import { Id } from '../core/key-transforms';
 import { Logger } from '../api/services/logger';
 
-export class PostgresAdapter extends Datastore {
+export class PostgresAdapter {
     private pool: Pool;
 
     constructor() {
-        super();
         this.initializePool();
     }
 
@@ -170,6 +169,9 @@ export class PostgresAdapter extends Datastore {
         let paramIndex = 1;
 
         for (const [field, value] of Object.entries(fields)) {
+            if (field === 'meta_deleted') {
+                continue; // Skip meta_deleted field - doesn't exist in Postgres
+            }
             const dbColumn = this.mapFieldToDbColumn(field);
             if (dbColumn) {
                 updates.push(`${dbColumn} = $${paramIndex}`);
@@ -204,15 +206,17 @@ export class PostgresAdapter extends Datastore {
             is_active: 'is_active',
             email: 'email',
             last_login: 'last_login',
-            saml_id: 'saml_id',
-            meta_deleted: '' // This field doesn't exist in Postgres - objects are actually deleted
+            saml_id: 'saml_id'
         };
 
         return fieldMapping[field] || field;
     }
 
     private mapFieldsToDbColumns(fields: string[]): string[] {
-        return fields.map(field => this.mapFieldToDbColumn(field)).filter(field => field && field !== '');
+        return fields
+            .filter(field => field !== 'meta_deleted') // Exclude meta_deleted from SQL queries
+            .map(field => this.mapFieldToDbColumn(field))
+            .filter(field => field && field !== '');
     }
 
     private transformUserFromDb(row: any): any {
