@@ -9,9 +9,34 @@ const getUrl = (hostVar: string, portVar: string): string => {
 
 export class Config {
     public static readonly DATABASE_PATH = 'database/';
-    public static readonly DATASTORE_READER = getUrl('DATASTORE_READER_HOST', 'DATASTORE_READER_PORT');
-    public static readonly DATASTORE_WRITER = getUrl('DATASTORE_WRITER_HOST', 'DATASTORE_WRITER_PORT');
-    public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
+
+    // Datastore URLs - only initialize if environment variables are available
+    public static get DATASTORE_READER(): string {
+        const host = process.env.DATASTORE_READER_HOST;
+        const port = process.env.DATASTORE_READER_PORT;
+        if (!host || !port) {
+            throw new Error('DATASTORE_READER_HOST or DATASTORE_READER_PORT is not defined.');
+        }
+        return `http://${host}:${parseInt(port, 10)}`;
+    }
+
+    public static get DATASTORE_WRITER(): string {
+        const host = process.env.DATASTORE_WRITER_HOST;
+        const port = process.env.DATASTORE_WRITER_PORT;
+        if (!host || !port) {
+            throw new Error('DATASTORE_WRITER_HOST or DATASTORE_WRITER_PORT is not defined.');
+        }
+        return `http://${host}:${parseInt(port, 10)}`;
+    }
+
+    public static get ACTION_URL(): string {
+        const host = process.env.ACTION_HOST;
+        const port = process.env.ACTION_PORT;
+        if (!host || !port) {
+            throw new Error('ACTION_HOST or ACTION_PORT is not defined.');
+        }
+        return `http://${host}:${parseInt(port, 10)}`;
+    }
 
     // PostgreSQL configuration
     public static readonly DATABASE_HOST = process.env.DATABASE_HOST || 'localhost';
