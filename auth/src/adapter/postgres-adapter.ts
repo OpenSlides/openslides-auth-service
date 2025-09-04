@@ -16,7 +16,14 @@ export class PostgresAdapter extends Datastore {
 
     private initializePool(): void {
         try {
-            const password = readFileSync(Config.DATABASE_PASSWORD_FILE, 'utf8').trim();
+            let password: string;
+            if (Config.isDevMode()) {
+                password = 'openslides';
+                Logger.debug('Using development password for PostgreSQL');
+            } else {
+                password = readFileSync(Config.DATABASE_PASSWORD_FILE, 'utf8').trim();
+                Logger.debug('Using password from file for PostgreSQL');
+            }
             this.pool = new Pool({
                 host: Config.DATABASE_HOST,
                 port: Config.DATABASE_PORT,
