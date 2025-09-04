@@ -54,7 +54,6 @@
         "istanbul-badges-readme": "^1.9.0",
         "jest": "^29.7.0",
         "nodemon": "^3.1.10",
-        "pg": "^8.16.3",
         "prettier": "^3.6.2",
         "ts-jest": "^29.4.1",
         "ts-node": "^10.9.2",
@@ -75,6 +74,7 @@
         "response-time": "^2.3.4",
         "rest-app": "^1.0.0-alpha.9",
         "samlify": "2.10.1",
+        "pg": "^8.16.3",
         "tslib": "^2.8.1"
     }
 }

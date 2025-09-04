@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  auth:
+    build:
+      target: "$CONTEXT"
+      args:
+        CONTEXT: "$CONTEXT"
+    image: openslides-auth-$CONTEXT
+    user: $USER_ID:$GROUP_ID
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - MESSAGE_BUS_HOST=redis
+      - MESSAGE_BUS_PORT=6379
+      - AUTH_HOST=auth
+      - AUTH_PORT=9004
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=openslides
+      - DATABASE_USER=openslides
+      - DATABASE_PASSWORD_FILE=/run/secrets/postgres_password
+      - OPENSLIDES_DEVELOPMENT=1
+    volumes:
+      - ./auth/libraries:/app/libraries
+      - ./auth/src:/app/src
+      - ./auth/test:/app/test
+      - ./postgres_password.txt:/run/secrets/postgres_password:ro
+    ports:
+      - "9004:9004"
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=openslides
+      - POSTGRES_PASSWORD=openslides
+      - POSTGRES_DB=openslides
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

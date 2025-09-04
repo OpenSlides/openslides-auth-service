@@ -8,7 +8,7 @@
         "sourceMap": false,
         "removeComments": true,
         "experimentalDecorators": true,
-        "target": "ES6",
+        "target": "ES2017",
         "esModuleInterop": true,
         "emitDecoratorMetadata": true,
         "moduleResolution": "node",

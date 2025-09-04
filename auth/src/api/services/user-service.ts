@@ -3,7 +3,7 @@ import { Id } from 'src/core/key-transforms';
 
 import { HashingService } from './hashing-service';
 import { Logger } from './logger';
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
+import { PostgresAdapter } from '../../adapter/postgres-adapter';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { User } from '../../core/models/user';
 import { Datastore, EventType, GetManyAnswer } from '../interfaces/datastore';
@@ -15,7 +15,7 @@ const dummyPassword =
     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM';
 
 export class UserService implements UserHandler {
-    @Factory(DatastoreAdapter)
+    @Factory(PostgresAdapter)
     private readonly _datastore: Datastore;
 
     @Factory(HashingService)
