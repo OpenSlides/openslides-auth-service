@@ -58,8 +58,8 @@ export class PostgresAdapter extends Datastore {
 
         const client = await this.pool.connect();
         try {
-            const fields = mappedFields ? mappedFields.join(', ') : '*';
-            const query = `SELECT ${fields} FROM user_t WHERE id = $1 AND is_active = true`;
+            const fields = mappedFields ? this.mapFieldsToDbColumns(mappedFields as string[]).join(', ') : '*';
+            const query = `SELECT ${fields} FROM user_t WHERE id = $1`;
             const result = await client.query(query, [id]);
 
             if (result.rows.length === 0) {
@@ -90,9 +90,9 @@ export class PostgresAdapter extends Datastore {
 
         const client = await this.pool.connect();
         try {
-            const fields = mappedFields ? mappedFields.join(', ') : '*';
+            const fields = mappedFields ? this.mapFieldsToDbColumns(mappedFields as string[]).join(', ') : '*';
             const dbField = this.mapFieldToDbColumn(filterField as string);
-            const query = `SELECT ${fields} FROM user_t WHERE ${dbField} = $1 AND is_active = true`;
+            const query = `SELECT ${fields} FROM user_t WHERE ${dbField} = $1`;
             const result = await client.query(query, [filterValue]);
 
             const answer: GetManyAnswer<T> = {};
@@ -124,7 +124,7 @@ export class PostgresAdapter extends Datastore {
         const client = await this.pool.connect();
         try {
             const dbField = this.mapFieldToDbColumn(filterField as string);
-            const query = `SELECT 1 FROM user_t WHERE ${dbField} = $1 AND is_active = true LIMIT 1`;
+            const query = `SELECT 1 FROM user_t WHERE ${dbField} = $1 LIMIT 1`;
             const result = await client.query(query, [filterValue]);
 
             return {
@@ -205,10 +205,14 @@ export class PostgresAdapter extends Datastore {
             email: 'email',
             last_login: 'last_login',
             saml_id: 'saml_id',
-            meta_deleted: '' // This doesn't exist in our Postgres schema, we use is_active instead
+            meta_deleted: '' // This field doesn't exist in Postgres - objects are actually deleted
         };
 
         return fieldMapping[field] || field;
+    }
+
+    private mapFieldsToDbColumns(fields: string[]): string[] {
+        return fields.map(field => this.mapFieldToDbColumn(field)).filter(field => field && field !== '');
     }
 
     private transformUserFromDb(row: any): any {
@@ -220,7 +224,7 @@ export class PostgresAdapter extends Datastore {
             email: row.email,
             last_login: row.last_login ? Math.floor(new Date(row.last_login).getTime() / 1000) : null,
             saml_id: row.saml_id,
-            meta_deleted: !row.is_active // Map is_active to meta_deleted logic
+            meta_deleted: false // In Postgres, deleted objects are actually deleted, so this is always false
         };
     }
 
