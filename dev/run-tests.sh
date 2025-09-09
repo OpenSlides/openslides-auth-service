@@ -18,7 +18,7 @@ done
 
 # Setup
 IMAGE_TAG=openslides-auth-tests
-LOCAL_PWD=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+LOCAL_PWD=$(dirname "$0")
 
 # Helpers
 USER_ID=$(id -u)
