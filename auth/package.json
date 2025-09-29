@@ -68,7 +68,7 @@
         "@opentelemetry/instrumentation-http": "^0.57.2",
         "@opentelemetry/sdk-node": "^0.57.2",
         "argon2": "^0.44.0",
-        "axios": "^1.11.0",
+        "axios": "^1.12.2",
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^5.8.0",
         "jsonwebtoken": "^9.0.2",
