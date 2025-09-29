@@ -70,7 +70,7 @@
         "argon2": "^0.44.0",
         "axios": "^1.11.0",
         "final-di": "^1.0.10-alpha.1",
-        "ioredis": "^5.7.0",
+        "ioredis": "^5.8.0",
         "jsonwebtoken": "^9.0.2",
         "response-time": "^2.3.4",
         "rest-app": "^1.0.0-alpha.9",
