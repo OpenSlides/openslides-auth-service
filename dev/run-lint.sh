@@ -38,7 +38,7 @@ then
 
     # Container Mode
     eval "$DC_AUTH npm run lint-check"
-    eval "$DC_AUTH auth npm run prettify-check"
+    eval "$DC_AUTH npm run prettify-check"
     eval "$DC_PIP -T auth black --check --diff authlib/ tests/"
     eval "$DC_PIP -T auth isort --check-only --diff authlib/ tests/"
     eval "$DC_PIP -T auth flake8 authlib/ tests/"
