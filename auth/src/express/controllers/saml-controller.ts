@@ -3,7 +3,7 @@ import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 import * as samlify from 'samlify';
 
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
+import { PostgresAdapter } from '../../adapter/postgres-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
@@ -71,7 +71,7 @@ export class SamlController {
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
 
-    @Factory(DatastoreAdapter)
+    @Factory(PostgresAdapter)
     private readonly _datastore: Datastore;
 
     @Factory(SecretService)
