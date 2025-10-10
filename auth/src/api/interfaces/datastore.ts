@@ -7,11 +7,6 @@ export interface GetManyAnswer<T> {
     [key: string]: T;
 }
 
-export interface ExistsAnswer {
-    exists: boolean;
-    position: Position;
-}
-
 export enum EventType {
     CREATE = 'create',
     UPDATE = 'update',
@@ -57,11 +52,5 @@ export abstract class Datastore {
         filterValue: string | number,
         mappedFields: (keyof T)[]
     ): Promise<GetManyAnswer<T>>;
-    public abstract exists<T>(
-        collection: string,
-        filterField: keyof T,
-        filterValue: string | number
-    ): Promise<{ exists: boolean; position: number }>;
-
     public abstract write(writeRequest: WriteRequest): Promise<void>;
 }

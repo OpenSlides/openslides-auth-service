@@ -10,11 +10,6 @@ interface FilterResponse<T> {
     data: GetManyAnswer<T>;
 }
 
-interface ExistsResponse {
-    position: number;
-    exists: boolean;
-}
-
 export class DatastoreAdapter extends Datastore {
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
@@ -52,22 +47,6 @@ export class DatastoreAdapter extends Datastore {
             { observe: 'data' }
         );
         return (response as FilterResponse<T>).data;
-    }
-
-    public async exists<T>(
-        collection: string,
-        filterField: keyof T,
-        filterValue: string | number
-    ): Promise<ExistsResponse> {
-        return (await this._httpHandler.post(
-            `${this.datastoreReader}/exists`,
-            {
-                collection,
-                filter: { field: filterField, value: filterValue, operator: '=' }
-            },
-            {},
-            { observe: 'data' }
-        )) as ExistsResponse;
     }
 
     public async write(writeRequest: WriteRequest): Promise<void> {
