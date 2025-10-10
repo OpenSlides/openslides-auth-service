@@ -10,8 +10,7 @@ services:
     user: $USER_ID:$GROUP_ID
     restart: always
     depends_on:
-      - datastore-reader
-      - datastore-writer
+      - postgres
       - redis
     env_file: services.env
     volumes:
@@ -20,44 +19,6 @@ services:
       - ./auth/test:/app/test
     ports:
       - "9004:9004"
-
-  datastore-reader:
-    build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
-      target: "prod"
-      dockerfile: Dockerfile
-      args:
-        MODULE: "reader"
-        PORT: "9010"
-        CONTEXT: "prod"
-    image: openslides-datastore-reader
-    ports:
-      - "9010:9010"
-    environment:
-      - DATASTORE_DATABASE_HOST=postgres
-      - OPENSLIDES_DEVELOPMENT=1
-      - NUM_WORKERS=8
-    depends_on:
-      - postgres
-
-  datastore-writer:
-    build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
-      target: "prod"
-      dockerfile: Dockerfile
-      args:
-        MODULE: "writer"
-        PORT: "9011"
-        CONTEXT: "prod"
-    image: openslides-datastore-writer
-    ports:
-      - "9011:9011"
-    environment:
-      - DATASTORE_DATABASE_HOST=postgres
-      - OPENSLIDES_DEVELOPMENT=1
-    depends_on:
-      - postgres
-      - redis
 
   postgres:
     image: postgres:15
