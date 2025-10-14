@@ -1,4 +1,5 @@
 import { BaseModel } from 'src/core/base/base-model';
+
 import { Config } from '../../config';
 import { Id } from '../../core/key-transforms';
 
@@ -43,9 +44,6 @@ export interface WriteRequest {
 }
 
 export abstract class Datastore {
-    protected datastoreReader = `${Config.DATASTORE_READER}/internal/datastore/reader`;
-    protected datastoreWriter = `${Config.DATASTORE_WRITER}/internal/datastore/writer`;
-
     public abstract get<T extends BaseModel>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<T>;
     public abstract filter<T extends BaseModel>(
         collection: string,

@@ -9,8 +9,6 @@ const getUrl = (hostVar: string, portVar: string): string => {
 
 export class Config {
     public static readonly DATABASE_PATH = 'database/';
-    public static readonly DATASTORE_READER = getUrl('DATASTORE_READER_HOST', 'DATASTORE_READER_PORT');
-    public static readonly DATASTORE_WRITER = getUrl('DATASTORE_WRITER_HOST', 'DATASTORE_WRITER_PORT');
     public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
     public static readonly DATABASE_HOST = process.env.DATABASE_HOST || 'localhost';
     public static readonly DATABASE_PORT = parseInt(process.env.DATABASE_PORT || '5432', 10);

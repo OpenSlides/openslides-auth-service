@@ -1,7 +1,7 @@
 import { BaseModel } from '../base/base-model';
 import { Id } from '../key-transforms';
 
-export class User extends BaseModel<User> {
+export class User extends BaseModel {
     public static readonly COLLECTION = 'user';
 
     public readonly id: Id;

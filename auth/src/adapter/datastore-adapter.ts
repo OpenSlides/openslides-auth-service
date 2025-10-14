@@ -1,9 +1,9 @@
 import { Pool, PoolClient } from 'pg';
-import { Logger } from 'src/api/services/logger';
-import { Config } from 'src/config';
-import { BaseModel } from 'src/core/base/base-model';
 
 import { Datastore, EventType, GetManyAnswer, WriteRequest } from '../api/interfaces/datastore';
+import { Logger } from '../api/services/logger';
+import { Config } from '../config';
+import { BaseModel, BaseModelType } from '../core/base/base-model';
 import { Id } from '../core/key-transforms';
 
 
@@ -89,7 +89,7 @@ export class DatastoreAdapter extends Datastore {
 
             const answer: GetManyAnswer<T> = {};
             for (const row of result.rows) {
-                answer[(row as {[key:string]:any}).id as number] = this.replaceDbTimestamps(row) as T;
+                answer[(row as BaseModelType).id as number] = this.replaceDbTimestamps(row) as T;
             }
 
             return answer;
@@ -132,7 +132,7 @@ export class DatastoreAdapter extends Datastore {
         Logger.debug('PostgreSQL pool closed');
     }
 
-    private replaceDbTimestamps(row: {[key:string]:any}): {[key:string]:any} {
+    private replaceDbTimestamps(row: BaseModelType): object {
         for (const [key, val] of Object.entries(row)) {
             if (val instanceof Date) {
                 row[key] = Math.floor(val.getTime() / 1000)
