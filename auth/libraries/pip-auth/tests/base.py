@@ -1,7 +1,7 @@
 import unittest
 
-from authlib.auth_handler import AuthHandler
-from authlib.message_bus import MessageBus
+from osauthlib.auth_handler import AuthHandler
+from osauthlib.message_bus import MessageBus
 
 from .fake_request import FakeRequest
 
