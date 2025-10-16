@@ -6,13 +6,11 @@ import { Config } from '../config';
 import { BaseModel, BaseModelType } from '../core/base/base-model';
 import { Id } from '../core/key-transforms';
 
-
 export class DatastoreAdapter extends Datastore {
-
-    private _pool: Pool
+    private _pool: Pool;
 
     public constructor() {
-        super()
+        super();
 
         try {
             if (!Config.isDevMode()) {
@@ -25,10 +23,10 @@ export class DatastoreAdapter extends Datastore {
                 database: Config.DATABASE_NAME,
                 user: Config.DATABASE_USER,
                 password,
-                min:Config.DB_POOL_MIN_SIZE,
-                max:Config.DB_POOL_MAX_SIZE,
+                min: Config.DB_POOL_MIN_SIZE,
+                max: Config.DB_POOL_MAX_SIZE,
                 idleTimeoutMillis: Config.DB_IDLE_TIMEOUT,
-                connectionTimeoutMillis: Config.DB_CONNECTION_TIMEOUT,
+                connectionTimeoutMillis: Config.DB_CONNECTION_TIMEOUT
                 // connectionString:
                 // keepAlive:
                 // stream:
@@ -50,10 +48,10 @@ export class DatastoreAdapter extends Datastore {
                 // maxUses:
                 // Client:
             });
-            this._pool.on('error', (err) => {
+            this._pool.on('error', err => {
                 Logger.error('PostgreSQL pool error:', err);
             });
-            Logger.debug('PostgreSQL pool initialized.')
+            Logger.debug('PostgreSQL pool initialized.');
         } catch (error) {
             Logger.error('Failed to initialize PostgreSQL pool:', error);
             throw error;
@@ -69,9 +67,9 @@ export class DatastoreAdapter extends Datastore {
             if (result.rows.length === 0) {
                 return {} as T;
             }
-            return this.replaceDbTimestamps(result.rows[0]) as T
+            return this.replaceDbTimestamps(result.rows[0]) as T;
         } finally {
-            client.release()
+            client.release();
         }
     }
 
@@ -105,7 +103,7 @@ export class DatastoreAdapter extends Datastore {
 
             for (const event of writeRequest.events) {
                 if (event.type === EventType.UPDATE) {
-                    const [collection, id]: [string, string] = event.fqid.split('/') as  [string, string];
+                    const [collection, id]: [string, string] = event.fqid.split('/') as [string, string];
                     if (collection === 'user') {
                         await this.updateUser(client, parseInt(id, 10), event.fields);
                     } else {
@@ -135,10 +133,10 @@ export class DatastoreAdapter extends Datastore {
     private replaceDbTimestamps(row: BaseModelType): object {
         for (const [key, val] of Object.entries(row)) {
             if (val instanceof Date) {
-                row[key] = Math.floor(val.getTime() / 1000)
+                row[key] = Math.floor(val.getTime() / 1000);
             }
         }
-        return row
+        return row;
     }
 
     private async updateUser(client: PoolClient, userId: number, fields: { [key: string]: unknown }): Promise<void> {

@@ -4,9 +4,12 @@ import { FakePostgreAdapter } from './fake-postgre-adapter';
 import { FAKE_ADMIN_ID } from './fake-user';
 import { Id } from '../src/core/key-transforms';
 import { User } from '../src/core/models/user';
+import { BaseModel } from '../src/core/base/base-model';
 
 export class FakeDatastoreAdapter {
     private datastore = new DatastoreAdapter();
+
+    // private data: {[key:string]: BaseModel} = {}
 
     public constructor(private readonly _postgre: FakePostgreAdapter) {}
 
@@ -23,7 +26,7 @@ export class FakeDatastoreAdapter {
         await this._postgre.prune();
     }
 
-    public async get<T>(collection: string, id: Id): Promise<T> {
+    public async get<T extends BaseModel>(collection: string, id: Id): Promise<T> {
         return await this.datastore.get<T>(collection, id);
     }
 
@@ -39,4 +42,36 @@ export class FakeDatastoreAdapter {
     public async closeConnection(): Promise<void> {
         await this._postgre.closeConnection();
     }
+
+
+    // public async isReady(): Promise<boolean> {
+    //     return true;
+    // }
+
+    // public async prune(): Promise<void> {
+    //     this.data = {};
+    // }
+
+    // public async get<T extends BaseModel>(collection: string, id: Id): Promise<T> {
+    //     return this.data[`${collection}/${id}`] as T
+    // }
+
+    // public async write(events: DatastoreEvent[]): Promise<void> {
+    //     for (let event of events) {
+    //         switch (event.type) {
+    //             case EventType.CREATE:
+    //                 this.data[event.fqid] = event.fields;
+    //                 break;
+    //             case EventType.UPDATE:
+    //                 Object.assign(this.data[event.fqid], event.fields);
+    //                 break;
+    //             case EventType.DELETE:
+    //                 delete this.data[event.fqid];
+    //         }
+    //     }
+    // }
+
+    // public async closeConnection(): Promise<void> {
+    //     return
+    // }
 }

@@ -13,12 +13,18 @@ services:
       - postgres
       - redis
     env_file: services.env
+    environment:
+      - POSTGRES_USER=openslides
+      - POSTGRES_PASSWORD=openslides
+      - POSTGRES_DB=openslides
+      - PGPASSWORD=openslides
     volumes:
       - ./auth/libraries:/app/libraries
       - ./auth/src:/app/src
       - ./auth/test:/app/test
     ports:
       - "9004:9004"
+      - "9229:9229"
 
   postgres:
     image: postgres:15
@@ -26,8 +32,15 @@ services:
       - POSTGRES_USER=openslides
       - POSTGRES_PASSWORD=openslides
       - POSTGRES_DB=openslides
+      - PGPASSWORD=openslides
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   redis:
     image: redis:alpine
     expose:
       - 6379
+  
+volumes:
+  postgres_data:
