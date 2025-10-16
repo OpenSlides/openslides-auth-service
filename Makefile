@@ -33,16 +33,16 @@ run-check-prettify: | run-pre-test
 	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -T auth npm run prettify-check
 
 run-check-black: | run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth black --check --diff osauthlib/ tests/
 
 run-check-isort: | run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff osauthlib/ tests/
 
 run-check-flake8: | run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth flake8 osauthlib/ tests/
 
 run-check-mypy: | run-pre-test
-	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+	CONTEXT="tests" docker compose -f docker-compose.dev.yml exec -w /app/libraries/pip-auth/ -T auth mypy osauthlib/ tests/
 
 run-tests:
 	bash dev/run-tests.sh
