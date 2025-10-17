@@ -6,6 +6,8 @@ import { Config } from '../config';
 import { BaseModel, BaseModelType } from '../core/base/base-model';
 import { Id } from '../core/key-transforms';
 
+type QueryData = [string[], unknown[], number];
+
 export class DatastoreAdapter extends Datastore {
     private _pool: Pool;
 
@@ -102,16 +104,23 @@ export class DatastoreAdapter extends Datastore {
             await client.query('BEGIN');
 
             for (const event of writeRequest.events) {
-                if (event.type === EventType.UPDATE) {
-                    const [collection, id]: [string, string] = event.fqid.split('/') as [string, string];
-                    if (collection === 'user') {
-                        await this.updateUser(client, parseInt(id, 10), event.fields);
-                    } else {
-                        // No need to write into any collection, except user.
-                        Logger.debug(`Unsupported collection for write: ${collection}`);
-                    }
-                } else {
-                    Logger.debug(`Unsupported event type: ${event.type}`);
+                const [collection, id]: [string, string] = event.fqid.split('/') as [string, string];
+                switch (event.type) {
+                    case EventType.UPDATE:
+                        const updateData = this.getQueryData(collection, event.fields);
+                        if (updateData) {
+                            await this.updateModel(client, collection, parseInt(id, 10), event.fields, updateData);
+                        }
+                        break;
+                    case EventType.CREATE:
+                        delete event.fields['id'];
+                        const createData = this.getQueryData(collection, event.fields);
+                        if (createData) {
+                            await this.createModel(client, collection, parseInt(id, 10), event.fields, createData);
+                        }
+                        break;
+                    default:
+                        Logger.debug(`Unsupported event type: ${event.type}`);
                 }
             }
 
@@ -139,14 +148,24 @@ export class DatastoreAdapter extends Datastore {
         return row;
     }
 
-    private async updateUser(client: PoolClient, userId: number, fields: { [key: string]: unknown }): Promise<void> {
-        const updates: string[] = [];
+    private getQueryData(collection: string, fields: { [key: string]: unknown }): QueryData | undefined {
+        if (collection === 'user') {
+            return this.getUserQueryData(fields);
+        } else {
+            // No need to write into any collection, except user.
+            Logger.debug(`Unsupported collection for write: ${collection}`);
+            return undefined;
+        }
+    }
+
+    private getUserQueryData(fields: { [key: string]: unknown }): QueryData {
+        const selectors: string[] = [];
         const values: unknown[] = [];
         let paramIndex = 1;
 
         for (const [field, value] of Object.entries(fields)) {
             if (field) {
-                updates.push(`${field} = $${paramIndex}`);
+                selectors.push(`${field} = $${paramIndex}`);
 
                 // Handle last_login timestamp conversion
                 if (field === 'last_login' && typeof value === 'number') {
@@ -157,16 +176,55 @@ export class DatastoreAdapter extends Datastore {
                 paramIndex++;
             }
         }
+        return [selectors, values, paramIndex];
+    }
 
-        if (updates.length === 0) {
+    private async updateModel(
+        client: PoolClient,
+        collection: string,
+        id: number,
+        fields: { [key: string]: unknown },
+        queryData: QueryData
+    ): Promise<void> {
+        const [selectors, values, paramIndex]: QueryData = queryData;
+        if (selectors.length === 0) {
             Logger.debug('No valid fields to update');
             return;
         }
 
-        values.push(userId);
-        const query = `UPDATE user_t SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
+        values.push(id);
+        const query = `UPDATE ${collection}_t SET ${selectors.join(', ')} WHERE id = $${paramIndex}`;
 
+        // throw Error(`DEBUG: UPDATE MODEL "${query}" "${JSON.stringify(values)}"`)
         await client.query(query, values);
-        Logger.debug(`Updated user ${userId} with fields:`, fields);
+        Logger.debug(`Updated ${collection} ${id} with fields:`, fields);
+    }
+
+    private async createModel(
+        client: PoolClient,
+        collection: string,
+        id: number,
+        fields: { [key: string]: unknown },
+        queryData: QueryData
+    ): Promise<void> {
+        const [selectors, values, paramIndex_]: QueryData = queryData;
+
+        const fieldNameList = selectors.map(date => date.split(' = ')[0]);
+        const standinList = selectors.map(date => date.split(' = ')[1]);
+        // const idIndex = fieldNameList.indexOf('id')
+        // if (idIndex !== -1){
+        //     values.splice(idIndex, 1);
+        //     fieldNameList.splice(idIndex, 1);
+        //     standinList.splice(idIndex, 1);
+        // }
+        const fieldNames = fieldNameList.join(', ');
+        const standins = standinList.join(', ');
+
+        // TODO: Is this the right format?
+        const query = `INSERT INTO ${collection}_t (${fieldNames}) VALUES (${standins})`;
+
+        // throw Error(`DEBUG: CREATE MODEL "${query}" "${JSON.stringify(values)}"`)
+        await client.query(query, values);
+        Logger.debug(`Created ${collection} ${id} with fields:`, fields);
     }
 }
