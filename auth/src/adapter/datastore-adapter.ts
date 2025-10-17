@@ -195,7 +195,6 @@ export class DatastoreAdapter extends Datastore {
         values.push(id);
         const query = `UPDATE ${collection}_t SET ${selectors.join(', ')} WHERE id = $${paramIndex}`;
 
-        // throw Error(`DEBUG: UPDATE MODEL "${query}" "${JSON.stringify(values)}"`)
         await client.query(query, values);
         Logger.debug(`Updated ${collection} ${id} with fields:`, fields);
     }
@@ -211,19 +210,11 @@ export class DatastoreAdapter extends Datastore {
 
         const fieldNameList = selectors.map(date => date.split(' = ')[0]);
         const standinList = selectors.map(date => date.split(' = ')[1]);
-        // const idIndex = fieldNameList.indexOf('id')
-        // if (idIndex !== -1){
-        //     values.splice(idIndex, 1);
-        //     fieldNameList.splice(idIndex, 1);
-        //     standinList.splice(idIndex, 1);
-        // }
         const fieldNames = fieldNameList.join(', ');
         const standins = standinList.join(', ');
 
-        // TODO: Is this the right format?
         const query = `INSERT INTO ${collection}_t (${fieldNames}) VALUES (${standins})`;
 
-        // throw Error(`DEBUG: CREATE MODEL "${query}" "${JSON.stringify(values)}"`)
         await client.query(query, values);
         Logger.debug(`Created ${collection} ${id} with fields:`, fields);
     }
