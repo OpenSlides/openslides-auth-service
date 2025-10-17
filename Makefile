@@ -68,16 +68,16 @@ run-check-prettify: | deprecation-warning run-pre-test
 	$(TEST_DC) exec -T auth npm run prettify-check
 
 run-check-black: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth black --check --diff osauthlib/ tests/
 
 run-check-isort: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff osauthlib/ tests/
 
 run-check-flake8: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth flake8 osauthlib/ tests/
 
 run-check-mypy: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth mypy osauthlib/ tests/
 
 run-cleanup-ci: | deprecation-warning build-dev
 	$(TEST_DC) up -d
