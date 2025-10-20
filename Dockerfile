@@ -1,6 +1,6 @@
 ARG CONTEXT=prod
 
-FROM node:22.19-alpine AS base
+FROM node:25.0-alpine AS base
 
 ## Setup
 ARG CONTEXT
@@ -43,7 +43,7 @@ FROM base AS build
 RUN npm run build && \
     npm prune --production
 
-FROM node:22.19-alpine AS prod
+FROM node:25.0-alpine AS prod
 
 ## Setup
 ARG CONTEXT
