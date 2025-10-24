@@ -10,7 +10,7 @@ import { Datastore, EventType, GetManyAnswer } from '../interfaces/datastore';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 
-const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted'];
+const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted', 'saml_id'];
 const dummyPassword =
     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM';
 
@@ -29,6 +29,25 @@ export class UserService implements UserHandler {
     public async getUserByUserId(userId: Id): Promise<User> {
         Logger.debug(`Get user by user id: ${userId}`);
         return await this._datastore.get<User>('user', userId, userFields);
+    }
+
+    public async getUserBySamlID(samlId: string): Promise<User> {
+        const userObj = await this.getUserCollectionFromDatastore('saml_id', samlId);
+        Logger.debug('User object by saml_id from datastore: ', userObj);
+
+        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        if (users.length > 1) {
+            Logger.error('Multiple users found for same username!');
+            throw new AuthenticationException('Multiple users with same credentials!');
+        }
+        const thisUser: User = new User(users[0]);
+        if (!thisUser.isExisting()) {
+            throw new AuthenticationException('Username is incorrect.');
+        }
+        if (!thisUser.is_active) {
+            throw new AuthenticationException('The account is deactivated.');
+        }
+        return thisUser;
     }
 
     public async getUserByUsername(username: string): Promise<User> {
