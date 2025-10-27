@@ -9,11 +9,13 @@ const getUrl = (hostVar: string, portVar: string): string => {
 
 export class Config {
     public static readonly DATABASE_PATH = 'database/';
+
     public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
     public static readonly DATABASE_HOST = process.env.DATABASE_HOST || 'localhost';
     public static readonly DATABASE_PORT = parseInt(process.env.DATABASE_PORT || '5432', 10);
     public static readonly DATABASE_NAME = process.env.DATABASE_NAME || 'openslides';
     public static readonly DATABASE_USER = process.env.DATABASE_USER || 'openslides';
+
     public static readonly DB_POOL_MIN_SIZE = parseInt(process.env.DB_POOL_MIN_SIZE || '0', 10);
     public static readonly DB_POOL_MAX_SIZE = parseInt(process.env.DB_POOL_MAX_SIZE || '10', 10);
     public static readonly DB_IDLE_TIMEOUT = parseInt(process.env.DB_IDLE_TIMEOUT || '10000', 10);

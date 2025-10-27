@@ -27,6 +27,7 @@ CREATE TABLE user_t (
 
 -- Insert test user with password 'password' hashed with argon2
 -- The hash below is for password 'password'
+
 -- INSERT INTO user_t (
 --     username,
 --     password,
