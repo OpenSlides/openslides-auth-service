@@ -21,6 +21,7 @@ export class FakePostgreAdapter {
             const client = await this.getClient();
             for (const table of ALL_TABLES) {
                 await client.query(`DELETE FROM ${table} CASCADE;`, []);
+                await client.query(`ALTER SEQUENCE ${table}_id_seq RESTART WITH 1;`, []);
             }
         } catch (e: any) {
             console.log('Error prune', e.stack);

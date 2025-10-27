@@ -1,13 +1,13 @@
-import { DatastoreEvent } from '../src/api/interfaces/datastore';
-import { DatastoreAdapter } from '../src/adapter/datastore-adapter';
+import { DatabaseEvent } from '../src/api/interfaces/database';
+import { DatabaseAdapter } from '../src/adapter/database-adapter';
 import { FakePostgreAdapter } from './fake-postgre-adapter';
 import { FAKE_ADMIN_ID } from './fake-user';
 import { Id } from '../src/core/key-transforms';
 import { User } from '../src/core/models/user';
 import { BaseModel } from '../src/core/base/base-model';
 
-export class FakeDatastoreAdapter {
-    private datastore = new DatastoreAdapter();
+export class FakeDatabaseAdapter {
+    private database = new DatabaseAdapter();
 
     // private data: {[key:string]: BaseModel} = {}
 
@@ -27,11 +27,11 @@ export class FakeDatastoreAdapter {
     }
 
     public async get<T extends BaseModel>(collection: string, id: Id): Promise<T> {
-        return await this.datastore.get<T>(collection, id);
+        return await this.database.get<T>(collection, id);
     }
 
-    public async write(events: DatastoreEvent[]): Promise<void> {
-        await this.datastore.write({
+    public async write(events: DatabaseEvent[]): Promise<void> {
+        await this.database.write({
             user_id: FAKE_ADMIN_ID,
             information: {},
             locked_fields: {},
@@ -56,7 +56,7 @@ export class FakeDatastoreAdapter {
     //     return this.data[`${collection}/${id}`] as T
     // }
 
-    // public async write(events: DatastoreEvent[]): Promise<void> {
+    // public async write(events: DatabaseEvent[]): Promise<void> {
     //     for (let event of events) {
     //         switch (event.type) {
     //             case EventType.CREATE:

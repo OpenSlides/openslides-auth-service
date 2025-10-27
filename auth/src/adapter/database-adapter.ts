@@ -1,24 +1,29 @@
 import { Pool, PoolClient } from 'pg';
 
-import { Datastore, EventType, GetManyAnswer, WriteRequest } from '../api/interfaces/datastore';
+import { Database, EventType, GetManyAnswer, WriteRequest } from '../api/interfaces/database';
 import { Logger } from '../api/services/logger';
 import { Config } from '../config';
 import { BaseModel, BaseModelType } from '../core/base/base-model';
 import { Id } from '../core/key-transforms';
 
+import { readFileSync } from 'fs';
+
 type QueryData = [string[], unknown[], number];
 
-export class DatastoreAdapter extends Datastore {
+export class DatabaseAdapter extends Database {
     private _pool: Pool;
 
     public constructor() {
         super();
 
         try {
+            let password: string;
             if (!Config.isDevMode()) {
-                throw Error('Prod postgres password code not implemented.');
+                password = readFileSync(Config.DATABASE_PASSWORD_FILE, 'utf8').trim();
             }
-            const password = 'openslides';
+            else {
+                password = 'openslides';
+            }
             this._pool = new Pool({
                 host: Config.DATABASE_HOST,
                 port: Config.DATABASE_PORT,
@@ -120,7 +125,7 @@ export class DatastoreAdapter extends Datastore {
                         }
                         break;
                     default:
-                        Logger.debug(`Unsupported event type: ${event.type}`);
+                        Logger.debug(`Unsupported event type`);//: ${event.type}`);
                 }
             }
 
@@ -206,7 +211,7 @@ export class DatastoreAdapter extends Datastore {
         fields: { [key: string]: unknown },
         queryData: QueryData
     ): Promise<void> {
-        const [selectors, values, paramIndex_]: QueryData = queryData;
+        const [selectors, values]: QueryData = queryData;
 
         const fieldNameList = selectors.map(date => date.split(' = ')[0]);
         const standinList = selectors.map(date => date.split(' = ')[1]);
@@ -216,6 +221,5 @@ export class DatastoreAdapter extends Datastore {
         const query = `INSERT INTO ${collection}_t (${fieldNames}) VALUES (${standins})`;
 
         await client.query(query, values);
-        Logger.debug(`Created ${collection} ${id} with fields:`, fields);
     }
 }

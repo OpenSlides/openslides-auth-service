@@ -1,10 +1,10 @@
 import { Redis } from 'ioredis';
 
-import { Database, KeyType } from '../api/interfaces/database';
+import { RedisDatabase, KeyType } from '../api/interfaces/redis-database';
 import { Logger } from '../api/services/logger';
 import { Config } from '../config';
 
-export class RedisDatabaseAdapter extends Database {
+export class RedisDatabaseAdapter extends RedisDatabase {
     private _database: Redis;
 
     /**
@@ -69,7 +69,7 @@ export class RedisDatabaseAdapter extends Database {
     }
 
     private getPrefix(): string {
-        return `${Database.PREFIX}:${this.prefix}`;
+        return `${RedisDatabase.PREFIX}:${this.prefix}`;
     }
 
     private getPrefixedKey(key: KeyType): string {
