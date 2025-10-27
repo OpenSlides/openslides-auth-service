@@ -1,44 +1,49 @@
-import { Id } from 'src/core/key-transforms';
+import { BaseModel } from 'src/core/base/base-model';
 
-export type KeyType = Id | string;
+import { Id } from '../../core/key-transforms';
+
+export type Position = number;
+
+export interface GetManyAnswer<T> {
+    [key: string]: T;
+}
+
+export enum EventType {
+    CREATE = 'create',
+    UPDATE = 'update'
+}
+
+interface Event {
+    fqid: string;
+    type: EventType;
+}
+
+export interface CreateEvent extends Event {
+    type: EventType.CREATE;
+    fields: { [key: string]: unknown };
+}
+
+export interface UpdateEvent extends Event {
+    type: EventType.UPDATE;
+    fields: { [key: string]: unknown };
+}
+
+export type DatabaseEvent = CreateEvent | UpdateEvent;
+
+export interface WriteRequest {
+    user_id: number; // eslint-disable-line @typescript-eslint/naming-convention
+    locked_fields: object; // eslint-disable-line
+    information: object; // eslint-disable-line
+    events: DatabaseEvent[];
+}
 
 export abstract class Database {
-    public static readonly PREFIX = 'auth';
-
-    /**
-     * Function to get all stored keys for a given prefix.
-     *
-     * @returns A list with all found keys.
-     */
-    public abstract keys(): Promise<string[]>;
-
-    /**
-     * Function to write a key/value-pair to the database. If the key is already existing, it will do nothing.
-     *
-     * @param key The key, where the object is found.
-     * @param obj The object to store.
-     * @param expire Optional: If true, the key expires after PASSWORD_RESET_TOKEN_EXPIRATION_TIME. If false,
-     * the key is added to the index set.
-     *
-     * @returns A boolean, if everything is okay - if `false`, the key is already existing in the database.
-     */
-    public abstract set<T>(key: KeyType, obj: T, expire?: boolean): Promise<void>;
-
-    /**
-     * This returns an object stored by the given key.
-     *
-     * @param key The key, where the object will be found.
-     *
-     * @returns The object - if there is no object stored by this key, it will return an empty object.
-     */
-    public abstract get<T>(key: KeyType): Promise<T>;
-
-    /**
-     * This will delete an entry from the database.
-     *
-     * @param key The key of the related object to remove.
-     *
-     * @returns A boolean if the object was successfully deleted.
-     */
-    public abstract remove(key: KeyType): Promise<boolean>;
+    public abstract get<T extends BaseModel>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<T>;
+    public abstract filter<T extends BaseModel>(
+        collection: string,
+        filterField: keyof T,
+        filterValue: string | number,
+        mappedFields: (keyof T)[]
+    ): Promise<GetManyAnswer<T>>;
+    public abstract write(writeRequest: WriteRequest): Promise<void>;
 }

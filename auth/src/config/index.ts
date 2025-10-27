@@ -10,41 +10,17 @@ const getUrl = (hostVar: string, portVar: string): string => {
 export class Config {
     public static readonly DATABASE_PATH = 'database/';
 
-    // Datastore URLs - only initialize if environment variables are available
-    public static get DATASTORE_READER(): string {
-        const host = process.env.DATASTORE_READER_HOST;
-        const port = process.env.DATASTORE_READER_PORT;
-        if (!host || !port) {
-            throw new Error('DATASTORE_READER_HOST or DATASTORE_READER_PORT is not defined.');
-        }
-        return `http://${host}:${parseInt(port, 10)}`;
-    }
-
-    public static get DATASTORE_WRITER(): string {
-        const host = process.env.DATASTORE_WRITER_HOST;
-        const port = process.env.DATASTORE_WRITER_PORT;
-        if (!host || !port) {
-            throw new Error('DATASTORE_WRITER_HOST or DATASTORE_WRITER_PORT is not defined.');
-        }
-        return `http://${host}:${parseInt(port, 10)}`;
-    }
-
-    public static get ACTION_URL(): string {
-        const host = process.env.ACTION_HOST;
-        const port = process.env.ACTION_PORT;
-        if (!host || !port) {
-            throw new Error('ACTION_HOST or ACTION_PORT is not defined.');
-        }
-        return `http://${host}:${parseInt(port, 10)}`;
-    }
-
-    // PostgreSQL configuration
+    public static readonly ACTION_URL = getUrl('ACTION_HOST', 'ACTION_PORT');
     public static readonly DATABASE_HOST = process.env.DATABASE_HOST || 'localhost';
     public static readonly DATABASE_PORT = parseInt(process.env.DATABASE_PORT || '5432', 10);
     public static readonly DATABASE_NAME = process.env.DATABASE_NAME || 'openslides';
     public static readonly DATABASE_USER = process.env.DATABASE_USER || 'openslides';
     public static readonly DATABASE_PASSWORD_FILE =
         process.env.DATABASE_PASSWORD_FILE || '/run/secrets/postgres_password';
+    public static readonly DB_POOL_MIN_SIZE = parseInt(process.env.DB_POOL_MIN_SIZE || '0', 10);
+    public static readonly DB_POOL_MAX_SIZE = parseInt(process.env.DB_POOL_MAX_SIZE || '10', 10);
+    public static readonly DB_IDLE_TIMEOUT = parseInt(process.env.DB_IDLE_TIMEOUT || '10000', 10);
+    public static readonly DB_CONNECTION_TIMEOUT = parseInt(process.env.DB_CONNECTION_TIMEOUT || '0', 10);
 
     public static readonly TOKEN_EXPIRATION_TIME = 600;
 

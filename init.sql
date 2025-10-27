@@ -27,56 +27,57 @@ CREATE TABLE user_t (
 
 -- Insert test user with password 'password' hashed with argon2
 -- The hash below is for password 'password'
-INSERT INTO user_t (
-    username,
-    password,
-    email,
-    first_name,
-    last_name,
-    is_active
-) VALUES (
-    'admin',
-    '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
-    'admin@example.com',
-    'Admin',
-    'User',
-    true
-);
 
--- Insert another test user
-INSERT INTO user_t (
-    username,
-    password,
-    email,
-    first_name,
-    last_name,
-    is_active
-) VALUES (
-    'testuser',
-    '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
-    'test@example.com',
-    'Test',
-    'User',
-    true
-);
+-- INSERT INTO user_t (
+--     username,
+--     password,
+--     email,
+--     first_name,
+--     last_name,
+--     is_active
+-- ) VALUES (
+--     'admin',
+--     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
+--     'admin@example.com',
+--     'Admin',
+--     'User',
+--     true
+-- );
 
--- Insert an inactive user to test authentication rejection
-INSERT INTO user_t (
-    username,
-    password,
-    email,
-    first_name,
-    last_name,
-    is_active
-) VALUES (
-    'inactive',
-    '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
-    'inactive@example.com',
-    'Inactive',
-    'User',
-    false
-);
+-- -- Insert another test user
+-- INSERT INTO user_t (
+--     username,
+--     password,
+--     email,
+--     first_name,
+--     last_name,
+--     is_active
+-- ) VALUES (
+--     'testuser',
+--     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
+--     'test@example.com',
+--     'Test',
+--     'User',
+--     true
+-- );
 
--- Create an index on username for faster lookups
-CREATE INDEX idx_user_username ON user_t(username);
-CREATE INDEX idx_user_active ON user_t(is_active);
+-- -- Insert an inactive user to test authentication rejection
+-- INSERT INTO user_t (
+--     username,
+--     password,
+--     email,
+--     first_name,
+--     last_name,
+--     is_active
+-- ) VALUES (
+--     'inactive',
+--     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM',
+--     'inactive@example.com',
+--     'Inactive',
+--     'User',
+--     false
+-- );
+
+-- -- Create an index on username for faster lookups
+-- CREATE INDEX idx_user_username ON user_t(username);
+-- CREATE INDEX idx_user_active ON user_t(is_active);
