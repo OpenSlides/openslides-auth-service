@@ -1,12 +1,12 @@
 #/bin/bash
 
 printf "Autoflake:\n"
-autoflake authlib/ tests/
+autoflake osauthlib/ tests/
 printf "Black:\n"
-black authlib/ tests/
+black osauthlib/ tests/
 printf "Isort:\n"
-isort authlib/ tests/
+isort osauthlib/ tests/
 printf "Flake8:\n"
-flake8 authlib/ tests/
+flake8 osauthlib/ tests/
 printf "Mypy:\n"
-mypy authlib/ tests/
+mypy osauthlib/ tests/

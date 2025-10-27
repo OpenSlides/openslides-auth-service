@@ -1,8 +1,8 @@
 import pytest
 
-from authlib.config import Environment
-from authlib.constants import AUTHORIZATION_HEADER
-from authlib.exceptions import AuthorizationException
+from osauthlib.config import Environment
+from osauthlib.constants import AUTHORIZATION_HEADER
+from osauthlib.exceptions import AuthorizationException
 
 from .base import BaseTestEnvironment
 
