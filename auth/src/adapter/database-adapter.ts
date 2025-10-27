@@ -5,7 +5,6 @@ import { Logger } from '../api/services/logger';
 import { Config } from '../config';
 import { BaseModel, BaseModelType } from '../core/base/base-model';
 import { Id } from '../core/key-transforms';
-
 import { readFileSync } from 'fs';
 
 type QueryData = [string[], unknown[], number];
@@ -20,8 +19,7 @@ export class DatabaseAdapter extends Database {
             let password: string;
             if (!Config.isDevMode()) {
                 password = readFileSync(Config.DATABASE_PASSWORD_FILE, 'utf8').trim();
-            }
-            else {
+            } else {
                 password = 'openslides';
             }
             this._pool = new Pool({
@@ -125,7 +123,7 @@ export class DatabaseAdapter extends Database {
                         }
                         break;
                     default:
-                        Logger.debug(`Unsupported event type`);//: ${event.type}`);
+                        Logger.debug('Unsupported event type'); // : ${event.type}`);
                 }
             }
 
