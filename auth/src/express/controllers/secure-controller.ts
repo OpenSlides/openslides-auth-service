@@ -4,11 +4,16 @@ import { Body, OnGet, OnPost, Res, RestController } from 'rest-app';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { AuthService } from '../../api/services/auth-service';
+import { SamlHandler } from '../../api/interfaces/saml-handler';
+import { SamlService } from '../../api/services/saml-service';
+import { UserHandler } from '../../api/interfaces/user-handler';
+import { UserService } from '../../api/services/user-service';
 import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import { makeSpan } from '../../util/otel';
 import { TicketMiddleware } from '../middleware/ticket-validator';
+import { Logger } from '../../api/services/logger';
 
 @RestController({
     prefix: 'system/auth/secure',
@@ -17,6 +22,12 @@ import { TicketMiddleware } from '../middleware/ticket-validator';
 export class SecureController {
     @Factory(AuthService)
     private _authHandler: AuthHandler;
+
+    @Factory(SamlService)
+    private _samlHandler: SamlHandler;
+
+    @Factory(UserService)
+    private _userHandler: UserHandler;
 
     @OnGet()
     public index(): AuthServiceResponse {
@@ -28,6 +39,16 @@ export class SecureController {
         const token = res.locals['token'] as Token;
         await this._authHandler.logout(token);
         res.clearCookie(AuthHandler.COOKIE_NAME);
+        
+        const user = await this._userHandler.getUserByUserId(token.userId);
+        const settings = (await this._samlHandler.getSamlSettings());
+
+        if (settings.saml_enabled && user.saml_id) {
+            const sp = await this._samlHandler.getSp();
+            let idp = await this._samlHandler.getIdp();
+            const request = sp.createLogoutRequest(idp, 'redirect', { "sessionIndex": token.sessionId, "logoutNameID": user.saml_id });
+            return createResponse({}, request.context);
+        }
         return createResponse();
     }
 
