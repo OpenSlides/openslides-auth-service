@@ -71,12 +71,3 @@ run-test-prod: | build-prod
 stop-dev:
 	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
 
-run-postgres-dev: | build-dev
-	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) CONTEXT="dev" docker compose -f docker-compose.postgres.yml up
-
-run-postgres-bash: | build-dev
-	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) CONTEXT="dev" docker compose -f docker-compose.postgres.yml up -d
-	USER_ID=$$(id -u $${USER}) GROUP_ID=$$(id -g $${USER}) CONTEXT="dev" docker compose -f docker-compose.postgres.yml exec auth sh
-
-stop-postgres:
-	CONTEXT="dev" docker compose -f docker-compose.postgres.yml down
