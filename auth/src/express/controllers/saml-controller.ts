@@ -70,7 +70,11 @@ export class SamlController {
         const sp = await this._samlHandler.getSp();
         const idp = await this._samlHandler.getIdp();
 
+        Logger.Error('sp meta: ', sp);
+        Logger.Error('idp meta: ', idp);
         const extract = (await idp.parseLogoutRequest(sp, 'post', req))?.extract;
+
+        Logger.Error('extracted nameID: ', extract.nameID);
         const user = await this._userHandler.getUserBySamlID(extract.nameID);
         await this._authHandler.clearAllSessions(user.id);
 
