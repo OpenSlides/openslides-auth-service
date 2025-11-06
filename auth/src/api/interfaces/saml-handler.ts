@@ -20,7 +20,6 @@ export interface SamlUser {
     is_physical_person?: boolean | string;
 }
 
-
 export interface SamlBackendCall {
     action: string;
     data: [SamlUser];

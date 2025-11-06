@@ -5,9 +5,16 @@ import * as samlify from 'samlify';
 
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
-import { SamlHandler, SamlAttributes, SamlBackendCall, SamlHttpResponse, SamlSettings, SamlUser } from '../../api/interfaces/saml-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
+import {
+    SamlHandler,
+    SamlAttributes,
+    SamlBackendCall,
+    SamlHttpResponse,
+    SamlSettings,
+    SamlUser
+} from '../../api/interfaces/saml-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
 import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
@@ -24,9 +31,7 @@ import * as util from 'util';
 
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 
-
 export class SamlService extends SamlHandler {
-
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
 
@@ -69,7 +74,6 @@ export class SamlService extends SamlHandler {
 
     public async getSamlSettings(): Promise<SamlSettings> {
         if (!this._samlSettings) {
-            
             this._samlSettings = await this._datastore.get('organization', 1, [
                 'saml_enabled',
                 'saml_metadata_idp',

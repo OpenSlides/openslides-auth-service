@@ -7,23 +7,23 @@ import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
+import { SamlHandler, SamlSettings, SamlAttributes } from '../../api/interfaces/saml-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
 import { UserHandler } from '../../api/interfaces/user-handler';
-import { SamlHandler, SamlSettings, SamlAttributes } from '../../api/interfaces/saml-handler';
-import { SamlService } from '../../api/services/saml-service';
 import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
+import { SamlService } from '../../api/services/saml-service';
 import { SecretService } from '../../api/services/secret-service';
 import { UserService } from '../../api/services/user-service';
 import { Config } from '../../config';
+import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
 
-import { Token } from '../../core/ticket/token';
 /* eslint-enable */
 
 @RestController({
@@ -66,7 +66,7 @@ export class SamlController {
     }
 
     @OnPost()
-    public async idplogout(@Req() req: Request, @Res () res: Response): Promise<void> {
+    public async idplogout(@Req() req: Request, @Res() res: Response): Promise<void> {
         const sp = await this._samlHandler.getSp();
         const idp = await this._samlHandler.getIdp();
 
@@ -77,9 +77,9 @@ export class SamlController {
         const response = sp.createLogoutResponse(idp, req, 'redirect');
         res.redirect(response.context);
     }
-    
+
     @OnGet()
-    public async logout(@Req() req: Request, @Res () res: Response): Promise<void> {
+    public async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
         // This is the callback route for the SAML logout request.
         // Simply redirect to the root since logout already happened.
         res.redirect('/');
