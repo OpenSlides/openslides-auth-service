@@ -46,6 +46,10 @@ export class SecureController {
         if (settings.saml_enabled && user.saml_id) {
             const sp = await this._samlHandler.getSp();
             const idp = await this._samlHandler.getIdp();
+
+            Logger.error('sp meta: ', sp);
+            Logger.error('idp meta: ', idp);
+            Logger.error('user: ', user.saml_id);
             const request = sp.createLogoutRequest(idp, 'redirect', {
                 sessionIndex: token.sessionId,
                 logoutNameID: user.saml_id
