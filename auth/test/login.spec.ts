@@ -68,17 +68,6 @@ test('POST login with wrong username', async () => {
     await container.request.sendRequestAndValidateForbiddenRequest(container.request.login('xyz', 'admin'));
 });
 
-/*
-test('POST login multiple users, only one alive', async () => {
-    const toDelete = await container.userService.createUser('ash');
-//    We do not delete users from auth service...?
-//    await container.userService.deleteUser(toDelete);
-    await container.userService.createUser('ash');
-    const response = await container.request.login('ash', 'ash');
-    Validation.validateSuccessfulRequest(response);
-    Validation.validateAccessToken(response);
-});
-*/
 test('POST login multiple users, forbidden', async () => {
     await container.userService.createUser('ash');
     await container.userService.createUser('ash');

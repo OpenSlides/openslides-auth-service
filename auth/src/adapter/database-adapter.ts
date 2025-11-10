@@ -32,26 +32,6 @@ export class DatabaseAdapter extends Database {
                 max: Config.DB_POOL_MAX_SIZE,
                 idleTimeoutMillis: Config.DB_IDLE_TIMEOUT,
                 connectionTimeoutMillis: Config.DB_CONNECTION_TIMEOUT
-                // connectionString:
-                // keepAlive:
-                // stream:
-                // statement_timeout:
-                // ssl:
-                // lock_timeout:
-                // keepAliveInitialDelayMillis:
-                // idle_in_transaction_session_timeout:
-                // application_name:
-                // fallback_application_name:
-                // types:
-                // options:
-                // client_encoding:
-                // maxLifetimeSeconds:
-
-                // log:
-                // Promise:
-                // allowExitOnIdle:
-                // maxUses:
-                // Client:
             });
             this._pool.on('error', err => {
                 Logger.error('PostgreSQL pool error:', err);
