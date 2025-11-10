@@ -9,8 +9,6 @@ import { TokenPayload, Utils } from './utils';
 import { FakeDatabaseAdapter } from './fake-database-adapter';
 import { EventType } from '../src/api/interfaces/database';
 
-let nextUserId = 0;
-
 export class FakeUserService {
     public get currentAdminId(): Id {
         return getIdFromFqid(this._adminFqid);
@@ -56,8 +54,8 @@ export class FakeUserService {
         this._adminFqid = await this.createUser(username, { password });
     }
 
-    public async createUser(username: string, options: { [K in keyof User]?: unknown } = {}): Promise<Fqid> {
-        const fqid: Fqid = `user/1`;//${++nextUserId}`;
+    public async createUser(username: string, options: { [K in keyof User]?: unknown } = {}, userId:number=1): Promise<Fqid> {
+        const fqid: Fqid = `user/${userId}`;
         const update = { ...options };
         if (update.password && typeof update.password === 'string') {
             update.password = await this._hashService.hash(update.password);
@@ -68,7 +66,7 @@ export class FakeUserService {
             {
                 type: EventType.CREATE,
                 fqid,
-                fields: { id: 1, username: username, is_active: true, ...update }
+                fields: { id: userId, username: username, is_active: true, ...update }
             }
         ]);
         return fqid;
@@ -87,10 +85,6 @@ export class FakeUserService {
             }
         ]);
     }
-
-    // public async deleteUser(fqid: Fqid): Promise<void> {
-    //     await this._database.write([{ type: EventType.DELETE, fqid }]);
-    // }
 
     public async getUser(id: Id): Promise<User> {
         return await this._database.get<User>('user', id);

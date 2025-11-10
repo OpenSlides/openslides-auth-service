@@ -38,6 +38,13 @@ export interface WriteRequest {
 }
 
 export abstract class Database {
+    /**
+     * This returns an object stored by the given key.
+     *
+     * @param key The key, where the object will be found.
+     *
+     * @returns The object - if there is no object stored by this key, it will return an empty object.
+     */
     public abstract get<T extends BaseModel>(collection: string, id: Id, mappedFields: (keyof T)[]): Promise<T>;
     public abstract filter<T extends BaseModel>(
         collection: string,
