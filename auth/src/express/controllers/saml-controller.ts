@@ -3,9 +3,9 @@ import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 import * as samlify from 'samlify';
 
-import { PostgresAdapter } from '../../adapter/postgres-adapter';
+import { DatabaseAdapter } from '../../adapter/database-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
-import { Datastore } from '../../api/interfaces/datastore';
+import { Database } from '../../api/interfaces/database';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
 import { UserHandler } from '../../api/interfaces/user-handler';
@@ -71,8 +71,8 @@ export class SamlController {
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
 
-    @Factory(PostgresAdapter)
-    private readonly _datastore: Datastore;
+    @Factory(DatabaseAdapter)
+    private readonly _database: Database;
 
     @Factory(SecretService)
     private readonly _secretHandler: SecretHandler;
@@ -213,7 +213,7 @@ export class SamlController {
 
     private async getSamlSettings(): Promise<SamlSettings> {
         if (!this._samlSettings) {
-            this._samlSettings = await this._datastore.get('organization', 1, [
+            this._samlSettings = await this._database.get('organization', 1, [
                 'saml_enabled',
                 'saml_metadata_idp',
                 'saml_metadata_sp',
