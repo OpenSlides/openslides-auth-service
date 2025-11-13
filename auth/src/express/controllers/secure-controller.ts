@@ -51,14 +51,15 @@ export class SecureController {
             const sp = await this._samlHandler.getSp();
             const idp = await this._samlHandler.getIdp();
 
-            const request = sp.createLogoutRequest(idp, 'post', {
+            const request = sp.createLogoutRequest(idp, 'redirect', {
                 sessionIndex: token.sessionId,
                 logoutNameID: user.saml_id
             });
 
             Logger.log('request: ', request);
 
-            return createResponse({}, request.context);
+            res.redirect(request.context);
+            // return createResponse({}, request.context);
         }
         return createResponse();
     }
