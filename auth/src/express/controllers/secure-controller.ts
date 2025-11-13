@@ -36,12 +36,16 @@ export class SecureController {
 
     @OnPost()
     public async logout(@Res() res: Response): Promise<AuthServiceResponse> {
+        Logger.debug('logout');
         const token = res.locals['token'] as Token;
         await this._authHandler.logout(token);
         res.clearCookie(AuthHandler.COOKIE_NAME);
 
         const user = await this._userHandler.getUserByUserId(token.userId);
         const settings = await this._samlHandler.getSamlSettings();
+
+        Logger.error('user: ', user);
+        Logger.error('settings: ', settings);
 
         if (settings.saml_enabled && user.saml_id) {
             const sp = await this._samlHandler.getSp();
