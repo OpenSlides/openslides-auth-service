@@ -49,7 +49,7 @@ export class SecureController {
 
             Logger.log('sp: ', sp);
             Logger.log('idp: ', idp);
-            idp.wantLogoutRequestSigned = true;
+            idp.entitySetting.wantLogoutRequestSigned = true;
             const request = sp.createLogoutRequest(idp, 'redirect', {
                 sessionIndex: token.sessionId,
                 logoutNameID: user.saml_id
