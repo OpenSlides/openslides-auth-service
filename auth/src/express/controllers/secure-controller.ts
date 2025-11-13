@@ -36,7 +36,6 @@ export class SecureController {
 
     @OnPost()
     public async logout(@Res() res: Response): Promise<AuthServiceResponse> {
-        Logger.log('logout');
         const token = res.locals['token'] as Token;
         await this._authHandler.logout(token);
         res.clearCookie(AuthHandler.COOKIE_NAME);
@@ -44,22 +43,17 @@ export class SecureController {
         const user = await this._userHandler.getUserByUserId(token.userId);
         const settings = await this._samlHandler.getSamlSettings();
 
-        Logger.log('user: ', user);
-        Logger.log('settings: ', settings);
-
-        if (settings.saml_enabled && !!user.saml_id) {
+        if (settings.saml_enabled && user.saml_id) {
             const sp = await this._samlHandler.getSp();
             const idp = await this._samlHandler.getIdp();
 
+            Logger.log('sp: ', sp);
+            Logger.log('idp: ', idp);
             const request = sp.createLogoutRequest(idp, 'redirect', {
                 sessionIndex: token.sessionId,
                 logoutNameID: user.saml_id
             });
-
-            Logger.log('request: ', request);
-
-            res.redirect(request.context);
-            // return createResponse({}, request.context);
+            return createResponse({}, request.context);
         }
         return createResponse();
     }
