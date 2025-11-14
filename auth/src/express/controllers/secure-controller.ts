@@ -3,7 +3,11 @@ import { Factory } from 'final-di';
 import { Body, OnGet, OnPost, Res, RestController } from 'rest-app';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
+import { SamlHandler } from '../../api/interfaces/saml-handler';
+import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
+import { SamlService } from '../../api/services/saml-service';
+import { UserService } from '../../api/services/user-service';
 import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
@@ -18,6 +22,12 @@ export class SecureController {
     @Factory(AuthService)
     private _authHandler: AuthHandler;
 
+    @Factory(SamlService)
+    private _samlHandler: SamlHandler;
+
+    @Factory(UserService)
+    private _userHandler: UserHandler;
+
     @OnGet()
     public index(): AuthServiceResponse {
         return createResponse({}, 'Yeah! A secure route!');
@@ -28,6 +38,21 @@ export class SecureController {
         const token = res.locals['token'] as Token;
         await this._authHandler.logout(token);
         res.clearCookie(AuthHandler.COOKIE_NAME);
+
+        const user = await this._userHandler.getUserByUserId(token.userId);
+        const settings = await this._samlHandler.getSamlSettings();
+
+        if (settings.saml_enabled && user.saml_id) {
+            const sp = await this._samlHandler.getSp();
+            const idp = await this._samlHandler.getIdp();
+
+            idp.entitySetting.wantLogoutRequestSigned = true;
+            const request = sp.createLogoutRequest(idp, 'redirect', {
+                sessionIndex: token.sessionId,
+                logoutNameID: user.saml_id
+            });
+            return createResponse({}, request.context);
+        }
         return createResponse();
     }
 
