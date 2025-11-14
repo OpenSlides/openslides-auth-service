@@ -31,7 +31,7 @@ export class UserService implements UserHandler {
         return await this._datastore.get<User>('user', userId, userFields);
     }
 
-    public async getUserBySamlID(samlId: string): Promise<User> {
+    public async getUserBySamlId(samlId: string): Promise<User> {
         const userObj = await this.getUserCollectionFromDatastore('saml_id', samlId);
         Logger.debug('User object by saml_id from datastore: ', userObj);
 

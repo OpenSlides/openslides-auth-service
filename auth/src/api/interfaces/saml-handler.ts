@@ -1,11 +1,11 @@
 import * as samlify from 'samlify';
 
 export interface SamlSettings {
-    saml_enabled: string;
-    saml_metadata_idp: string;
-    saml_metadata_sp: string;
-    saml_private_key: string;
-    saml_attr_mapping: object;
+    saml_enabled: string; // eslint-disable-line @typescript-eslint/naming-convention
+    saml_metadata_idp: string; // eslint-disable-line @typescript-eslint/naming-convention
+    saml_metadata_sp: string; // eslint-disable-line @typescript-eslint/naming-convention
+    saml_private_key: string; // eslint-disable-line @typescript-eslint/naming-convention
+    saml_attr_mapping: object; // eslint-disable-line @typescript-eslint/naming-convention
 }
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface SamlUser {

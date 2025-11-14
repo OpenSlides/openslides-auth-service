@@ -1,10 +1,7 @@
-import { Request, Response } from 'express';
 import { Factory } from 'final-di';
-import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
 import * as samlify from 'samlify';
 
 import { DatastoreAdapter } from '../../adapter/datastore-adapter';
-import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { Datastore } from '../../api/interfaces/datastore';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
 import {
@@ -13,21 +10,12 @@ import {
     SamlBackendCall,
     SamlHttpResponse,
     SamlSettings,
-    SamlUser
 } from '../../api/interfaces/saml-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
-import { UserHandler } from '../../api/interfaces/user-handler';
-import { AuthService } from '../../api/services/auth-service';
 import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { SecretService } from '../../api/services/secret-service';
-import { UserService } from '../../api/services/user-service';
 import { Config } from '../../config';
-import { AuthServiceResponse } from '../../util/helper/definitions';
-import { createResponse } from '../../util/helper/functions';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as util from 'util';
 
 const INTERNAL_AUTHORIZATION_HEADER = 'Authorization';
 

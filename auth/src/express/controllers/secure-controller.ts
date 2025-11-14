@@ -6,7 +6,6 @@ import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { SamlHandler } from '../../api/interfaces/saml-handler';
 import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
-import { Logger } from '../../api/services/logger';
 import { SamlService } from '../../api/services/saml-service';
 import { UserService } from '../../api/services/user-service';
 import { Token } from '../../core/ticket/token';

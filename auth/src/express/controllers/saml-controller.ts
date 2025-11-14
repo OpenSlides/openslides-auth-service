@@ -1,23 +1,14 @@
 import { Request, Response } from 'express';
 import { Factory } from 'final-di';
 import { OnGet, OnPost, Req, Res, RestController } from 'rest-app';
-import * as samlify from 'samlify';
 
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
 import { AuthHandler } from '../../api/interfaces/auth-handler';
-import { Datastore } from '../../api/interfaces/datastore';
-import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
-import { SamlHandler, SamlSettings, SamlAttributes } from '../../api/interfaces/saml-handler';
-import { SecretHandler } from '../../api/interfaces/secret-handler';
+import { SamlHandler, SamlAttributes } from '../../api/interfaces/saml-handler';
 import { UserHandler } from '../../api/interfaces/user-handler';
 import { AuthService } from '../../api/services/auth-service';
-import { HttpService } from '../../api/services/http-service';
 import { Logger } from '../../api/services/logger';
 import { SamlService } from '../../api/services/saml-service';
-import { SecretService } from '../../api/services/secret-service';
 import { UserService } from '../../api/services/user-service';
-import { Config } from '../../config';
-import { Token } from '../../core/ticket/token';
 import { AuthServiceResponse } from '../../util/helper/definitions';
 import { createResponse } from '../../util/helper/functions';
 import * as fs from 'fs';
@@ -70,10 +61,11 @@ export class SamlController {
         const sp = await this._samlHandler.getSp();
         const idp = await this._samlHandler.getIdp();
 
-        const extract = (await idp.parseLogoutRequest(sp, 'post', req))?.extract;
-
-        Logger.error('extracted nameID: ', extract.nameID);
-        const user = await this._userHandler.getUserBySamlID(extract.nameID);
+        const extract = (await idp.parseLogoutRequest(sp, 'post', req));
+        const user =
+            await this._userHandler.getUserBySamlId(
+                extract?.extract.nameID // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+            );
         await this._authHandler.clearAllSessions(user.id);
 
         const response = sp.createLogoutResponse(idp, req, 'redirect');
@@ -81,7 +73,7 @@ export class SamlController {
     }
 
     @OnGet()
-    public async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    public logout(@Req() req: Request, @Res() res: Response): void {
         // This is the callback route for the SAML logout request.
         // Simply redirect to the root since logout already happened.
         res.redirect('/');
@@ -93,7 +85,7 @@ export class SamlController {
      * @returns SAML Login Url
      */
     @OnGet()
-    public async getUrl(@Res() res: Response): Promise<AuthServiceResponse> {
+    public async getUrl(): Promise<AuthServiceResponse> {
         if (!(await this._samlHandler.getSamlSettings()).saml_enabled) {
             return createResponse({}, 'SAML SP service is disabled');
         }
