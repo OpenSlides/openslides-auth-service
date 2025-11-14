@@ -47,8 +47,6 @@ export class SecureController {
             const sp = await this._samlHandler.getSp();
             const idp = await this._samlHandler.getIdp();
 
-            Logger.log('sp: ', sp);
-            Logger.log('idp: ', idp);
             idp.entitySetting.wantLogoutRequestSigned = true;
             const request = sp.createLogoutRequest(idp, 'redirect', {
                 sessionIndex: token.sessionId,
