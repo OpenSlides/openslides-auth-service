@@ -61,11 +61,10 @@ export class SamlController {
         const sp = await this._samlHandler.getSp();
         const idp = await this._samlHandler.getIdp();
 
-        const extract = (await idp.parseLogoutRequest(sp, 'post', req));
-        const user =
-            await this._userHandler.getUserBySamlId(
-                extract?.extract.nameID // eslint-disable-line @typescript-eslint/no-unsafe-member-access
-            );
+        const extract = await idp.parseLogoutRequest(sp, 'post', req);
+        const user = await this._userHandler.getUserBySamlId(
+            extract?.extract.nameID // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+        );
         await this._authHandler.clearAllSessions(user.id);
 
         const response = sp.createLogoutResponse(idp, req, 'redirect');

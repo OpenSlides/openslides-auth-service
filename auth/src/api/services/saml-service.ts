@@ -9,7 +9,7 @@ import {
     SamlAttributes,
     SamlBackendCall,
     SamlHttpResponse,
-    SamlSettings,
+    SamlSettings
 } from '../../api/interfaces/saml-handler';
 import { SecretHandler } from '../../api/interfaces/secret-handler';
 import { HttpService } from '../../api/services/http-service';
