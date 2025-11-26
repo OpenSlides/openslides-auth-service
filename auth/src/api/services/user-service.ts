@@ -32,10 +32,10 @@ export class UserService implements UserHandler {
     }
 
     public async getUserBySamlId(samlId: string): Promise<User> {
-        const userObj = await this.getUserCollectionFromDatastore('saml_id', samlId);
+        const userObj = await this.getUserCollectionFromDatabase('saml_id', samlId);
         Logger.debug('User object by saml_id from datastore: ', userObj);
 
-        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        const users = Object.values(userObj);
         if (users.length > 1) {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');

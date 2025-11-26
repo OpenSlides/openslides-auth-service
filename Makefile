@@ -57,9 +57,6 @@ run-test-prod: | deprecation-warning build-prod
 	docker compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
 	docker compose -f .github/startup-test/docker-compose.yml down
 
-stop-dev:
-	CONTEXT="dev" docker compose -f docker-compose.dev.yml down
-
 run-pre-test: | deprecation-warning build-tests
 	$(TEST_DC) up -d
 	$(TEST_DC) exec -T auth ./wait-for.sh auth:9004
