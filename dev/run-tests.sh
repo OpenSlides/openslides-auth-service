@@ -1,14 +1,24 @@
 #!/bin/bash
 
-# Executes all tests. Should errors occur, CATCH will be set to 1, causing an erroneous exit code.
+set -e
+
+# Executes all tests and linters. Should errors occur, CATCH will be set to 1, causing an erroneous exit code.
 
 echo "########################################################################"
 echo "###################### Run Tests and Linters ###########################"
 echo "########################################################################"
 
+# Parameters
+while getopts "s" FLAG; do
+    case "${FLAG}" in
+    s) SKIP_BUILD=true ;;
+    *) echo "Can't parse flag ${FLAG}" && break ;;
+    esac
+done
+
 # Setup
 IMAGE_TAG=openslides-auth-tests
-CATCH=0
+LOCAL_PWD=$(dirname "$0")
 
 # Helpers
 USER_ID=$(id -u)
@@ -19,18 +29,11 @@ DC="CONTEXT=tests USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker compose -f docker-c
 trap 'eval "$DC down"' EXIT
 
 # Execution
-make build-test
-eval "$DC up -d || CATCH=1"
-eval "$DC exec -T auth ./wait-for.sh auth:9004 || CATCH=1"
-eval "$DC exec -T auth npm run test || CATCH=1"
-eval "$DC exec -T auth pytest || CATCH=1"
+if [ -z "$SKIP_BUILD" ]; then make build-tests; fi
+eval "$DC up -d"
+eval "$DC exec -T auth ./wait-for.sh auth:9004"
+eval "$DC exec -T auth npm run test"
+eval "$DC exec -T auth pytest"
 
 # Linters
-eval "$DC exec -T auth npm run lint-check || CATCH=1"
-eval "$DC exec -T auth npm run prettify-check || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth black --check --diff authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth flake8 authlib/ tests/ || CATCH=1"
-eval "$DC exec -w /app/libraries/pip-auth/ -T auth mypy authlib/ tests/ || CATCH=1"
-
-exit $CATCH
+bash "$LOCAL_PWD"/run-lint.sh

@@ -236,7 +236,7 @@ The pip-library has the following API:
 
 ````python
 # The class `AuthHandler` and the constants `AUTHENTICATION_HEADER`, `AUTHORIZATION_HEADER`, `COOKIE_NAME` are exported
-from authlib import AuthHandler, AUTHENTICATION_HEADER, AUTHORIZATION_HEADER, COOKIE_NAME
+from osauthlib import AuthHandler, AUTHENTICATION_HEADER, AUTHORIZATION_HEADER, COOKIE_NAME
 
 authhandler = AuthHandler(debug_fn?) # Optional: a function to print debug information can be passed.
 access_token = requests.headers.get(HEADER_NAME, NONE)

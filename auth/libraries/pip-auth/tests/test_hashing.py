@@ -1,4 +1,4 @@
-from authlib.hashing_handler import ARGON2_HASH_START
+from osauthlib.hashing_handler import ARGON2_HASH_START
 
 from .base import BaseTestEnvironment
 

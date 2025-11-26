@@ -1,13 +1,11 @@
-version: "3"
-
 services:
   auth:
     build:
-        target: "$CONTEXT"
+        target: "${CONTEXT}"
         args:
-            CONTEXT: "$CONTEXT"
-    image: openslides-auth-$CONTEXT
-    user: $USER_ID:$GROUP_ID
+            CONTEXT: "${CONTEXT}"
+    image: openslides-auth-${CONTEXT}
+    user: ${USER_ID}:${GROUP_ID}
     restart: always
     depends_on:
       - datastore-reader
@@ -23,7 +21,7 @@ services:
 
   datastore-reader:
     build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
+      context: "https://github.com/OpenSlides/openslides-datastore-service.git#${COMPOSE_REFERENCE_BRANCH:-main}"
       target: "prod"
       dockerfile: Dockerfile
       args:
@@ -42,7 +40,7 @@ services:
 
   datastore-writer:
     build:
-      context: "https://github.com/OpenSlides/openslides-datastore-service.git#main"
+      context: "https://github.com/OpenSlides/openslides-datastore-service.git#${COMPOSE_REFERENCE_BRANCH:-main}"
       target: "prod"
       dockerfile: Dockerfile
       args:
