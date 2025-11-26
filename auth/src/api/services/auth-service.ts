@@ -13,8 +13,8 @@ import { Ticket, Token } from '../../core/ticket';
 import { JwtPayload } from '../../core/ticket/base-jwt';
 import { Cookie } from '../../core/ticket/cookie';
 import { AuthHandler } from '../interfaces/auth-handler';
-import { Database } from '../interfaces/database';
 import { HashingHandler } from '../interfaces/hashing-handler';
+import { RedisDatabase } from '../interfaces/redis-database';
 import { SessionHandler } from '../interfaces/session-handler';
 import { TicketHandler } from '../interfaces/ticket-handler';
 import { UserHandler } from '../interfaces/user-handler';
@@ -33,7 +33,7 @@ export class AuthService implements AuthHandler {
     private _sessionHandler: SessionHandler;
 
     @Factory(RedisDatabaseAdapter, AuthHandler.TOKEN_DB_KEY)
-    private readonly _tokenDatabase: Database;
+    private readonly _tokenDatabase: RedisDatabase;
 
     public async login(username: string, password: string): Promise<Ticket> {
         if (!username || !password) {
