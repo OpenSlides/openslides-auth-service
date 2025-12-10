@@ -5,17 +5,17 @@ import { RedisMessageBusAdapter } from '../../adapter/redis-message-bus-adapter'
 import { Id } from '../../core/key-transforms';
 import { User } from '../../core/models/user';
 import { Random } from '../../util/helper';
-import { Database } from '../interfaces/database';
 import { MessageBus } from '../interfaces/message-bus';
+import { RedisDatabase } from '../interfaces/redis-database';
 import { SessionHandler } from '../interfaces/session-handler';
 import { Logger } from '../services/logger';
 
 export class SessionService extends SessionHandler {
     @Factory(RedisDatabaseAdapter, SessionHandler.SESSION_KEY)
-    private readonly _sessionDatabase: Database;
+    private readonly _sessionDatabase: RedisDatabase;
 
     @Factory(RedisDatabaseAdapter, SessionHandler.USER_KEY)
-    private readonly _userDatabase: Database;
+    private readonly _userDatabase: RedisDatabase;
 
     @Factory(RedisMessageBusAdapter)
     private readonly _messageBus: MessageBus;
