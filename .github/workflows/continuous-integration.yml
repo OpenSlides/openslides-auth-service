@@ -19,7 +19,7 @@ jobs:
         working-directory: .github/startup-test
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Create secrets
         run: |
@@ -48,7 +48,7 @@ jobs:
     name: Build and test development image
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Run tests
         run: make run-test-ci
