@@ -71,7 +71,7 @@
         "axios": "^1.13.1",
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^5.8.2",
-        "jsonwebtoken": "^9.0.2",
+        "jsonwebtoken": "^9.0.3",
         "response-time": "^2.3.4",
         "rest-app": "^1.0.0-alpha.9",
         "samlify": "2.10.1",
