@@ -102,7 +102,7 @@ export class UserService implements UserHandler {
             throw new AuthenticationException('Multiple users with same credentials!');
         }
         const thisUser: User = new User(users[0]);
-        const passwordCorrect = await this.isPasswordCorrect(password, thisUser?.password || dummyPassword);
+        const passwordCorrect = await this.isPasswordCorrect(password, thisUser?.password);
         if (!thisUser.isExisting() || !passwordCorrect) {
             throw new AuthenticationException('Username or password is incorrect.');
         }
