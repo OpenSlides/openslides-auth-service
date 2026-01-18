@@ -95,6 +95,18 @@ export class SamlController {
     }
 
     /**
+     * SAML SP: Initiates the login process and redirects to the SAML IDP.
+     *
+     * @param res Response
+     * @returns Redirect to SAML IDP
+     */
+    @OnGet()
+    public async send(@Res() res: Response): Promise<void> {
+        const request = (await this._samlHandler.getSp()).createLoginRequest(await this._samlHandler.getIdp(), 'redirect');
+        return res.redirect(request.context);
+    }
+    
+    /**
      * SAML SP: Receives the SAML response from the SAML IDP, handels authentication and redirects to the frontend.
      *
      * @param req Request
