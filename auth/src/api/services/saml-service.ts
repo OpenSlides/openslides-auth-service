@@ -1,8 +1,8 @@
 import { Factory } from 'final-di';
 import * as samlify from 'samlify';
 
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
-import { Datastore } from '../../api/interfaces/datastore';
+import { DatabaseAdapter } from '../../adapter/database-adapter';
+import { Database } from '../../api/interfaces/database';
 import { HttpHandler, HttpResponse } from '../../api/interfaces/http-handler';
 import {
     SamlHandler,
@@ -23,8 +23,8 @@ export class SamlService extends SamlHandler {
     @Factory(HttpService)
     private readonly _httpHandler: HttpHandler;
 
-    @Factory(DatastoreAdapter)
-    private readonly _datastore: Datastore;
+    @Factory(DatabaseAdapter)
+    private readonly _database: Database;
 
     @Factory(SecretService)
     private readonly _secretHandler: SecretHandler;
@@ -62,7 +62,7 @@ export class SamlService extends SamlHandler {
 
     public async getSamlSettings(): Promise<SamlSettings> {
         if (!this._samlSettings) {
-            this._samlSettings = await this._datastore.get('organization', 1, [
+            this._samlSettings = await this._database.get('organization', 1, [
                 'saml_enabled',
                 'saml_metadata_idp',
                 'saml_metadata_sp',
