@@ -39,7 +39,7 @@ jobs:
         uses: iFaxity/wait-on-action@v1.1.0
         with:
           resource: http://localhost:9004
-          timeout: 30
+          timeout: 30000
 
       - name: Test connection
         run: curl -I localhost:9004/system/auth
