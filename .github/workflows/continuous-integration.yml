@@ -35,8 +35,11 @@ jobs:
       - name: Run prod image
         run: CONTEXT="prod" docker compose up -d
 
-      - name: Wait for auth-service
-        run: CONTEXT="prod" docker compose exec -T auth ./wait-for.sh -t 30 auth:9004
+      - name: Wait for dev setup
+        uses: iFaxity/wait-on-action@v1.1.0
+        with:
+          resource: http://localhost:9004
+          timeout: 30
 
       - name: Test connection
         run: curl -I localhost:9004/system/auth
