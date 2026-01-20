@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from requests import Response
 
@@ -31,6 +31,7 @@ class AuthHandler:
         debug_fn: Any = print,
         oidc_issuer: Optional[str] = None,
         oidc_audience: Optional[str] = None,
+        user_lookup_fn: Optional[Callable[[str], Optional[Dict[str, Any]]]] = None,
     ) -> None:
         self.debug_fn = debug_fn
         self.http_handler = HttpHandler(debug_fn)
@@ -44,6 +45,8 @@ class AuthHandler:
         self.oidc_issuer = oidc_issuer
         self.oidc_audience = oidc_audience
         self._oidc_authenticator: Optional[OidcAuthenticator] = None
+        # User lookup function for keycloak_id resolution
+        self.user_lookup_fn = user_lookup_fn
 
     @property
     def oidc_authenticator(self) -> Optional[OidcAuthenticator]:
@@ -56,17 +59,39 @@ class AuthHandler:
             )
         return self._oidc_authenticator
 
-    def configure_oidc(self, issuer: str, audience: str) -> None:
+    def configure_oidc(
+        self,
+        issuer: str,
+        audience: str,
+        user_lookup_fn: Optional[Callable[[str], Optional[Dict[str, Any]]]] = None,
+    ) -> None:
         """
         Configure OIDC authentication settings.
 
         Args:
             issuer: The OIDC token issuer URL (Keycloak realm URL)
             audience: The expected audience (client_id)
+            user_lookup_fn: Optional function to lookup user by keycloak_id.
+                           Takes keycloak_id string, returns user dict or None.
         """
         self.oidc_issuer = issuer
         self.oidc_audience = audience
         self._oidc_authenticator = None  # Reset to force re-creation
+        if user_lookup_fn is not None:
+            self.user_lookup_fn = user_lookup_fn
+
+    def set_user_lookup_fn(
+        self, user_lookup_fn: Callable[[str], Optional[Dict[str, Any]]]
+    ) -> None:
+        """
+        Set the user lookup function for keycloak_id resolution.
+
+        Args:
+            user_lookup_fn: Function that takes a keycloak_id string and returns
+                           a user dict with at least 'id' and optionally 'is_active',
+                           or None if user not found.
+        """
+        self.user_lookup_fn = user_lookup_fn
 
     def authenticate(
         self, access_token: Optional[str], refresh_id: Optional[str]
@@ -90,7 +115,16 @@ class AuthHandler:
         if raw_token and self.oidc_authenticator:
             if self.oidc_authenticator.is_oidc_token(raw_token):
                 self.debug_fn("Detected OIDC token, validating via JWKS")
-                user_id = self.oidc_authenticator.extract_user_id(raw_token)
+                if self.user_lookup_fn:
+                    # Use keycloak_id lookup to resolve user
+                    self.debug_fn("Using keycloak_id lookup to resolve user")
+                    user_id = self.oidc_authenticator.resolve_user_by_keycloak_id(
+                        raw_token, self.user_lookup_fn
+                    )
+                else:
+                    # Fallback to extracting user_id from token claim
+                    self.debug_fn("Extracting user_id from token claim")
+                    user_id = self.oidc_authenticator.extract_user_id(raw_token)
                 # OIDC tokens don't have a new access token to return
                 return user_id, None
 

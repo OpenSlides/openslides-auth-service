@@ -4,7 +4,7 @@ OIDC Authenticator for per-request authentication.
 Validates Keycloak/OIDC access tokens and looks up the corresponding OpenSlides user.
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import jwt
 from jwt import PyJWKClient
@@ -195,3 +195,50 @@ class OidcAuthenticator:
         payload = self.validate_token(token)
         user_id = self.extract_user_id(token)
         return user_id, payload
+
+    def resolve_user_by_keycloak_id(
+        self,
+        token: str,
+        user_lookup_fn: "Callable[[str], Optional[Dict[str, Any]]]",
+    ) -> int:
+        """
+        Validate token, extract keycloak_id (sub claim), and lookup user.
+
+        This method validates the OIDC token, extracts the 'sub' claim as the
+        keycloak_id, and uses the provided lookup function to find the
+        corresponding OpenSlides user.
+
+        Args:
+            token: The JWT access token
+            user_lookup_fn: Function that takes a keycloak_id string and returns
+                           a user dict with at least 'id' and optionally 'is_active',
+                           or None if user not found.
+
+        Returns:
+            OpenSlides user ID
+
+        Raises:
+            InvalidCredentialsException: If token is invalid
+            AuthenticateException: If user not found or user is deactivated
+        """
+        self.debug_fn("OidcAuthenticator.resolve_user_by_keycloak_id")
+
+        # Validate token and extract keycloak_id (sub claim)
+        keycloak_id = self.extract_keycloak_id(token)
+        self.debug_fn(f"Looking up user with keycloak_id: {keycloak_id}")
+
+        # Lookup user by keycloak_id
+        user = user_lookup_fn(keycloak_id)
+        if user is None:
+            raise AuthenticateException(f"No user found with keycloak_id: {keycloak_id}")
+
+        # Check if user is active
+        if not user.get("is_active", True):
+            raise AuthenticateException("User is deactivated")
+
+        user_id = user.get("id")
+        if user_id is None:
+            raise AuthenticateException("User lookup returned user without id")
+
+        self.debug_fn(f"Resolved keycloak_id {keycloak_id} to user_id {user_id}")
+        return user_id
