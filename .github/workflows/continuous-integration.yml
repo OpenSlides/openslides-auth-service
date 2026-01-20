@@ -36,7 +36,7 @@ jobs:
         run: CONTEXT="prod" docker compose up -d
 
       - name: Wait for auth-service
-        run: CONTEXT="prod" docker compose exec -T auth ./wait-for.sh auth:9004
+        run: CONTEXT="prod" docker compose exec -T auth ./wait-for.sh -t 30 auth:9004
 
       - name: Test connection
         run: curl -I localhost:9004/system/auth
