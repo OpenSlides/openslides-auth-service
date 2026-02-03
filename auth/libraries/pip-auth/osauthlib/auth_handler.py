@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 from requests import Response
 
-from .constants import ANONYMOUS_USER
+from .constants import ANONYMOUS_USER, AUTHENTICATION_HEADER, COOKIE_NAME
 from .database import Database
 from .exceptions import AuthorizationException
 from .hashing_handler import HashingHandler
@@ -177,3 +177,45 @@ class AuthHandler:
 
     def clear_sessions_by_user_id(self, user_id: int) -> None:
         return self.session_handler.clear_sessions_by_user_id(user_id)
+
+    def sso_login(self, user_id: int) -> Tuple[str, str]:
+        """
+        Create a session for a user via SSO (OIDC/SAML) login.
+
+        Calls the internal auth service endpoint to create a session for the given user ID.
+        Returns the access token and refresh cookie for the session.
+
+        Args:
+            user_id: The OpenSlides user ID to create a session for.
+
+        Returns:
+            Tuple of (access_token, refresh_cookie)
+
+        Raises:
+            AuthenticateException: If session creation fails.
+        """
+        from .exceptions import AuthenticateException
+
+        self.debug_fn(f"SSO login for user_id: {user_id}")
+        response = self.http_handler.send_internal_request(
+            "sso-login", {"userId": user_id}
+        )
+        if response.status_code != 200:
+            raise AuthenticateException(
+                f"Failed to create SSO session: HTTP {response.status_code}"
+            )
+
+        access_token = response.headers.get(AUTHENTICATION_HEADER, "")
+        # Extract cookie from Set-Cookie header
+        refresh_cookie = ""
+        set_cookie = response.headers.get("Set-Cookie", "")
+        if set_cookie:
+            # Parse refreshId cookie from Set-Cookie header
+            for part in set_cookie.split(";"):
+                part = part.strip()
+                if part.startswith(f"{COOKIE_NAME}="):
+                    refresh_cookie = part[len(f"{COOKIE_NAME}=") :]
+                    break
+
+        self.debug_fn(f"SSO login successful: access_token={access_token[:20]}...")
+        return access_token, refresh_cookie
