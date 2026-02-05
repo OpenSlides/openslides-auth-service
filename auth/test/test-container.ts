@@ -1,4 +1,4 @@
-import { FakeDatastoreAdapter } from './fake-datastore-adapter';
+import { FakeDatabaseAdapter } from './fake-database-adapter';
 import { FakeHttpService } from './fake-http-service';
 import { FakePostgreAdapter } from './fake-postgre-adapter';
 import { FakeRedisAdapter } from './fake-redis-adapter';
@@ -13,7 +13,7 @@ export class TestContainer {
     public readonly userService: FakeUserService;
     public readonly request: FakeRequest;
     public readonly http: FakeHttpService;
-    public readonly datastore: FakeDatastoreAdapter;
+    public readonly database: FakeDatabaseAdapter;
     public readonly ticketService: FakeTicketService;
 
     private readonly _postgre: FakePostgreAdapter;
@@ -23,8 +23,8 @@ export class TestContainer {
         this.redis = new FakeRedisAdapter();
         this.http = new FakeHttpService();
         this.ticketService = new FakeTicketService();
-        this.datastore = new FakeDatastoreAdapter(this._postgre);
-        this.userService = new FakeUserService(this.datastore);
+        this.database = new FakeDatabaseAdapter(this._postgre);
+        this.userService = new FakeUserService(this.database);
         this.user = this.userService.getFakeUser();
         this.request = new FakeRequest(this.userService, this.http);
     }
