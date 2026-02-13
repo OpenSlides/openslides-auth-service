@@ -1,4 +1,5 @@
 argon2-cffi==25.1.0
+cryptography==44.0.3
 ordered-set==4.1.0
 pyjwt==2.10.1
 redis==7.1.0

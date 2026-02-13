@@ -60,4 +60,17 @@ export class PrivateController {
         await this._authHandler.clearAllSessions(userId);
         return createResponse();
     }
+
+    /**
+     * SSO login endpoint for OIDC authentication.
+     * Creates a session for a user by ID (similar to SAML login flow).
+     * Returns access token in authentication header and refresh cookie.
+     */
+    @OnPost('sso-login')
+    public async ssoLogin(@Body('userId') userId: Id, @Res() res: Response): Promise<AuthServiceResponse> {
+        const ticket = await this._authHandler.doSamlLogin(userId);
+        res.setHeader(AuthHandler.AUTHENTICATION_HEADER, ticket.token.toString());
+        res.cookie(AuthHandler.COOKIE_NAME, ticket.cookie.toString(), { secure: true, httpOnly: true });
+        return createResponse();
+    }
 }
