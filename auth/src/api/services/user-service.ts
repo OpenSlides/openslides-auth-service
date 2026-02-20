@@ -3,39 +3,39 @@ import { Id } from 'src/core/key-transforms';
 
 import { HashingService } from './hashing-service';
 import { Logger } from './logger';
-import { DatastoreAdapter } from '../../adapter/datastore-adapter';
+import { DatabaseAdapter } from '../../adapter/database-adapter';
 import { AuthenticationException } from '../../core/exceptions/authentication-exception';
 import { User } from '../../core/models/user';
-import { Datastore, EventType, GetManyAnswer } from '../interfaces/datastore';
+import { Database, EventType, GetManyAnswer } from '../interfaces/database';
 import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 
-const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'meta_deleted', 'saml_id'];
+const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'saml_id'];
 const dummyPassword =
     '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM';
 
 export class UserService implements UserHandler {
-    @Factory(DatastoreAdapter)
-    private readonly _datastore: Datastore;
+    @Factory(DatabaseAdapter)
+    private readonly _database: Database;
 
     @Factory(HashingService)
     private readonly _hashingHandler: HashingHandler;
 
     public async getUserByCredentials(username: string, password: string): Promise<User> {
         Logger.debug(`Get user by credentials: ${username} and ${password}`);
-        return await this.readUserFromDatastoreByCredentials(username, password);
+        return await this.readUserFromDatabaseByCredentials(username, password);
     }
 
     public async getUserByUserId(userId: Id): Promise<User> {
         Logger.debug(`Get user by user id: ${userId}`);
-        return await this._datastore.get<User>('user', userId, userFields);
+        return await this._database.get<User>('user', userId, userFields);
     }
 
     public async getUserBySamlId(samlId: string): Promise<User> {
-        const userObj = await this.getUserCollectionFromDatastore('saml_id', samlId);
+        const userObj = await this.getUserCollectionFromDatabase('saml_id', samlId);
         Logger.debug('User object by saml_id from datastore: ', userObj);
 
-        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        const users = Object.values(userObj);
         if (users.length > 1) {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');
@@ -51,10 +51,10 @@ export class UserService implements UserHandler {
     }
 
     public async getUserByUsername(username: string): Promise<User> {
-        const userObj = await this.getUserCollectionFromDatastore('username', username);
-        Logger.debug('User object by username from datastore: ', userObj);
+        const userObj = await this.getUserCollectionFromDatabase('username', username);
+        Logger.debug('User object by username from database: ', userObj);
 
-        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+        const users = Object.values(userObj);
         if (users.length > 1) {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');
@@ -75,7 +75,7 @@ export class UserService implements UserHandler {
 
     private async updateUser(userId: Id, data: { [K in keyof User]?: unknown }): Promise<void> {
         Logger.debug(`Update user ${userId}: ` + JSON.stringify(data));
-        await this._datastore.write({
+        await this._database.write({
             user_id: userId,
             information: {},
             locked_fields: {},
@@ -93,10 +93,10 @@ export class UserService implements UserHandler {
         return await this._hashingHandler.isEquals(input, toCompare);
     }
 
-    private async readUserFromDatastoreByCredentials(username: string, password: string): Promise<User> {
-        const userObj = await this.getUserCollectionFromDatastore('username', username);
-        Logger.debug('User object from datastore: ', userObj);
-        const users = Object.values(userObj).filter(user => !user.meta_deleted);
+    private async readUserFromDatabaseByCredentials(username: string, password: string): Promise<User> {
+        const userObj = await this.getUserCollectionFromDatabase('username', username);
+        Logger.debug('User object from database: ', userObj);
+        const users = Object.values(userObj);
         if (users.length > 1) {
             Logger.error('Multiple users found for same username!');
             throw new AuthenticationException('Multiple users with same credentials!');
@@ -117,11 +117,11 @@ export class UserService implements UserHandler {
         return thisUser;
     }
 
-    private async getUserCollectionFromDatastore(property: keyof User, value: string): Promise<GetManyAnswer<User>> {
+    private async getUserCollectionFromDatabase(property: keyof User, value: string): Promise<GetManyAnswer<User>> {
         if (!value) {
             Logger.error(`Property ${property} is ${value}`);
             throw new Error(`Property ${property} is ${value}`);
         }
-        return await this._datastore.filter<User>('user', property, value, userFields);
+        return await this._database.filter<User>('user', property, value, userFields);
     }
 }
