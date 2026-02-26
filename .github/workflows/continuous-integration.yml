@@ -71,5 +71,5 @@ jobs:
       - name: Check mypy
         run: make run-check-mypy
 
-      - name: Stop dev containers
-        run: make stop-dev
+      - name: Stop test containers
+        run: make stop-test-ci
