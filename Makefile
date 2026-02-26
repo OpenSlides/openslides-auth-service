@@ -19,12 +19,40 @@ run-tests:
 lint:
 	bash dev/run-lint.sh -l
 
+# CI
+
+run-pre-test: | build-tests
+	$(TEST_DC) up -d
+	$(TEST_DC) exec -T auth ./wait-for.sh auth:9004
+
 run-test-ci: | run-pre-test
 	@echo "########################################################################"
 	@echo "###################### Start full system tests #########################"
 	@echo "########################################################################"
 	$(TEST_DC) exec -T auth npm run test
 	$(TEST_DC) exec -T auth pytest
+
+
+run-check-lint: | run-pre-test
+	$(TEST_DC) exec -T auth npm run lint-check
+
+run-check-prettify: | run-pre-test
+	$(TEST_DC) exec -T auth npm run prettify-check
+
+run-check-black: | run-pre-test
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth black --check --diff osauthlib/ tests/
+
+run-check-isort: | run-pre-test
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff osauthlib/ tests/
+
+run-check-flake8: | run-pre-test
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth flake8 osauthlib/ tests/
+
+run-check-mypy: | run-pre-test
+	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth mypy osauthlib/ tests/
+
+stop-test-ci:
+	$(TEST_DC) down
 
 # Cleanup
 
@@ -56,28 +84,6 @@ run-test-prod: | deprecation-warning build-prod
 	docker compose -f .github/startup-test/docker-compose.yml up -d
 	docker compose -f .github/startup-test/docker-compose.yml exec -T auth ./wait-for.sh auth:9004
 	docker compose -f .github/startup-test/docker-compose.yml down
-
-run-pre-test: | deprecation-warning build-tests
-	$(TEST_DC) up -d
-	$(TEST_DC) exec -T auth ./wait-for.sh auth:9004
-
-run-check-lint: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -T auth npm run lint-check
-
-run-check-prettify: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -T auth npm run prettify-check
-
-run-check-black: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth black --check --diff osauthlib/ tests/
-
-run-check-isort: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth isort --check-only --diff osauthlib/ tests/
-
-run-check-flake8: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth flake8 osauthlib/ tests/
-
-run-check-mypy: | deprecation-warning run-pre-test
-	$(TEST_DC) exec -w /app/libraries/pip-auth/ -T auth mypy osauthlib/ tests/
 
 run-cleanup-ci: | deprecation-warning build-dev
 	$(TEST_DC) up -d
