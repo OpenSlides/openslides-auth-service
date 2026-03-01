@@ -71,7 +71,7 @@
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^5.9.1",
         "jsonwebtoken": "^9.0.3",
-        "pg": "^8.16.3",
+        "pg": "^8.18.0",
         "response-time": "^2.3.4",
         "rest-app": "^1.0.0-alpha.9",
         "samlify": "2.10.2",
