@@ -69,7 +69,7 @@
         "argon2": "^0.44.0",
         "axios": "^1.13.2",
         "final-di": "^1.0.10-alpha.1",
-        "ioredis": "^5.9.1",
+        "ioredis": "^5.9.3",
         "jsonwebtoken": "^9.0.3",
         "pg": "^8.16.3",
         "response-time": "^2.3.4",
