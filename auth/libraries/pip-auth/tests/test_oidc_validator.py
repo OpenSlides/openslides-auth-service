@@ -127,8 +127,14 @@ class OIDCValidator:
 class TestOIDCValidator(unittest.TestCase):
     """Tests for OIDC token validation."""
 
+    keypair: OIDCKeyPair
+    token_factory: OIDCTokenFactory
+    jwks_server: MockJWKSServer
+    issuer: str
+    audience: str
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test OIDC environment."""
         cls.keypair, cls.token_factory, cls.jwks_server = create_test_oidc_environment()
         cls.issuer = cls.token_factory.issuer
@@ -243,7 +249,7 @@ class TestOIDCValidator(unittest.TestCase):
             jwk = wrong_issuer_keypair.get_jwk()
             return jwt.PyJWK.from_dict(jwk)
 
-        validator._jwks_client.get_signing_key_from_jwt = (
+        validator._jwks_client.get_signing_key_from_jwt = (  # type: ignore[method-assign]
             get_signing_key_from_wrong_issuer
         )
 
