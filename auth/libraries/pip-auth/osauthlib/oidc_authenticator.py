@@ -35,7 +35,8 @@ class OidcAuthenticator:
         Args:
             issuer: The token issuer URL (Keycloak realm URL)
             audience: The expected audience (client_id)
-            jwks_uri: The JWKS endpoint URL (defaults to issuer + /protocol/openid-connect/certs)
+            jwks_uri: The JWKS endpoint URL
+                (defaults to issuer + /protocol/openid-connect/certs)
             debug_fn: Debug logging function
         """
         self.issuer = issuer
@@ -144,7 +145,8 @@ class OidcAuthenticator:
 
         if not isinstance(user_id, int):
             raise AuthenticateException(
-                f"{self.OIDC_USER_ID_CLAIM} must be an integer, got {type(user_id).__name__}"
+                f"{self.OIDC_USER_ID_CLAIM} must be an integer, "
+                f"got {type(user_id).__name__}"
             )
 
         return user_id

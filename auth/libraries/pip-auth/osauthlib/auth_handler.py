@@ -182,7 +182,8 @@ class AuthHandler:
         """
         Create a session for a user via SSO (OIDC/SAML) login.
 
-        Calls the internal auth service endpoint to create a session for the given user ID.
+        Calls the internal auth service endpoint to create a session
+        for the given user ID.
         Returns the access token and refresh cookie for the session.
 
         Args:
