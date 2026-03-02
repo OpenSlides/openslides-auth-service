@@ -239,8 +239,6 @@ class TestOIDCValidator(unittest.TestCase):
             audience=self.audience,
         )
 
-        _wrong_jwks_server = MockJWKSServer([wrong_issuer_keypair])
-
         def get_signing_key_from_wrong_issuer(token):
             jwk = wrong_issuer_keypair.get_jwk()
             return jwt.PyJWK.from_dict(jwk)
