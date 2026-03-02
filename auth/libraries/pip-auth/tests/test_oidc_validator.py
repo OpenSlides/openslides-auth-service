@@ -249,7 +249,7 @@ class TestOIDCValidator(unittest.TestCase):
             jwk = wrong_issuer_keypair.get_jwk()
             return jwt.PyJWK.from_dict(jwk)
 
-        validator._jwks_client.get_signing_key_from_jwt = (  # type: ignore[method-assign]
+        validator._jwks_client.get_signing_key_from_jwt = (  # type: ignore[method-assign]  # noqa: E501
             get_signing_key_from_wrong_issuer
         )
 
