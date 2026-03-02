@@ -295,7 +295,9 @@ class TestOIDCValidator(unittest.TestCase):
     def test_reject_invalid_user_id_type_float(self):
         """Test rejection of token with float user_id instead of int."""
         validator = self._create_validator_with_mock_jwks()
-        token = self.token_factory.create_token_with_invalid_user_id(invalid_user_id=1.5)
+        token = self.token_factory.create_token_with_invalid_user_id(
+            invalid_user_id=1.5
+        )
 
         with self.assertRaises(AuthenticateException) as context:
             validator.extract_user_id(token)
@@ -305,7 +307,9 @@ class TestOIDCValidator(unittest.TestCase):
     def test_reject_invalid_user_id_type_null(self):
         """Test rejection of token with null user_id."""
         validator = self._create_validator_with_mock_jwks()
-        token = self.token_factory.create_token_with_invalid_user_id(invalid_user_id=None)
+        token = self.token_factory.create_token_with_invalid_user_id(
+            invalid_user_id=None
+        )
 
         with self.assertRaises(AuthenticateException) as context:
             validator.extract_user_id(token)
@@ -360,7 +364,15 @@ class TestOIDCValidator(unittest.TestCase):
 
         payload = validator.validate_token(token)
 
-        required_claims = ["iss", "aud", "sub", "exp", "iat", "email", "openslides_user_id"]
+        required_claims = [
+            "iss",
+            "aud",
+            "sub",
+            "exp",
+            "iat",
+            "email",
+            "openslides_user_id",
+        ]
         for claim in required_claims:
             self.assertIn(claim, payload, f"Missing required claim: {claim}")
 
