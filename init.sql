@@ -12,6 +12,7 @@ CREATE TABLE user_t (
     username varchar(256) NOT NULL,
     member_number varchar(256),
     saml_id varchar(256) CONSTRAINT minlength_saml_id CHECK (char_length(saml_id) >= 1),
+    keycloak_id varchar(256) CONSTRAINT minlength_keycloak_id CHECK (char_length(keycloak_id) >= 1),
     pronoun varchar(32),
     title varchar(256),
     first_name varchar(256),

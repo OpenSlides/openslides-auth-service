@@ -11,3 +11,4 @@ from .exceptions import (  # noqa
     InstanceError,
     InvalidCredentialsException,
 )
+from .oidc_authenticator import OidcAuthenticator  # noqa
