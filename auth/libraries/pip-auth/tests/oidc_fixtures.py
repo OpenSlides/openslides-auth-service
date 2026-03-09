@@ -8,7 +8,6 @@ import json
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
-from unittest.mock import MagicMock
 
 import jwt
 from cryptography.hazmat.backends import default_backend
@@ -166,7 +165,6 @@ class OIDCTokenFactory:
         **kwargs: Any,
     ) -> str:
         """Create a token with incorrect issuer."""
-        now = datetime.now(timezone.utc)
         return self.create_access_token(
             openslides_user_id,
             extra_claims={"iss": wrong_issuer},

@@ -7,10 +7,9 @@ Tests for RS256 token validation and JWKS integration for OIDC/Keycloak authenti
 import json
 import unittest
 from typing import Any, Dict, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import jwt
-import pytest
 
 from osauthlib.exceptions import AuthenticateException, InvalidCredentialsException
 
@@ -66,7 +65,7 @@ class OIDCValidator:
         Raises:
             InvalidCredentialsException: If token validation fails
         """
-        self.debug_fn(f"OIDCValidator.validate_token")
+        self.debug_fn("OIDCValidator.validate_token")
 
         try:
             signing_key = self.jwks_client.get_signing_key_from_jwt(token)
@@ -118,7 +117,8 @@ class OIDCValidator:
 
         if not isinstance(user_id, int):
             raise AuthenticateException(
-                f"{self.OIDC_USER_ID_CLAIM} must be an integer, got {type(user_id).__name__}"
+                f"{self.OIDC_USER_ID_CLAIM} must be an integer, "
+                f"got {type(user_id).__name__}"
             )
 
         return user_id
@@ -139,7 +139,10 @@ class TestOIDCValidator(unittest.TestCase):
         validator = OIDCValidator(
             issuer=self.issuer,
             audience=self.audience,
-            jwks_uri="http://localhost:8080/realms/openslides/protocol/openid-connect/certs",
+            jwks_uri=(
+                "http://localhost:8080/realms/openslides"
+                "/protocol/openid-connect/certs"
+            ),
             debug_fn=lambda x: None,
         )
 
