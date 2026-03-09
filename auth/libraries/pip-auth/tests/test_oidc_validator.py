@@ -84,9 +84,7 @@ class OIDCValidator:
                 if token_azp != self.audience:
                     raise InvalidCredentialsException("Invalid token audience")
             elif token_aud:
-                aud_list = (
-                    [token_aud] if isinstance(token_aud, str) else token_aud
-                )
+                aud_list = [token_aud] if isinstance(token_aud, str) else token_aud
                 if self.audience not in aud_list:
                     raise InvalidCredentialsException("Invalid token audience")
 
