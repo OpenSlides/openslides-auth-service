@@ -230,7 +230,9 @@ class OidcAuthenticator:
         # Lookup user by keycloak_id
         user = user_lookup_fn(keycloak_id)
         if user is None:
-            raise AuthenticateException(f"No user found with keycloak_id: {keycloak_id}")
+            raise AuthenticateException(
+                f"No user found with keycloak_id: {keycloak_id}"
+            )
 
         # Check if user is active
         if not user.get("is_active", True):
