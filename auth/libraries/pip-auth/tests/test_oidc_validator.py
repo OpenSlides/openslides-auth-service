@@ -239,7 +239,7 @@ class TestOIDCValidator(unittest.TestCase):
             audience=self.audience,
         )
 
-        wrong_jwks_server = MockJWKSServer([wrong_issuer_keypair])
+        MockJWKSServer([wrong_issuer_keypair])  # noqa: F841
 
         def get_signing_key_from_wrong_issuer(token):
             jwk = wrong_issuer_keypair.get_jwk()
@@ -324,7 +324,10 @@ class TestOIDCValidator(unittest.TestCase):
         validator = OIDCValidator(
             issuer=self.issuer,
             audience=self.audience,
-            jwks_uri="http://localhost:8080/realms/openslides/protocol/openid-connect/certs",
+            jwks_uri=(
+                "http://localhost:8080/realms/openslides"
+                "/protocol/openid-connect/certs"
+            ),
             debug_fn=lambda x: None,
         )
 
