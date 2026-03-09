@@ -73,9 +73,23 @@ class OIDCValidator:
                 token,
                 signing_key.key,
                 algorithms=["RS256"],
-                audience=self.audience,
+                options={"verify_aud": False},
                 issuer=self.issuer,
             )
+
+            # Manual audience verification: check `azp` first, then `aud`.
+            token_azp = payload.get("azp")
+            token_aud = payload.get("aud")
+            if token_azp:
+                if token_azp != self.audience:
+                    raise InvalidCredentialsException("Invalid token audience")
+            elif token_aud:
+                aud_list = (
+                    [token_aud] if isinstance(token_aud, str) else token_aud
+                )
+                if self.audience not in aud_list:
+                    raise InvalidCredentialsException("Invalid token audience")
+
             return payload
         except jwt.exceptions.InvalidSignatureError:
             raise InvalidCredentialsException("Invalid token signature")
@@ -83,8 +97,6 @@ class OIDCValidator:
             raise InvalidCredentialsException("Token has expired")
         except jwt.exceptions.InvalidIssuerError:
             raise InvalidCredentialsException("Invalid token issuer")
-        except jwt.exceptions.InvalidAudienceError:
-            raise InvalidCredentialsException("Invalid token audience")
         except jwt.exceptions.DecodeError as e:
             raise InvalidCredentialsException(f"Token decode error: {e}")
         except jwt.exceptions.PyJWKClientError as e:
