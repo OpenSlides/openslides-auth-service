@@ -10,7 +10,7 @@ export class User extends BaseModel {
     public readonly username: string;
     public readonly password: string;
     public readonly email: string;
-    public readonly last_login: number;
+    public readonly last_login: string;
     public readonly is_active: boolean;
 
     public constructor(input?: Partial<User>) {
