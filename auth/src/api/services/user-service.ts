@@ -70,7 +70,7 @@ export class UserService implements UserHandler {
     }
 
     public async updateLastLogin(userId: Id): Promise<void> {
-        await this.updateUser(userId, { last_login: (new Date()).toISOString() });
+        await this.updateUser(userId, { last_login: new Date().toISOString() });
     }
 
     private async updateUser(userId: Id, data: { [K in keyof User]?: unknown }): Promise<void> {
