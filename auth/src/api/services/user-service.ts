@@ -11,8 +11,7 @@ import { HashingHandler } from '../interfaces/hashing-handler';
 import { UserHandler } from '../interfaces/user-handler';
 
 const userFields: (keyof User)[] = ['id', 'username', 'password', 'is_active', 'saml_id'];
-const dummyPassword =
-    '$argon2id$v=19$m=65536,t=3,p=4$IGvN2jGNrF5aPB5G85671w$zdaAc/BrqhD7edEz5bJroJ+M9xeZrUWao34lY8494cM';
+const dummyPassword = '$argon2id$v=19$m=65536,t=3,p=4$OXRxaWhTU2JnNkFvdnBDRg$Hqd6Us8drdCsBo3gpYth0Q';
 
 export class UserService implements UserHandler {
     @Factory(DatabaseAdapter)
