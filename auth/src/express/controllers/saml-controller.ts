@@ -102,8 +102,10 @@ export class SamlController {
      */
     @OnGet()
     public async send(@Res() res: Response): Promise<void> {
-        const request =
-            (await this._samlHandler.getSp()).createLoginRequest(await this._samlHandler.getIdp(), 'redirect');
+        const request = (await this._samlHandler.getSp()).createLoginRequest(
+            await this._samlHandler.getIdp(),
+            'redirect'
+        );
         return res.redirect(request.context);
     }
 
