@@ -1,4 +1,5 @@
 override SERVICE=auth
+override DEV_DC=CONTEXT="dev" docker compose -f docker-compose.dev.yml
 override TEST_DC=CONTEXT="tests" docker compose -f docker-compose.dev.yml
 
 # Build images for different contexts
@@ -57,10 +58,10 @@ stop-test-ci:
 # Cleanup
 
 run-cleanup:
-	make dev-detached ARGS="auth"
-	make dev-exec ARGS="auth ./wait-for.sh auth:9004"
-	make dev-exec ARGS="auth npm run cleanup"
-	make dev-stop
+	$(DEV_DC) up -d
+	$(DEV_DC) exec auth ./wait-for.sh auth:9004
+	$(DEV_DC) exec auth npm run cleanup
+	$(DEV_DC) down
 
 ########################## Deprecation List ##########################
 
