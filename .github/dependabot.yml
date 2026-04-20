@@ -6,6 +6,25 @@ updates:
       interval: "daily"
     assignees:
       - "luisa-beerboom"
+    groups:
+      code-style-depedencies:
+        patterns:
+          - "autoflake"
+          - "black"
+          - "debugpy"
+          - "flake8"
+          - "isort"
+          - "mypy"
+          - "pyupgrade"
+      web-dependencies:
+        patterns:
+          - "pyjwt"
+          - "requests"
+          - "types-requests"
+      redis-dependencies:
+        patterns:
+          - "redis"
+          - "types-redis"
     open-pull-requests-limit: 42
 
   - package-ecosystem: "npm"
@@ -15,12 +34,12 @@ updates:
     assignees:
       - "bastianjoel"
     groups:
-       typescript-eslint:
-          patterns:
-            - "@typescript-eslint/*"
-       opentelemetry:
-          patterns:
-            - "@opentelemetry/*"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
+      opentelemetry:
+        patterns:
+          - "@opentelemetry/*"
     open-pull-requests-limit: 42
 
   - package-ecosystem: "docker"
