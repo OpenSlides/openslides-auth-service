@@ -39,10 +39,10 @@ then
     # Container Mode
     eval "$DC_AUTH npm run lint-check"
     eval "$DC_AUTH npm run prettify-check"
-    eval "$DC_PIP -T auth black --check --diff authlib/ tests/"
-    eval "$DC_PIP -T auth isort --check-only --diff authlib/ tests/"
-    eval "$DC_PIP -T auth flake8 authlib/ tests/"
-    eval "$DC_PIP -T auth mypy authlib/ tests/"
+    eval "$DC_PIP -T auth black --check --diff osauthlib/ tests/"
+    eval "$DC_PIP -T auth isort --check-only --diff osauthlib/ tests/"
+    eval "$DC_PIP -T auth flake8 osauthlib/ tests/"
+    eval "$DC_PIP -T auth mypy osauthlib/ tests/"
 else
     {
         cd ./auth || exit 1
@@ -52,9 +52,9 @@ else
         npm run prettify-check
 
         cd ./libraries/pip-auth || exit 1
-        black --check --diff authlib/ tests/
-        isort --check-only --diff authlib/ tests/
-        flake8 authlib/ tests/
-        mypy authlib/ tests/
+        black --check --diff osauthlib/ tests/
+        isort --check-only --diff osauthlib/ tests/
+        flake8 osauthlib/ tests/
+        mypy osauthlib/ tests/
     }
 fi
