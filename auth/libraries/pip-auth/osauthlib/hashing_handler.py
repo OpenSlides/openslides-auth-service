@@ -3,7 +3,6 @@ import hashlib
 
 import argon2
 
-
 SHA512_HASHED_LENGTH = 152
 ARGON2_HASH_START = "$argon2"
 

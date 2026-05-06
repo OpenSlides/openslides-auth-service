@@ -2,7 +2,6 @@ from osauthlib.hashing_handler import ARGON2_HASH_START
 
 from .base import BaseTestEnvironment
 
-
 DEPRECATED_PW_HASH = "316af7b2ddc20ead599c38541fbe87e9a9e4e960d4017d6e59de188b41b2758flD5BVZAZ8jLy4nYW9iomHcnkXWkfk3PgBjeiTSxjGG7+fBjMBxsaS1vIiAMxYh+K38l0gDW4wcP+i8tgoc4UBg=="  # noqa: E501
 
 

@@ -3,7 +3,6 @@ from typing import Any
 
 from .exceptions import SecretException
 
-
 AUTH_DEV_TOKEN_SECRET = "auth-dev-token-key"
 AUTH_DEV_COOKIE_SECRET = "auth-dev-cookie-key"
 DEVELOPMENT_VARIABLE = "OPENSLIDES_DEVELOPMENT"

@@ -44,11 +44,17 @@ then
     eval "$DC_PIP -T auth flake8 authlib/ tests/"
     eval "$DC_PIP -T auth mypy authlib/ tests/"
 else
-    # Local Mode
-    npm run lint-check
-    npm run prettify-check
-    black --check --diff authlib/ tests/
-    isort --check-only --diff authlib/ tests/
-    flake8 authlib/ tests/
-    mypy authlib/ tests/
+    {
+        cd ./auth || exit 1
+
+        # Local Mode
+        npm run lint-check
+        npm run prettify-check
+
+        cd ./libraries/pip-auth || exit 1
+        black --check --diff authlib/ tests/
+        isort --check-only --diff authlib/ tests/
+        flake8 authlib/ tests/
+        mypy authlib/ tests/
+    }
 fi

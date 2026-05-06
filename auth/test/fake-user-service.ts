@@ -6,10 +6,8 @@ import { Fqid, getIdFromFqid, Id } from '../src/core/key-transforms';
 import { User } from '../src/core/models/user';
 import { FakeUser } from './fake-user';
 import { TokenPayload, Utils } from './utils';
-import { FakeDatastoreAdapter } from './fake-datastore-adapter';
-import { EventType } from '../src/api/interfaces/datastore';
-
-let nextUserId = 0;
+import { FakeDatabaseAdapter } from './fake-database-adapter';
+import { EventType } from '../src/api/interfaces/database';
 
 export class FakeUserService {
     public get currentAdminId(): Id {
@@ -27,7 +25,7 @@ export class FakeUserService {
     private readonly _hashService = new HashingService();
     private readonly _keyService = new SecretService();
 
-    public constructor(private readonly _datastore: FakeDatastoreAdapter) {}
+    public constructor(private readonly _database: FakeDatabaseAdapter) {}
 
     public getFakeUser(): FakeUser {
         return this._fakeUser;
@@ -38,13 +36,13 @@ export class FakeUserService {
     }
 
     public async init(): Promise<void> {
-        await this._datastore.isReady();
-        await this._datastore.prune();
+        await this._database.isReady();
+        await this._database.prune();
         await this.createAdmin();
     }
 
     public async end(): Promise<void> {
-        await this._datastore.closeConnection();
+        await this._database.closeConnection();
     }
 
     public async updateAdmin(fields: { [K in keyof User]?: unknown }): Promise<void> {
@@ -56,19 +54,19 @@ export class FakeUserService {
         this._adminFqid = await this.createUser(username, { password });
     }
 
-    public async createUser(username: string, options: { [K in keyof User]?: unknown } = {}): Promise<Fqid> {
-        const fqid: Fqid = `user/${++nextUserId}`;
+    public async createUser(username: string, options: { [K in keyof User]?: unknown } = {}, userId:number=1): Promise<Fqid> {
+        const fqid: Fqid = `user/${userId}`;
         const update = { ...options };
         if (update.password && typeof update.password === 'string') {
             update.password = await this._hashService.hash(update.password);
         } else {
             update.password = await this._hashService.hash(username);
         }
-        await this._datastore.write([
+        await this._database.write([
             {
                 type: EventType.CREATE,
                 fqid,
-                fields: { id: nextUserId, username: username, is_active: true, ...update }
+                fields: { id: userId, username: username, is_active: true, ...update }
             }
         ]);
         return fqid;
@@ -79,7 +77,7 @@ export class FakeUserService {
         if (options.password && typeof options.password === 'string') {
             update.password = this._hashService.hash(options.password);
         }
-        await this._datastore.write([
+        await this._database.write([
             {
                 type: EventType.UPDATE,
                 fqid,
@@ -88,12 +86,8 @@ export class FakeUserService {
         ]);
     }
 
-    public async deleteUser(fqid: Fqid): Promise<void> {
-        await this._datastore.write([{ type: EventType.DELETE, fqid }]);
-    }
-
     public async getUser(id: Id): Promise<User> {
-        return await this._datastore.get<User>('user', id);
+        return await this._database.get<User>('user', id);
     }
 
     public setAccessTokenToExpired(): void {
