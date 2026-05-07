@@ -15,7 +15,7 @@ services:
       - postgres_password
 
   postgres:
-    image: postgres:15
+    image: postgres:17
     environment:
       - POSTGRES_USER=openslides
       - POSTGRES_PASSWORD=openslides
