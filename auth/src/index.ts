@@ -1,4 +1,3 @@
-import './init';
 import { Request, Response } from 'express';
 import { RestApplication } from 'rest-app';
 
