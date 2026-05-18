@@ -6,4 +6,4 @@ mypy==2.1.0
 pytest==9.0.3
 
 types-redis==4.6.0.20241004
-types-requests==2.33.0.20260513
+types-requests==2.33.0.20260518
