@@ -57,7 +57,7 @@
         "prettier": "^3.8.4",
         "ts-jest": "^29.4.11",
         "ts-node": "^10.9.2",
-        "typescript": "^5.5.4"
+        "typescript": "^5.9.3"
     },
     "dependencies": {
         "argon2": "^0.44.0",
