@@ -30,10 +30,6 @@ export class Config {
         return this.isTruthy(process.env.OPENSLIDES_DEVELOPMENT);
     }
 
-    public static isOtelEnabled(): boolean {
-        return this.isTruthy(process.env.OPENTELEMETRY_ENABLED);
-    }
-
     private static isTruthy(value?: string): boolean {
         return this.VERBOSE_TRUE_FIELDS.includes(value?.toLowerCase() || '');
     }
