@@ -56,11 +56,6 @@ export class SecureController {
         return createResponse();
     }
 
-    @OnGet('list-sessions')
-    public async listSessions(): Promise<{ sessions: string[] }> {
-        return { sessions: await this._authHandler.getListOfSessions() };
-    }
-
     @OnPost('clear-all-sessions-except-themselves')
     public async clearAllSessionsExceptThemselves(@Res() res: Response): Promise<AuthServiceResponse> {
         const token = res.locals['token'] as Token;
@@ -75,11 +70,5 @@ export class SecureController {
             await this._authHandler.clearAllSessions(token.userId);
             return createResponse();
         });
-    }
-
-    @OnPost('clear-session-by-id')
-    public async clearSessionById(@Body('sessionId') sessionId: string): Promise<AuthServiceResponse> {
-        await this._authHandler.clearUserSessionById(sessionId);
-        return createResponse();
     }
 }
