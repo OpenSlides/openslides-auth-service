@@ -58,11 +58,7 @@ The currently available internal and external routes are listed below:
 
 3. `POST who-am-i (refreshId: string): Response<void>`
 
-4. `GET secure/list-sessions (ticket: Ticket): Response<{sessions: string[]}>`
-
-5. `POST secure/clear-session-by-id (sessionId: string, ticket: Ticket): Response<void>`
-
-6. `POST secure/clear-all-sessions-except-themselves (ticket: Ticket): Response<void>`
+4. `POST secure/clear-all-sessions-except-themselves (ticket: Ticket): Response<void>`
 
 A detailed description about these routes are given below:
 
@@ -106,27 +102,11 @@ secure/logout (ticket: Ticket): Response<void> publishes LogoutSessionEvent;
 who-am-i (refreshId: string): Response<LoginInformation>;
 
 /**
-* POST to /system/auth/secure/clear-session-by-id
-*
-* Function to sign out one specific client from a user by its corresponding session-id.
-*/
-secure/clear-session-by-id (sessionId: string, ticket: Ticket): Response<void> publishes LogoutSessionEvent;
-
-/**
 * POST to /system/auth/secure/clear-all-session-except-themselves
 *
 * Function to kill all current opened sessions from one user except the one, which is requesting.
 */
 secure/clear-all-sessions-except-themselves (sessionId: string, ticket: Ticket): Response<void> publishes LogoutSessionEvent;
-
-/**
-* GET to system/auth/secure/list-sessions
-*
-* Returns all currently active sessions.
-*
-* @returns an array containing currently active sessions.
-*/
-secure/list-sessions (ticket: Ticket): Response<{sessions: string[]}>;
 ```
 
 ### internal routes
