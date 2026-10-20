@@ -69,7 +69,7 @@ export class TicketService extends TicketHandler {
 
         const tokenDecoded = jwt.decode(tokenEncoded) as Token;
         const cookieDecoded = jwt.decode(cookieEncoded) as Token;
-        if (tokenDecoded.userId !== cookieDecoded.userId) {
+        if (tokenDecoded && cookieDecoded && tokenDecoded.userId !== cookieDecoded.userId) {
             throw new ValidationException('Token mismatch');
         }
 
