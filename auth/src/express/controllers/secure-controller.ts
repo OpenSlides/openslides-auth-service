@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Factory } from 'final-di';
-import { Body, OnGet, OnPost, Res, RestController } from 'rest-app';
+import { OnGet, OnPost, Res, RestController } from 'rest-app';
 
 import { AuthHandler } from '../../api/interfaces/auth-handler';
 import { SamlHandler } from '../../api/interfaces/saml-handler';
