@@ -84,10 +84,6 @@ export class TicketMiddleware implements RestMiddleware {
         try {
             const newTicket = await this._authHandler.whoAmI(cookieEncoded);
             const oldToken = this._ticketHandler.decode<Token>(tokenEncoded);
-            if (oldToken.userId !== newTicket.token.userId) {
-                response.status(403).json(createResponse({}, "Token mismatch", false));
-                return
-            }
             this.next(response, next, { token: oldToken, newToken: newTicket.token.toString() });
         } catch (e) {
             Logger.debug('Error while refreshing an access-token');

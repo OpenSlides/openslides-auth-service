@@ -66,6 +66,13 @@ export class TicketService extends TicketHandler {
 
     public verifyTicket(tokenEncoded: string, cookieEncoded: string): Ticket {
         this.checkBearerTicket(tokenEncoded, cookieEncoded);
+
+        const tokenDecoded = jwt.decode(tokenEncoded) as Token;
+        const cookieDecoded = jwt.decode(cookieEncoded) as Token;
+        if (tokenDecoded.userId !== cookieDecoded.userId) {
+            throw new ValidationException('Token mismatch');
+        }
+
         const token = this.verifyJwt(tokenEncoded) as Token;
         const cookie = this.verifyJwt(cookieEncoded, 'cookie') as Cookie;
         return { token, cookie };
