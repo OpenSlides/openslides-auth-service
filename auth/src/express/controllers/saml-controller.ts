@@ -66,9 +66,13 @@ export class SamlController {
             const user = await this._userHandler.getUserBySamlId(extract.extract.nameID);
             await this._authHandler.clearAllSessions(user.id);
 
-            const response = sp.createLogoutResponse(idp, {
-                extract: extract.extract,
-            }, 'redirect');
+            const response = sp.createLogoutResponse(
+                idp,
+                {
+                    extract: extract.extract
+                },
+                'redirect'
+            );
             res.redirect(response.context);
         }
     }
