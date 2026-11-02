@@ -128,6 +128,7 @@ export class SamlController {
 
         const loginResp = await sp.parseLoginResponse(idp, 'post', req);
         if (!loginResp.extract.attributes) {
+            res.redirect('/');
             return;
         }
 
