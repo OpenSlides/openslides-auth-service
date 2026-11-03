@@ -1,9 +1,9 @@
 autoflake==2.4.0
-black==26.10.0
-flake8==7.4.1
+black==26.10.1
+flake8==7.5.0
 isort==9.0.2
-mypy==2.4.0
-pytest==9.1.1
+mypy==2.4.1
+pytest==9.2.0
 
 types-redis==4.6.0.20241004
-types-requests==2.33.0.20261006
+types-requests==2.33.0.20261030
