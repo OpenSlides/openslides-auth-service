@@ -62,13 +62,19 @@ export class SamlController {
         const idp = await this._samlHandler.getIdp();
 
         const extract = await idp.parseLogoutRequest(sp, 'post', req);
-        const user = await this._userHandler.getUserBySamlId(
-            extract?.extract.nameID // eslint-disable-line @typescript-eslint/no-unsafe-member-access
-        );
-        await this._authHandler.clearAllSessions(user.id);
+        if (extract?.extract.nameID) {
+            const user = await this._userHandler.getUserBySamlId(extract.extract.nameID);
+            await this._authHandler.clearAllSessions(user.id);
 
-        const response = sp.createLogoutResponse(idp, req, 'redirect');
-        res.redirect(response.context);
+            const response = sp.createLogoutResponse(
+                idp,
+                {
+                    extract: extract.extract
+                },
+                'redirect'
+            );
+            res.redirect(response.context);
+        }
     }
 
     @OnGet()
@@ -124,14 +130,16 @@ export class SamlController {
         const sp = await this._samlHandler.getSp();
         const idp = await this._samlHandler.getIdp();
 
-        const {
-            extract // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-        }: {
-            extract: { attributes: SamlAttributes };
-        } = await sp.parseLoginResponse(idp, 'post', req);
-        const { username }: { username: string } = extract.attributes;
+        const loginResp = await sp.parseLoginResponse(idp, 'post', req);
+        if (!loginResp.extract.attributes) {
+            res.redirect('/');
+            return;
+        }
 
-        const userId = await this._samlHandler.provisionUser(extract.attributes);
+        const attributes = loginResp.extract.attributes as unknown as SamlAttributes;
+        const username = attributes['username'];
+
+        const userId = await this._samlHandler.provisionUser(attributes);
 
         const samlAttributeMapping = (await this._samlHandler.getSamlSettings()).saml_attr_mapping;
         const user = await this._userHandler.getUserByUserId(userId);
