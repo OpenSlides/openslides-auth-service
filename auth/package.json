@@ -60,7 +60,7 @@
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "argon2": "^0.45.1",
+        "argon2": "^0.45.2",
         "axios": "^1.21.0",
         "final-di": "^1.0.10-alpha.1",
         "ioredis": "^6.0.0",
